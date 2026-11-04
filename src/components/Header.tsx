@@ -47,41 +47,43 @@ export const Header: React.FC = () => {
   return (
     <>
       {/* Top Announcement Bar — Egypt Delivery */}
-      <div className="bg-brand-black text-brand-gold text-[11px] tracking-widest uppercase border-b border-brand-border/60 py-2.5 px-4 font-sans select-none">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="hidden md:flex items-center space-x-2 rtl:space-x-reverse text-brand-ivory/80 text-[10px] tracking-widest">
-            <span className="inline-flex items-center text-brand-gold font-mono">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping mr-2 rtl:ml-2 rtl:mr-0 inline-block" />
-              {t('brandOrigin')}
-            </span>
-          </div>
+      {content.showAnnouncement !== false && (
+        <div className="bg-brand-black text-brand-gold text-[11px] tracking-widest uppercase border-b border-brand-border/60 py-2.5 px-4 font-sans select-none">
+          <div className="max-w-7xl mx-auto flex items-center justify-between">
+            <div className="hidden md:flex items-center space-x-2 rtl:space-x-reverse text-brand-ivory/80 text-[10px] tracking-widest">
+              <span className="inline-flex items-center text-brand-gold font-mono">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping mr-2 rtl:ml-2 rtl:mr-0 inline-block" />
+                {t('brandOrigin')}
+              </span>
+            </div>
 
-          <div className="mx-auto text-center font-medium tracking-wider text-[11px] text-brand-ivory flex items-center justify-center space-x-2 rtl:space-x-reverse">
-            <Flame className="w-3.5 h-3.5 text-brand-gold flex-shrink-0" />
-            <span>{announcementText}</span>
-          </div>
+            <div className="mx-auto text-center font-medium tracking-wider text-[11px] text-brand-ivory flex items-center justify-center space-x-2 rtl:space-x-reverse">
+              <Flame className="w-3.5 h-3.5 text-brand-gold flex-shrink-0" />
+              <span>{announcementText}</span>
+            </div>
 
-          {/* Quick Selectors */}
-          <div className="hidden md:flex items-center space-x-4 rtl:space-x-reverse text-[11px]">
-            {/* Currency Indicator (EGP Only) */}
-            <span className="font-mono text-brand-gold/90 font-bold px-2 py-0.5 bg-brand-charcoal border border-brand-border text-[10px]">
-              EGP | ج.م
-            </span>
+            {/* Quick Selectors */}
+            <div className="hidden md:flex items-center space-x-4 rtl:space-x-reverse text-[11px]">
+              {/* Currency Indicator (EGP Only) */}
+              <span className="font-mono text-brand-gold/90 font-bold px-2 py-0.5 bg-brand-charcoal border border-brand-border text-[10px]">
+                EGP | ج.م
+              </span>
 
-            <span className="text-brand-border">|</span>
+              <span className="text-brand-border">|</span>
 
-            {/* Language Switcher */}
-            <button
-              onClick={() => setLanguage(language === 'en' ? 'ar' : 'en')}
-              className="flex items-center space-x-1 rtl:space-x-reverse text-brand-ivory/90 hover:text-brand-gold transition-colors font-sans"
-              title={language === 'en' ? 'التحويل للعربية' : 'Switch to English'}
-            >
-              <Globe className="w-3 h-3 opacity-70" />
-              <span className="font-semibold text-xs">{language === 'en' ? 'العربية' : 'EN'}</span>
-            </button>
+              {/* Language Switcher */}
+              <button
+                onClick={() => setLanguage(language === 'en' ? 'ar' : 'en')}
+                className="flex items-center space-x-1 rtl:space-x-reverse text-brand-ivory/90 hover:text-brand-gold transition-colors font-sans"
+                title={language === 'en' ? 'التحويل للعربية' : 'Switch to English'}
+              >
+                <Globe className="w-3 h-3 opacity-70" />
+                <span className="font-semibold text-xs">{language === 'en' ? 'العربية' : 'EN'}</span>
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Main Navigation Header */}
       <header

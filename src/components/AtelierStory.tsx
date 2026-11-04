@@ -2,10 +2,38 @@
 
 import React from 'react';
 import { useLanguage } from '@/context/LanguageContext';
+import { useHomepageContent } from '@/hooks/useHomepageContent';
 import { Flame, Layers, ShieldCheck, Sparkles } from 'lucide-react';
 
 export const AtelierStory: React.FC = () => {
   const { t, language } = useLanguage();
+  const { content } = useHomepageContent();
+  const isAr = language === 'ar';
+
+  if (content.showStory === false) {
+    return null;
+  }
+
+  const storyImg = content.storyImage || 'https://images.unsplash.com/photo-1509967419530-da38b4704bc6?q=80&w=1200&auto=format&fit=crop';
+  const badge = isAr ? content.storyBadgeAr || t('storyBadge') : content.storyBadgeEn || t('storyBadge');
+  const title = isAr ? content.storyTitleAr || t('storyTitle') : content.storyTitleEn || t('storyTitle');
+  const p1 = isAr ? content.storyParagraph1Ar || t('storyParagraph1') : content.storyParagraph1En || t('storyParagraph1');
+  const p2 = isAr ? content.storyParagraph2Ar || t('storyParagraph2') : content.storyParagraph2En || t('storyParagraph2');
+  const quote = isAr
+    ? content.storyQuoteAr || '"الستريتوير ليس مجرد شعار، بل ثقل القماش، وثبات الياقة، وتوازن القصّة."'
+    : content.storyQuoteEn || '"Real streetwear is not about loud logos; it is defined by fabric weight, structural hood, and boxy proportions."';
+  const quoteAuthor = isAr
+    ? content.storyQuoteAuthorAr || '— ميثاق دار أثير'
+    : content.storyQuoteAuthorEn || '— ATHEER Brand Manifesto';
+
+  const m1Val = content.storyMetric1Value || '500';
+  const m1Label = isAr ? content.storyMetric1LabelAr || 'قطن فرنش تيري ثقيل' : content.storyMetric1LabelEn || 'Heavy French Terry';
+
+  const m2Val = content.storyMetric2Value || '0%';
+  const m2Label = isAr ? content.storyMetric2LabelAr || 'بوليستر أو حشو رخيص' : content.storyMetric2LabelEn || 'Zero Synthetic Fillers';
+
+  const m3Val = content.storyMetric3Value || '100%';
+  const m3Label = isAr ? content.storyMetric3LabelAr || 'معالج ضد الانكماش' : content.storyMetric3LabelEn || 'Pre-Shrunk Cotton';
 
   return (
     <section id="about" className="py-24 sm:py-32 bg-brand-charcoal text-brand-ivory relative overflow-hidden border-b border-brand-border/60">
@@ -17,7 +45,7 @@ export const AtelierStory: React.FC = () => {
               <div
                 className="w-full h-full bg-cover bg-center"
                 style={{
-                  backgroundImage: `url('https://images.unsplash.com/photo-1556905055-8f358a7a47b2?q=80&w=1200&auto=format&fit=crop')`,
+                  backgroundImage: `url('${storyImg}')`,
                 }}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-brand-black/80 via-transparent to-transparent" />
@@ -32,12 +60,10 @@ export const AtelierStory: React.FC = () => {
                 </span>
               </div>
               <p className="text-xs text-brand-cream/85 font-sans leading-relaxed">
-                {language === 'ar'
-                  ? '"الستريتوير ليس مجرد شعار، بل ثقل القماش، وثبات الياقة، وتوازن القصّة."'
-                  : '"Real streetwear is not about loud logos; it is defined by fabric weight, structural hood, and boxy proportions."'}
+                {quote}
               </p>
               <span className="block mt-3 text-[10px] text-brand-gold uppercase tracking-widest font-mono">
-                — ATHEER Brand Manifesto
+                {quoteAuthor}
               </span>
             </div>
           </div>
@@ -46,39 +72,39 @@ export const AtelierStory: React.FC = () => {
           <div className="flex flex-col justify-center">
             <div className="inline-flex items-center space-x-2 rtl:space-x-reverse text-brand-gold text-xs uppercase tracking-[0.25em] font-mono font-semibold mb-4">
               <Sparkles className="w-3.5 h-3.5" />
-              <span>{t('storyBadge')}</span>
+              <span>{badge}</span>
             </div>
 
             <h2 className="font-sans font-black text-3xl sm:text-5xl text-brand-ivory uppercase tracking-tight leading-[1.15] mb-8">
-              {t('storyTitle')}
+              {title}
             </h2>
 
             <div className="space-y-6 text-sm sm:text-base text-brand-cream/85 font-sans font-light leading-relaxed">
-              <p>{t('storyParagraph1')}</p>
-              <p>{t('storyParagraph2')}</p>
+              <p>{p1}</p>
+              <p>{p2}</p>
             </div>
 
             {/* Technical Streetwear Metrics */}
             <div id="fabric-fit" className="mt-10 pt-8 border-t border-brand-border/60 grid grid-cols-3 gap-4">
               <div className="border-l-2 rtl:border-l-0 rtl:border-r-2 border-brand-gold pl-3 rtl:pl-0 rtl:pr-3">
-                <span className="font-mono text-2xl sm:text-3xl text-brand-gold font-bold">500</span>
+                <span className="font-mono text-2xl sm:text-3xl text-brand-gold font-bold">{m1Val}</span>
                 <span className="text-xs text-brand-gold font-mono ml-1">GSM</span>
                 <p className="text-[11px] text-brand-cream/70 uppercase tracking-wider mt-1 font-sans">
-                  {language === 'ar' ? 'قطن فرنش تيري ثقيل' : 'Heavy French Terry'}
+                  {m1Label}
                 </p>
               </div>
 
               <div className="border-l-2 rtl:border-l-0 rtl:border-r-2 border-brand-gold pl-3 rtl:pl-0 rtl:pr-3">
-                <span className="font-mono text-2xl sm:text-3xl text-brand-ivory font-bold">0%</span>
+                <span className="font-mono text-2xl sm:text-3xl text-brand-ivory font-bold">{m2Val}</span>
                 <p className="text-[11px] text-brand-cream/70 uppercase tracking-wider mt-1 font-sans">
-                  {language === 'ar' ? 'بوليستر أو حشو رخيص' : 'Zero Synthetic Fillers'}
+                  {m2Label}
                 </p>
               </div>
 
               <div className="border-l-2 rtl:border-l-0 rtl:border-r-2 border-brand-gold pl-3 rtl:pl-0 rtl:pr-3">
-                <span className="font-mono text-2xl sm:text-3xl text-brand-gold font-bold">100%</span>
+                <span className="font-mono text-2xl sm:text-3xl text-brand-gold font-bold">{m3Val}</span>
                 <p className="text-[11px] text-brand-cream/70 uppercase tracking-wider mt-1 font-sans">
-                  {language === 'ar' ? 'معالج ضد الانكماش' : 'Pre-Shrunk Cotton'}
+                  {m3Label}
                 </p>
               </div>
             </div>

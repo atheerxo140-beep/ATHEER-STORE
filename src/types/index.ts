@@ -137,8 +137,20 @@ export interface ShowcaseCategoryItem {
 }
 
 export interface HomepageContent {
+  // Visibility toggles for complete control over customer storefront
+  showAnnouncement?: boolean;
+  showHero?: boolean;
+  showCategories?: boolean;
+  showProducts?: boolean;
+  showStory?: boolean;
+  showFutureTeaser?: boolean;
+  showFeatures?: boolean;
+
+  // Announcement Bar
   announcementTextEn: string;
   announcementTextAr: string;
+
+  // Hero Section
   heroBadgeEn: string;
   heroBadgeAr: string;
   heroTitleEn: string;
@@ -152,6 +164,17 @@ export interface HomepageContent {
   heroCtaPrimaryAr: string;
   heroCtaSecondaryEn: string;
   heroCtaSecondaryAr: string;
+  heroStat1Value?: string;
+  heroStat1LabelEn?: string;
+  heroStat1LabelAr?: string;
+  heroStat2Value?: string;
+  heroStat2LabelEn?: string;
+  heroStat2LabelAr?: string;
+  heroStat3Value?: string;
+  heroStat3LabelEn?: string;
+  heroStat3LabelAr?: string;
+
+  // Categories Showcase
   categoriesSubtitleEn: string;
   categoriesSubtitleAr: string;
   categoriesTitleEn: string;
@@ -159,5 +182,62 @@ export interface HomepageContent {
   categoriesDescriptionEn: string;
   categoriesDescriptionAr: string;
   categories: ShowcaseCategoryItem[];
+
+  // Brand Story / Atelier Section (عن أثير)
+  storyBadgeEn?: string;
+  storyBadgeAr?: string;
+  storyTitleEn?: string;
+  storyTitleAr?: string;
+  storyParagraph1En?: string;
+  storyParagraph1Ar?: string;
+  storyParagraph2En?: string;
+  storyParagraph2Ar?: string;
+  storyImage?: string;
+  storyQuoteEn?: string;
+  storyQuoteAr?: string;
+  storyQuoteAuthorEn?: string;
+  storyQuoteAuthorAr?: string;
+  storyMetric1Value?: string;
+  storyMetric1LabelEn?: string;
+  storyMetric1LabelAr?: string;
+  storyMetric2Value?: string;
+  storyMetric2LabelEn?: string;
+  storyMetric2LabelAr?: string;
+  storyMetric3Value?: string;
+  storyMetric3LabelEn?: string;
+  storyMetric3LabelAr?: string;
+
+  // Future Drop Teaser Section (الإصدار القادم)
+  futureBadgeEn?: string;
+  futureBadgeAr?: string;
+  futureTitleEn?: string;
+  futureTitleAr?: string;
+  futureDescEn?: string;
+  futureDescAr?: string;
+  futureImage?: string;
+  futureChip1?: string;
+  futureChip2?: string;
+  futureChip3?: string;
+  futureBadgeBottomEn?: string;
+  futureBadgeBottomAr?: string;
+
+  // Luxury Features & Guarantees (المميزات والخدمات)
+  feature1TitleEn?: string;
+  feature1TitleAr?: string;
+  feature1DescEn?: string;
+  feature1DescAr?: string;
+  feature2TitleEn?: string;
+  feature2TitleAr?: string;
+  feature2DescEn?: string;
+  feature2DescAr?: string;
+  feature3TitleEn?: string;
+  feature3TitleAr?: string;
+  feature3DescEn?: string;
+  feature3DescAr?: string;
+  feature4TitleEn?: string;
+  feature4TitleAr?: string;
+  feature4DescEn?: string;
+  feature4DescAr?: string;
+
   updatedAt?: string;
 }

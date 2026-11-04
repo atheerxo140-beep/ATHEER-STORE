@@ -2,13 +2,40 @@
 
 import React, { useState } from 'react';
 import { useLanguage } from '@/context/LanguageContext';
+import { useHomepageContent } from '@/hooks/useHomepageContent';
 import { Clock, Flame, ArrowRight, ArrowLeft, Check, Sparkles } from 'lucide-react';
 
 export const FutureTeaser: React.FC = () => {
   const { language, isRtl } = useLanguage();
+  const { content } = useHomepageContent();
+  const isAr = language === 'ar';
   const ArrowIcon = isRtl ? ArrowLeft : ArrowRight;
   const [email, setEmail] = useState('');
   const [submitted, setSubmitted] = useState(false);
+
+  if (content.showFutureTeaser === false) {
+    return null;
+  }
+
+  const badge = isAr
+    ? content.futureBadgeAr || 'الإصدار القادم · قريباً'
+    : content.futureBadgeEn || 'FUTURE DROP · IN SAMPLING';
+
+  const title = isAr
+    ? content.futureTitleAr || 'تي شيرت أثير البوكسي الثقيل 320 GSM'
+    : content.futureTitleEn || 'The Essential 320 GSM Heavy Boxy Youth Tee';
+
+  const desc = isAr
+    ? content.futureDescAr || 'بينما نركز حالياً على إطلاق الهوديز والسويت شيرتات الثقيلة، نعمل في مختبر أثير على تجهيز التي شيرت الشبابي الأوفرسايز المثالي: قطن جيرسي 320 GSM فائق الكثافة، ياقة ضيقة متماسكة، وأكمام بوكسي واسعة.'
+    : content.futureDescEn || 'While our launch collection is dedicated to 500 GSM heavyweight hoodies and sweatshirts, we are currently engineering the ultimate youth boxy tee: 320 GSM ultra-dense combed cotton, structured mock-neck ribbing, and relaxed elbow-length sleeves.';
+
+  const img = content.futureImage || 'https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?q=80&w=1000&auto=format&fit=crop';
+  const chip1 = content.futureChip1 || '320 GSM Jersey';
+  const chip2 = content.futureChip2 || 'High-Neck Rib';
+  const chip3 = content.futureChip3 || 'Oversized Youth Cut';
+  const bottomBadge = isAr
+    ? content.futureBadgeBottomAr || 'مرحلة العينات · قريباً في الأسواق'
+    : content.futureBadgeBottomEn || 'DEVELOPMENT LAB · COMING SOON';
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,27 +59,21 @@ export const FutureTeaser: React.FC = () => {
             <div>
               <div className="inline-flex items-center space-x-2 rtl:space-x-reverse text-brand-gold text-[10px] sm:text-xs uppercase tracking-widest font-mono font-bold mb-4">
                 <Clock className="w-3.5 h-3.5 animate-spin" />
-                <span>
-                  {language === 'ar' ? 'الإصدار القادم · قريباً' : 'FUTURE DROP · IN SAMPLING'}
-                </span>
+                <span>{badge}</span>
               </div>
 
               <h2 className="font-sans font-black text-3xl sm:text-5xl text-brand-ivory uppercase tracking-tight leading-tight mb-4">
-                {language === 'ar'
-                  ? 'تي شيرت أثير البوكسي الثقيل 320 GSM'
-                  : 'The Essential 320 GSM Heavy Boxy Youth Tee'}
+                {title}
               </h2>
 
               <p className="text-sm sm:text-base text-brand-cream/80 font-sans font-light leading-relaxed mb-6">
-                {language === 'ar'
-                  ? 'بينما نركز حالياً على إطلاق الهوديز والسويت شيرتات الثقيلة، نعمل في مختبر أثير على تجهيز التي شيرت الشبابي الأوفرسايز المثالي: قطن جيرسي 320 GSM فائق الكثافة، ياقة ضيقة متماسكة، وأكمام بوكسي واسعة.'
-                  : 'While our launch collection is dedicated to 500 GSM heavyweight hoodies and sweatshirts, we are currently engineering the ultimate youth boxy tee: 320 GSM ultra-dense combed cotton, structured mock-neck ribbing, and relaxed elbow-length sleeves.'}
+                {desc}
               </p>
 
               <div className="flex flex-wrap gap-2 text-xs font-mono text-brand-gold mb-8">
-                <span className="px-3 py-1 bg-brand-charcoal border border-brand-border">320 GSM Jersey</span>
-                <span className="px-3 py-1 bg-brand-charcoal border border-brand-border">High-Neck Rib</span>
-                <span className="px-3 py-1 bg-brand-charcoal border border-brand-border">Oversized Youth Cut</span>
+                <span className="px-3 py-1 bg-brand-charcoal border border-brand-border">{chip1}</span>
+                <span className="px-3 py-1 bg-brand-charcoal border border-brand-border">{chip2}</span>
+                <span className="px-3 py-1 bg-brand-charcoal border border-brand-border">{chip3}</span>
               </div>
 
               {/* VIP Drop Notification Input */}
@@ -62,7 +83,7 @@ export const FutureTeaser: React.FC = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder={
-                    language === 'ar' ? 'أدخل بريدك لتصلك دعوة الإطلاق...' : 'Enter email for early tee access...'
+                    isAr ? 'أدخل بريدك لتصلك دعوة الإطلاق...' : 'Enter email for early tee access...'
                   }
                   required
                   className="flex-1 bg-brand-charcoal border border-brand-border px-4 py-3 text-xs text-brand-ivory placeholder-brand-muted focus:outline-none focus:border-brand-gold"
@@ -74,11 +95,11 @@ export const FutureTeaser: React.FC = () => {
                   {submitted ? (
                     <>
                       <Check className="w-4 h-4 stroke-[2.5]" />
-                      <span>{language === 'ar' ? 'تم التسجيل' : 'Notified'}</span>
+                      <span>{isAr ? 'تم التسجيل' : 'Notified'}</span>
                     </>
                   ) : (
                     <>
-                      <span>{language === 'ar' ? 'إشعار الإطلاق' : 'Notify Me'}</span>
+                      <span>{isAr ? 'إشعار الإطلاق' : 'Notify Me'}</span>
                       <ArrowIcon className="w-3.5 h-3.5" />
                     </>
                   )}
@@ -91,12 +112,12 @@ export const FutureTeaser: React.FC = () => {
               <div
                 className="w-full h-full bg-cover bg-center"
                 style={{
-                  backgroundImage: `url('https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?q=80&w=1000&auto=format&fit=crop')`,
+                  backgroundImage: `url('${img}')`,
                 }}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-brand-black via-brand-black/30 to-transparent" />
               <div className="absolute bottom-4 left-4 rtl:left-auto rtl:right-4 bg-brand-black/90 backdrop-blur-md px-3 py-1.5 border border-brand-gold/40 text-[10px] font-mono text-brand-gold">
-                {language === 'ar' ? 'مرحلة العينات · قريباً في الأسواق' : 'DEVELOPMENT LAB · COMING SOON'}
+                {bottomBadge}
               </div>
             </div>
           </div>

@@ -11,7 +11,18 @@ export const Hero: React.FC = () => {
   const isAr = language === 'ar';
   const ArrowIcon = isRtl ? ArrowLeft : ArrowRight;
 
-  const bgImage = content.heroBgImage || 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?q=80&w=2200&auto=format&fit=crop';
+  if (content.showHero === false) {
+    return null;
+  }
+
+  const stat1Val = content.heroStat1Value || t('heroStat1Value');
+  const stat1Label = isAr ? content.heroStat1LabelAr || t('heroStat1Label') : content.heroStat1LabelEn || t('heroStat1Label');
+  const stat2Val = content.heroStat2Value || t('heroStat2Value');
+  const stat2Label = isAr ? content.heroStat2LabelAr || t('heroStat2Label') : content.heroStat2LabelEn || t('heroStat2Label');
+  const stat3Val = content.heroStat3Value || t('heroStat3Value');
+  const stat3Label = isAr ? content.heroStat3LabelAr || t('heroStat3Label') : content.heroStat3LabelEn || t('heroStat3Label');
+
+  const bgImage = content.heroBgImage || 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=2200&auto=format&fit=crop';
   const isVideo = content.heroMediaType === 'video' || Boolean(content.heroBgVideo && content.heroBgVideo.trim().length > 0);
   const videoUrl = content.heroBgVideo?.trim() || '';
   const badge = isAr ? content.heroBadgeAr || t('heroBadge') : content.heroBadgeEn || t('heroBadge');
@@ -103,28 +114,28 @@ export const Hero: React.FC = () => {
         <div className="mt-16 sm:mt-20 pt-10 border-t border-brand-border/40 grid grid-cols-3 gap-6 sm:gap-12 w-full max-w-3xl">
           <div className="flex flex-col items-center text-center">
             <span className="font-sans font-black text-xl sm:text-3xl text-brand-gold tracking-tight">
-              {t('heroStat1Value')}
+              {stat1Val}
             </span>
             <span className="mt-1 text-[10px] sm:text-xs text-brand-cream/80 tracking-wider uppercase font-sans">
-              {t('heroStat1Label')}
+              {stat1Label}
             </span>
           </div>
 
           <div className="flex flex-col items-center text-center border-x border-brand-border/40 px-2 sm:px-4">
             <span className="font-sans font-black text-xl sm:text-3xl text-brand-ivory tracking-tight">
-              {t('heroStat2Value')}
+              {stat2Val}
             </span>
             <span className="mt-1 text-[10px] sm:text-xs text-brand-cream/80 tracking-wider uppercase font-sans">
-              {t('heroStat2Label')}
+              {stat2Label}
             </span>
           </div>
 
           <div className="flex flex-col items-center text-center">
             <span className="font-sans font-black text-xl sm:text-3xl text-brand-gold tracking-tight">
-              {t('heroStat3Value')}
+              {stat3Val}
             </span>
             <span className="mt-1 text-[10px] sm:text-xs text-brand-cream/80 tracking-wider uppercase font-sans">
-              {t('heroStat3Label')}
+              {stat3Label}
             </span>
           </div>
         </div>

@@ -31,9 +31,14 @@ export default function AdminOverviewPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        const token = typeof window !== 'undefined' ? localStorage.getItem('atheer_admin_token') : '';
+        const headers: Record<string, string> = {};
+        if (token) {
+          headers.Authorization = `Bearer ${token}`;
+        }
         const [ordersRes, productsRes] = await Promise.all([
-          fetch('/api/admin/orders'),
-          fetch('/api/admin/products'),
+          fetch('/api/admin/orders', { cache: 'no-store', headers }),
+          fetch('/api/admin/products', { cache: 'no-store', headers }),
         ]);
 
         const ordersData = await ordersRes.json();

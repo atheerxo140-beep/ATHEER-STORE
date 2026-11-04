@@ -11,6 +11,10 @@ export const CategoryShowcase: React.FC = () => {
   const isAr = language === 'ar';
   const ArrowIcon = isRtl ? ArrowLeft : ArrowRight;
 
+  if (content.showCategories === false) {
+    return null;
+  }
+
   const sectionSubtitle = isAr
     ? content.categoriesSubtitleAr || t('curatedCollections')
     : content.categoriesSubtitleEn || t('curatedCollections');

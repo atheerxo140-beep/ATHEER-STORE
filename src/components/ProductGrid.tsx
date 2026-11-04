@@ -5,12 +5,18 @@ import { Product } from '@/types';
 import { mockProducts } from '@/data/mockProducts';
 import { ProductCard } from '@/components/ProductCard';
 import { useLanguage } from '@/context/LanguageContext';
+import { useHomepageContent } from '@/hooks/useHomepageContent';
 import { useCart } from '@/context/CartContext';
 import { X, Flame, Check, ShoppingBag, ShieldCheck, Ruler, ArrowRight, ArrowLeft, Clock } from 'lucide-react';
 
 export const ProductGrid: React.FC = () => {
   const { t, language, formatPrice, isRtl } = useLanguage();
+  const { content } = useHomepageContent();
   const { addItem } = useCart();
+
+  if (content.showProducts === false) {
+    return null;
+  }
   const [products, setProducts] = useState<Product[]>(mockProducts);
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);

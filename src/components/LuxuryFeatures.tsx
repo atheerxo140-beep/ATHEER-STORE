@@ -2,31 +2,38 @@
 
 import React from 'react';
 import { useLanguage } from '@/context/LanguageContext';
+import { useHomepageContent } from '@/hooks/useHomepageContent';
 import { Layers, Scissors, Banknote, MessageCircle, Flame } from 'lucide-react';
 
 export const LuxuryFeatures: React.FC = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const { content } = useHomepageContent();
+  const isAr = language === 'ar';
+
+  if (content.showFeatures === false) {
+    return null;
+  }
 
   const features = [
     {
       icon: Layers,
-      title: t('pillar1Title'),
-      desc: t('pillar1Desc'),
+      title: isAr ? content.feature1TitleAr || t('pillar1Title') : content.feature1TitleEn || t('pillar1Title'),
+      desc: isAr ? content.feature1DescAr || t('pillar1Desc') : content.feature1DescEn || t('pillar1Desc'),
     },
     {
       icon: Scissors,
-      title: t('pillar2Title'),
-      desc: t('pillar2Desc'),
+      title: isAr ? content.feature2TitleAr || t('pillar2Title') : content.feature2TitleEn || t('pillar2Title'),
+      desc: isAr ? content.feature2DescAr || t('pillar2Desc') : content.feature2DescEn || t('pillar2Desc'),
     },
     {
       icon: Banknote,
-      title: t('pillar3Title'),
-      desc: t('pillar3Desc'),
+      title: isAr ? content.feature3TitleAr || t('pillar3Title') : content.feature3TitleEn || t('pillar3Title'),
+      desc: isAr ? content.feature3DescAr || t('pillar3Desc') : content.feature3DescEn || t('pillar3Desc'),
     },
     {
       icon: MessageCircle,
-      title: t('pillar4Title'),
-      desc: t('pillar4Desc'),
+      title: isAr ? content.feature4TitleAr || t('pillar4Title') : content.feature4TitleEn || t('pillar4Title'),
+      desc: isAr ? content.feature4DescAr || t('pillar4Desc') : content.feature4DescEn || t('pillar4Desc'),
     },
   ];
 

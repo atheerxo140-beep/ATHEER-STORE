@@ -110,7 +110,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { labelEn: 'Inventory', labelAr: 'المخزون', href: '/admin/inventory', icon: Layers },
     { labelEn: 'Egypt Shipping', labelAr: 'شحن المحافظات', href: '/admin/shipping', icon: Truck },
     { labelEn: 'Coupons', labelAr: 'كوبونات الخصم', href: '/admin/coupons', icon: Tag },
-    { labelEn: 'Homepage CMS', labelAr: 'محتوى الواجهة والصور', href: '/admin/content', icon: ImageIcon },
+    { labelEn: 'Storefront CMS', labelAr: 'التحكم باللوحة الرئيسية (الواجهة)', href: '/admin/content', icon: ImageIcon },
     { labelEn: 'Store Settings', labelAr: 'إعدادات المتجر', href: '/admin/settings', icon: Settings },
   ];
 

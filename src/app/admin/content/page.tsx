@@ -27,6 +27,15 @@ import {
   Film,
   Video,
   Play,
+  BookOpen,
+  Clock,
+  ShieldCheck,
+  ToggleLeft,
+  ToggleRight,
+  Sliders,
+  Scissors,
+  Banknote,
+  MessageCircle,
 } from 'lucide-react';
 
 const PRESET_HERO_IMAGES = [
@@ -56,15 +65,20 @@ export default function AdminContentPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
-  const [activeTab, setActiveTab] = useState<'hero' | 'categories'>('hero');
+  const [activeTab, setActiveTab] = useState<'sections' | 'hero' | 'categories' | 'story' | 'future' | 'features'>('sections');
 
   // File Upload States
   const [uploadingHero, setUploadingHero] = useState(false);
   const [uploadingHeroVideo, setUploadingHeroVideo] = useState(false);
   const [uploadingCategoryIdx, setUploadingCategoryIdx] = useState<number | null>(null);
+  const [uploadingStory, setUploadingStory] = useState(false);
+  const [uploadingFuture, setUploadingFuture] = useState(false);
+
   const heroFileInputRef = useRef<HTMLInputElement>(null);
   const heroVideoFileInputRef = useRef<HTMLInputElement>(null);
   const categoryFileInputRefs = useRef<{ [key: number]: HTMLInputElement | null }>({});
+  const storyFileInputRef = useRef<HTMLInputElement>(null);
+  const futureFileInputRef = useRef<HTMLInputElement>(null);
 
   const fetchContent = async () => {
     setLoading(true);
@@ -195,6 +209,50 @@ export default function AdminContentPage() {
     }
   };
 
+  const handleStoryFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !content) return;
+
+    setUploadingStory(true);
+    const uploadedUrl = await uploadMediaFile(file, 'story-media');
+    setUploadingStory(false);
+
+    if (uploadedUrl) {
+      setContent({ ...content, storyImage: uploadedUrl });
+      setFeedback({
+        type: 'success',
+        message: isAr ? 'تم رفع صورة قصة البراند بنجاح!' : 'Brand story image uploaded successfully!',
+      });
+      setTimeout(() => setFeedback(null), 4000);
+    }
+
+    if (storyFileInputRef.current) {
+      storyFileInputRef.current.value = '';
+    }
+  };
+
+  const handleFutureFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !content) return;
+
+    setUploadingFuture(true);
+    const uploadedUrl = await uploadMediaFile(file, 'future-drop');
+    setUploadingFuture(false);
+
+    if (uploadedUrl) {
+      setContent({ ...content, futureImage: uploadedUrl });
+      setFeedback({
+        type: 'success',
+        message: isAr ? 'تم رفع صورة الإصدار القادم بنجاح!' : 'Future drop image uploaded successfully!',
+      });
+      setTimeout(() => setFeedback(null), 4000);
+    }
+
+    if (futureFileInputRef.current) {
+      futureFileInputRef.current.value = '';
+    }
+  };
+
   const handleSave = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!content) return;
@@ -281,6 +339,20 @@ export default function AdminContentPage() {
         onChange={handleHeroFileSelect}
         className="hidden"
       />
+      <input
+        ref={storyFileInputRef}
+        type="file"
+        accept="image/png,image/jpeg,image/webp,image/jpg"
+        onChange={handleStoryFileSelect}
+        className="hidden"
+      />
+      <input
+        ref={futureFileInputRef}
+        type="file"
+        accept="image/png,image/jpeg,image/webp,image/jpg"
+        onChange={handleFutureFileSelect}
+        className="hidden"
+      />
 
       {/* Header & Global Actions */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-brand-border/60">
@@ -313,7 +385,7 @@ export default function AdminContentPage() {
 
           <button
             onClick={() => handleSave()}
-            disabled={saving || uploadingHero || uploadingHeroVideo || uploadingCategoryIdx !== null}
+            disabled={saving || uploadingHero || uploadingHeroVideo || uploadingCategoryIdx !== null || uploadingStory || uploadingFuture}
             className="flex items-center space-x-2 rtl:space-x-reverse px-6 py-2.5 bg-brand-gold text-brand-black text-xs font-mono font-bold tracking-wider hover:bg-brand-gold-hover transition-all duration-200 shadow-gold rounded-sm disabled:opacity-50"
           >
             {saving ? (
@@ -345,33 +417,314 @@ export default function AdminContentPage() {
       )}
 
       {/* Section Switcher Tabs */}
-      <div className="flex border-b border-brand-border/60 space-x-2 rtl:space-x-reverse text-xs font-mono">
+      <div className="flex flex-wrap border-b border-brand-border/60 gap-1 text-xs font-mono">
+        <button
+          type="button"
+          onClick={() => setActiveTab('sections')}
+          className={`flex items-center space-x-2 rtl:space-x-reverse px-4 py-3 border-b-2 font-bold transition-colors ${
+            activeTab === 'sections'
+              ? 'border-brand-gold text-brand-gold bg-brand-charcoal/40'
+              : 'border-transparent text-brand-cream/60 hover:text-brand-ivory'
+          }`}
+        >
+          <Sliders className="w-3.5 h-3.5" />
+          <span>{isAr ? '1. تحكم ظهور الأقسام للعميل' : '1. Section Toggles'}</span>
+        </button>
+
         <button
           type="button"
           onClick={() => setActiveTab('hero')}
-          className={`flex items-center space-x-2 rtl:space-x-reverse px-5 py-3 border-b-2 font-bold transition-colors ${
+          className={`flex items-center space-x-2 rtl:space-x-reverse px-4 py-3 border-b-2 font-bold transition-colors ${
             activeTab === 'hero'
               ? 'border-brand-gold text-brand-gold bg-brand-charcoal/40'
               : 'border-transparent text-brand-cream/60 hover:text-brand-ivory'
           }`}
         >
           <Sparkles className="w-3.5 h-3.5" />
-          <span>{isAr ? '1. البانر الرئيسي وصورة الواجهة' : '1. Hero Section & Visual'}</span>
+          <span>{isAr ? '2. البانر الرئيسي والشريط الإعلاني' : '2. Hero Banner & Announcement'}</span>
         </button>
 
         <button
           type="button"
           onClick={() => setActiveTab('categories')}
-          className={`flex items-center space-x-2 rtl:space-x-reverse px-5 py-3 border-b-2 font-bold transition-colors ${
+          className={`flex items-center space-x-2 rtl:space-x-reverse px-4 py-3 border-b-2 font-bold transition-colors ${
             activeTab === 'categories'
               ? 'border-brand-gold text-brand-gold bg-brand-charcoal/40'
               : 'border-transparent text-brand-cream/60 hover:text-brand-ivory'
           }`}
         >
           <Layers className="w-3.5 h-3.5" />
-          <span>{isAr ? '2. صور وبطاقات فئات المتجر (4 فئات)' : '2. Category Showcase Cards'}</span>
+          <span>{isAr ? '3. بطاقات الفئات (4 فئات)' : '3. Category Cards'}</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('story')}
+          className={`flex items-center space-x-2 rtl:space-x-reverse px-4 py-3 border-b-2 font-bold transition-colors ${
+            activeTab === 'story'
+              ? 'border-brand-gold text-brand-gold bg-brand-charcoal/40'
+              : 'border-transparent text-brand-cream/60 hover:text-brand-ivory'
+          }`}
+        >
+          <BookOpen className="w-3.5 h-3.5" />
+          <span>{isAr ? '4. قصة البراند وعن أثير' : '4. Brand Story & Quality'}</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('future')}
+          className={`flex items-center space-x-2 rtl:space-x-reverse px-4 py-3 border-b-2 font-bold transition-colors ${
+            activeTab === 'future'
+              ? 'border-brand-gold text-brand-gold bg-brand-charcoal/40'
+              : 'border-transparent text-brand-cream/60 hover:text-brand-ivory'
+          }`}
+        >
+          <Clock className="w-3.5 h-3.5" />
+          <span>{isAr ? '5. الإصدار القادم / التي شيرتات' : '5. Future Drop'}</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('features')}
+          className={`flex items-center space-x-2 rtl:space-x-reverse px-4 py-3 border-b-2 font-bold transition-colors ${
+            activeTab === 'features'
+              ? 'border-brand-gold text-brand-gold bg-brand-charcoal/40'
+              : 'border-transparent text-brand-cream/60 hover:text-brand-ivory'
+          }`}
+        >
+          <ShieldCheck className="w-3.5 h-3.5" />
+          <span>{isAr ? '6. مميزات وثقة المتجر' : '6. Store Guarantees'}</span>
         </button>
       </div>
+
+      {/* TAB 0: SECTIONS VISIBILITY CONTROL */}
+      {activeTab === 'sections' && (
+        <div className="space-y-6 animate-fade-in">
+          <div className="p-6 bg-brand-charcoal border border-brand-gold/40 rounded-sm">
+            <div className="flex items-center space-x-2 rtl:space-x-reverse text-brand-gold font-bold mb-2">
+              <Sliders className="w-4 h-4 text-brand-gold" />
+              <span>{isAr ? 'التحكم الشامل في أقسام الصفحة الرئيسية (التي تظهر للعميل)' : 'Master Control: Storefront Section Visibility'}</span>
+            </div>
+            <p className="text-xs text-brand-cream/70 leading-relaxed font-mono">
+              {isAr
+                ? 'يمكنك من هنا تفعيل أو إخفاء أي قسم في واجهة المتجر بنقرة زر واحدة. أي قسم توقفه سيختفي فوراً عن كل العملاء، وتستطيع إعادة تفعيله في أي وقت.'
+                : 'Instantly toggle any homepage section on or off for customers with one click.'}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* 1. Announcement Bar */}
+            <div className="p-5 bg-brand-charcoal border border-brand-border/80 rounded-sm flex items-center justify-between">
+              <div className="space-y-1">
+                <span className="text-xs font-mono font-bold text-brand-ivory block">
+                  {isAr ? '1. الشريط الإعلاني العلوي' : '1. Top Announcement Bar'}
+                </span>
+                <p className="text-[11px] text-brand-cream/60">
+                  {isAr ? 'الشريط الأسود في أعلى المتجر لنصوص الشحن ومواعيد الإصدار' : 'Top ticker bar for drop dates and delivery announcements'}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setContent({ ...content, showAnnouncement: content.showAnnouncement === false ? true : false })}
+                className={`px-4 py-2 text-xs font-mono font-bold rounded-xs transition-colors flex items-center space-x-1.5 rtl:space-x-reverse ${
+                  content.showAnnouncement !== false
+                    ? 'bg-emerald-600 text-white'
+                    : 'bg-brand-stone/60 text-brand-cream/40 border border-brand-border'
+                }`}
+              >
+                {content.showAnnouncement !== false ? (
+                  <>
+                    <Check className="w-3.5 h-3.5" />
+                    <span>{isAr ? 'ظاهر للعميل' : 'Visible'}</span>
+                  </>
+                ) : (
+                  <span>{isAr ? 'مخفي' : 'Hidden'}</span>
+                )}
+              </button>
+            </div>
+
+            {/* 2. Hero Banner */}
+            <div className="p-5 bg-brand-charcoal border border-brand-border/80 rounded-sm flex items-center justify-between">
+              <div className="space-y-1">
+                <span className="text-xs font-mono font-bold text-brand-ivory block">
+                  {isAr ? '2. البانر الرئيسي الافتتاحي (Hero)' : '2. Main Hero Showcase'}
+                </span>
+                <p className="text-[11px] text-brand-cream/60">
+                  {isAr ? 'صورة أو فيديو الموديل في بداية الصفحة والعنوان الكبير' : 'Hero background visual, main headline, and action buttons'}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setContent({ ...content, showHero: content.showHero === false ? true : false })}
+                className={`px-4 py-2 text-xs font-mono font-bold rounded-xs transition-colors flex items-center space-x-1.5 rtl:space-x-reverse ${
+                  content.showHero !== false
+                    ? 'bg-emerald-600 text-white'
+                    : 'bg-brand-stone/60 text-brand-cream/40 border border-brand-border'
+                }`}
+              >
+                {content.showHero !== false ? (
+                  <>
+                    <Check className="w-3.5 h-3.5" />
+                    <span>{isAr ? 'ظاهر للعميل' : 'Visible'}</span>
+                  </>
+                ) : (
+                  <span>{isAr ? 'مخفي' : 'Hidden'}</span>
+                )}
+              </button>
+            </div>
+
+            {/* 3. Categories Showcase */}
+            <div className="p-5 bg-brand-charcoal border border-brand-border/80 rounded-sm flex items-center justify-between">
+              <div className="space-y-1">
+                <span className="text-xs font-mono font-bold text-brand-ivory block">
+                  {isAr ? '3. بطاقات تشكيلات المتجر (4 فئات)' : '3. Category Showcase Cards'}
+                </span>
+                <p className="text-[11px] text-brand-cream/60">
+                  {isAr ? 'بطاقات الهوديز، السويت شيرتات، هندسة القماش، والتي شيرتات' : 'The 4 editorial streetwear category cards'}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setContent({ ...content, showCategories: content.showCategories === false ? true : false })}
+                className={`px-4 py-2 text-xs font-mono font-bold rounded-xs transition-colors flex items-center space-x-1.5 rtl:space-x-reverse ${
+                  content.showCategories !== false
+                    ? 'bg-emerald-600 text-white'
+                    : 'bg-brand-stone/60 text-brand-cream/40 border border-brand-border'
+                }`}
+              >
+                {content.showCategories !== false ? (
+                  <>
+                    <Check className="w-3.5 h-3.5" />
+                    <span>{isAr ? 'ظاهر للعميل' : 'Visible'}</span>
+                  </>
+                ) : (
+                  <span>{isAr ? 'مخفي' : 'Hidden'}</span>
+                )}
+              </button>
+            </div>
+
+            {/* 4. Products Grid */}
+            <div className="p-5 bg-brand-charcoal border border-brand-border/80 rounded-sm flex items-center justify-between">
+              <div className="space-y-1">
+                <span className="text-xs font-mono font-bold text-brand-ivory block">
+                  {isAr ? '4. كتالوج وشبكة المنتجات' : '4. Products Catalog Grid'}
+                </span>
+                <p className="text-[11px] text-brand-cream/60">
+                  {isAr ? 'عرض منتجات الهوديز والملابس المتصلة بقاعدة البيانات والمخزون' : 'Live products grid with add-to-cart and sizing filters'}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setContent({ ...content, showProducts: content.showProducts === false ? true : false })}
+                className={`px-4 py-2 text-xs font-mono font-bold rounded-xs transition-colors flex items-center space-x-1.5 rtl:space-x-reverse ${
+                  content.showProducts !== false
+                    ? 'bg-emerald-600 text-white'
+                    : 'bg-brand-stone/60 text-brand-cream/40 border border-brand-border'
+                }`}
+              >
+                {content.showProducts !== false ? (
+                  <>
+                    <Check className="w-3.5 h-3.5" />
+                    <span>{isAr ? 'ظاهر للعميل' : 'Visible'}</span>
+                  </>
+                ) : (
+                  <span>{isAr ? 'مخفي' : 'Hidden'}</span>
+                )}
+              </button>
+            </div>
+
+            {/* 5. Brand Story */}
+            <div className="p-5 bg-brand-charcoal border border-brand-border/80 rounded-sm flex items-center justify-between">
+              <div className="space-y-1">
+                <span className="text-xs font-mono font-bold text-brand-ivory block">
+                  {isAr ? '5. قصة البراند وعن أثير (Brand Story)' : '5. Brand Story & Quality'}
+                </span>
+                <p className="text-[11px] text-brand-cream/60">
+                  {isAr ? 'صورة وفلسفة أثير، معايير الثقل 500 GSM، وخلو القماش من البوليستر' : 'Manifesto, 500 GSM loopback cotton specs, and atelier photo'}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setContent({ ...content, showStory: content.showStory === false ? true : false })}
+                className={`px-4 py-2 text-xs font-mono font-bold rounded-xs transition-colors flex items-center space-x-1.5 rtl:space-x-reverse ${
+                  content.showStory !== false
+                    ? 'bg-emerald-600 text-white'
+                    : 'bg-brand-stone/60 text-brand-cream/40 border border-brand-border'
+                }`}
+              >
+                {content.showStory !== false ? (
+                  <>
+                    <Check className="w-3.5 h-3.5" />
+                    <span>{isAr ? 'ظاهر للعميل' : 'Visible'}</span>
+                  </>
+                ) : (
+                  <span>{isAr ? 'مخفي' : 'Hidden'}</span>
+                )}
+              </button>
+            </div>
+
+            {/* 6. Future Drop */}
+            <div className="p-5 bg-brand-charcoal border border-brand-border/80 rounded-sm flex items-center justify-between">
+              <div className="space-y-1">
+                <span className="text-xs font-mono font-bold text-brand-ivory block">
+                  {isAr ? '6. الإصدار القادم / التي شيرتات (Future Drop)' : '6. Future Drop Teaser'}
+                </span>
+                <p className="text-[11px] text-brand-cream/60">
+                  {isAr ? 'تشويق التي شيرتات القادمة 320 GSM مع نموذج إشعار الإطلاق' : 'Upcoming 320 GSM tees showcase with VIP email notification'}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setContent({ ...content, showFutureTeaser: content.showFutureTeaser === false ? true : false })}
+                className={`px-4 py-2 text-xs font-mono font-bold rounded-xs transition-colors flex items-center space-x-1.5 rtl:space-x-reverse ${
+                  content.showFutureTeaser !== false
+                    ? 'bg-emerald-600 text-white'
+                    : 'bg-brand-stone/60 text-brand-cream/40 border border-brand-border'
+                }`}
+              >
+                {content.showFutureTeaser !== false ? (
+                  <>
+                    <Check className="w-3.5 h-3.5" />
+                    <span>{isAr ? 'ظاهر للعميل' : 'Visible'}</span>
+                  </>
+                ) : (
+                  <span>{isAr ? 'مخفي' : 'Hidden'}</span>
+                )}
+              </button>
+            </div>
+
+            {/* 7. Store Features */}
+            <div className="p-5 bg-brand-charcoal border border-brand-border/80 rounded-sm flex items-center justify-between md:col-span-2">
+              <div className="space-y-1">
+                <span className="text-xs font-mono font-bold text-brand-ivory block">
+                  {isAr ? '7. مميزات وضمانات المتجر (الشحن، الدفع عند الاستلام، الجودة)' : '7. Store Guarantees & COD Services'}
+                </span>
+                <p className="text-[11px] text-brand-cream/60">
+                  {isAr ? 'البطاقات الأربعة لضمانات المتجر والشحن السريع لجميع المحافظات مع المعاينة' : 'Pillars of trust, COD inspection guarantee, and concierge service'}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setContent({ ...content, showFeatures: content.showFeatures === false ? true : false })}
+                className={`px-4 py-2 text-xs font-mono font-bold rounded-xs transition-colors flex items-center space-x-1.5 rtl:space-x-reverse ${
+                  content.showFeatures !== false
+                    ? 'bg-emerald-600 text-white'
+                    : 'bg-brand-stone/60 text-brand-cream/40 border border-brand-border'
+                }`}
+              >
+                {content.showFeatures !== false ? (
+                  <>
+                    <Check className="w-3.5 h-3.5" />
+                    <span>{isAr ? 'ظاهر للعميل' : 'Visible'}</span>
+                  </>
+                ) : (
+                  <span>{isAr ? 'مخفي' : 'Hidden'}</span>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* TAB 1: HERO & ANNOUNCEMENT */}
       {activeTab === 'hero' && (
@@ -855,6 +1208,73 @@ export default function AdminContentPage() {
                 />
               </div>
             </div>
+
+            {/* 3 Hero Stats */}
+            <div className="bg-brand-charcoal border border-brand-border/80 rounded-sm p-6 space-y-4 md:col-span-2">
+              <div className="text-sm font-bold text-brand-ivory flex items-center space-x-2 rtl:space-x-reverse">
+                <Flame className="w-4 h-4 text-brand-gold" />
+                <span>{isAr ? 'الإحصائيات والمواصفات الثلاثة أسفل البانر' : '3 Hero Headline Stats (Bottom of Banner)'}</span>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* Stat 1 */}
+                <div className="p-3 bg-brand-black border border-brand-border rounded-xs space-y-2">
+                  <span className="text-xs font-mono font-bold text-brand-gold block">{isAr ? 'الإحصائية 1' : 'Stat 1'}</span>
+                  <input
+                    type="text"
+                    placeholder="القيمة (مثال: 500 GSM)"
+                    value={content.heroStat1Value || ''}
+                    onChange={(e) => setContent({ ...content, heroStat1Value: e.target.value })}
+                    className="w-full bg-brand-charcoal border border-brand-border px-2 py-1.5 text-xs text-brand-ivory rounded-xs font-mono"
+                  />
+                  <input
+                    type="text"
+                    placeholder="الوصف (عربي)"
+                    value={content.heroStat1LabelAr || ''}
+                    onChange={(e) => setContent({ ...content, heroStat1LabelAr: e.target.value })}
+                    className="w-full bg-brand-charcoal border border-brand-border px-2 py-1.5 text-xs text-brand-ivory rounded-xs text-right"
+                  />
+                </div>
+
+                {/* Stat 2 */}
+                <div className="p-3 bg-brand-black border border-brand-border rounded-xs space-y-2">
+                  <span className="text-xs font-mono font-bold text-brand-gold block">{isAr ? 'الإحصائية 2' : 'Stat 2'}</span>
+                  <input
+                    type="text"
+                    placeholder="القيمة (مثال: قصّة بوكسي)"
+                    value={content.heroStat2Value || ''}
+                    onChange={(e) => setContent({ ...content, heroStat2Value: e.target.value })}
+                    className="w-full bg-brand-charcoal border border-brand-border px-2 py-1.5 text-xs text-brand-ivory rounded-xs font-mono"
+                  />
+                  <input
+                    type="text"
+                    placeholder="الوصف (عربي)"
+                    value={content.heroStat2LabelAr || ''}
+                    onChange={(e) => setContent({ ...content, heroStat2LabelAr: e.target.value })}
+                    className="w-full bg-brand-charcoal border border-brand-border px-2 py-1.5 text-xs text-brand-ivory rounded-xs text-right"
+                  />
+                </div>
+
+                {/* Stat 3 */}
+                <div className="p-3 bg-brand-black border border-brand-border rounded-xs space-y-2">
+                  <span className="text-xs font-mono font-bold text-brand-gold block">{isAr ? 'الإحصائية 3' : 'Stat 3'}</span>
+                  <input
+                    type="text"
+                    placeholder="القيمة (مثال: شحن ودفع عند الاستلام)"
+                    value={content.heroStat3Value || ''}
+                    onChange={(e) => setContent({ ...content, heroStat3Value: e.target.value })}
+                    className="w-full bg-brand-charcoal border border-brand-border px-2 py-1.5 text-xs text-brand-ivory rounded-xs font-mono"
+                  />
+                  <input
+                    type="text"
+                    placeholder="الوصف (عربي)"
+                    value={content.heroStat3LabelAr || ''}
+                    onChange={(e) => setContent({ ...content, heroStat3LabelAr: e.target.value })}
+                    className="w-full bg-brand-charcoal border border-brand-border px-2 py-1.5 text-xs text-brand-ivory rounded-xs text-right"
+                  />
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}
@@ -1087,6 +1507,605 @@ export default function AdminContentPage() {
         </div>
       )}
 
+      {/* TAB 3: BRAND STORY & MANIFESTO */}
+      {activeTab === 'story' && (
+        <div className="space-y-8 animate-fade-in">
+          {/* Section Overview & Visibility */}
+          <div className="bg-brand-charcoal border border-brand-border/80 rounded-sm p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <div className="flex items-center space-x-2 rtl:space-x-reverse text-sm font-bold text-brand-ivory">
+                <BookOpen className="w-4 h-4 text-brand-gold" />
+                <span>{isAr ? 'قسم قصة دار أثير والجودة (Atelier Story & Quality)' : 'Brand Story & Quality Specs'}</span>
+              </div>
+              <p className="text-xs text-brand-cream/60 mt-1 font-mono">
+                {isAr ? 'القسم الذي يتحدث عن فلسفة دار أثير، ثقل النسيج 500 GSM، وخلوه من البوليستر.' : 'Editorial story section featuring brand manifesto, loopback cotton specs, and atelier photo.'}
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setContent({ ...content, showStory: content.showStory === false ? true : false })}
+              className={`px-4 py-2 text-xs font-mono font-bold rounded-xs transition-colors flex items-center space-x-1.5 rtl:space-x-reverse self-start sm:self-auto ${
+                content.showStory !== false
+                  ? 'bg-emerald-600 text-white'
+                  : 'bg-brand-stone/60 text-brand-cream/40 border border-brand-border'
+              }`}
+            >
+              {content.showStory !== false ? (
+                <>
+                  <Check className="w-3.5 h-3.5" />
+                  <span>{isAr ? 'القسم مفعل وظاهر للعميل' : 'Section Visible'}</span>
+                </>
+              ) : (
+                <span>{isAr ? 'القسم معطل ومخفي' : 'Section Hidden'}</span>
+              )}
+            </button>
+          </div>
+
+          {/* Story Image Manager */}
+          <div className="bg-brand-charcoal border border-brand-border/80 rounded-sm p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="text-sm font-bold text-brand-ivory flex items-center space-x-2 rtl:space-x-reverse">
+                <Camera className="w-4 h-4 text-brand-gold" />
+                <span>{isAr ? 'صورة قصة البراند (Editorial Story Image)' : 'Brand Story Visual'}</span>
+              </div>
+              <span className="text-[10px] font-mono text-brand-gold bg-brand-black px-2 py-0.5 border border-brand-gold/30 rounded-xs">
+                {isAr ? 'صورة طولية (Portrait 4:5)' : 'Portrait 4:5 Aspect'}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+              <div className="md:col-span-4">
+                <div className="relative aspect-[4/5] rounded-sm overflow-hidden border-2 border-brand-gold/40 bg-brand-black group shadow-lg">
+                  <div
+                    className="w-full h-full bg-cover bg-center"
+                    style={{ backgroundImage: `url('${content.storyImage || defaultHomepageContent.storyImage}')` }}
+                  />
+                  {uploadingStory && (
+                    <div className="absolute inset-0 bg-brand-black/80 flex items-center justify-center">
+                      <RefreshCw className="w-6 h-6 animate-spin text-brand-gold" />
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="md:col-span-8 space-y-4">
+                <div className="space-y-1">
+                  <h3 className="text-sm font-bold text-brand-ivory">
+                    {isAr ? 'ارفع صورة مخصصة لقصة البراند من جهازك' : 'Upload Story Photo from Device'}
+                  </h3>
+                  <p className="text-xs text-brand-cream/60 leading-relaxed">
+                    {isAr
+                      ? 'يمكنك رفع أي صورة من استوديو هاتفك أو جهازك (صورة موديل، أو تصوير أقمشة، أو جلسة تصوير خاصة).'
+                      : 'Upload high-resolution photography from your phone studio or PC gallery.'}
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => storyFileInputRef.current?.click()}
+                    disabled={uploadingStory}
+                    className="flex items-center space-x-2 rtl:space-x-reverse px-6 py-3 bg-brand-gold text-brand-black text-xs font-mono font-bold tracking-wider hover:bg-brand-gold-hover transition-colors rounded-sm shadow-gold disabled:opacity-50"
+                  >
+                    {uploadingStory ? (
+                      <RefreshCw className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Upload className="w-4 h-4" />
+                    )}
+                    <span>
+                      {uploadingStory
+                        ? (isAr ? 'جاري الرفع...' : 'Uploading...')
+                        : (isAr ? 'ارفع صورة من جهازك / الاستوديو' : 'Upload from Device Gallery')}
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setContent({ ...content, storyImage: defaultHomepageContent.storyImage })}
+                    className="flex items-center space-x-1.5 rtl:space-x-reverse px-4 py-3 bg-brand-black hover:bg-rose-950/40 border border-brand-border/80 hover:border-rose-500/60 text-brand-cream/70 hover:text-rose-300 text-xs font-mono transition-colors rounded-sm"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>{isAr ? 'استعادة الافتراضية' : 'Reset'}</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Story Texts & Manifesto */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-brand-charcoal border border-brand-border/80 rounded-sm p-6 space-y-4 md:col-span-2">
+              <div className="text-sm font-bold text-brand-ivory flex items-center space-x-2 rtl:space-x-reverse">
+                <Type className="w-4 h-4 text-brand-gold" />
+                <span>{isAr ? 'الشارة والعنوان الرئيسي للقصة' : 'Story Badge & Headline'}</span>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-mono text-brand-cream/70 mb-1">
+                    {isAr ? 'الشارة العلوية (عربي)' : 'Badge (Arabic)'}
+                  </label>
+                  <input
+                    type="text"
+                    value={content.storyBadgeAr || ''}
+                    onChange={(e) => setContent({ ...content, storyBadgeAr: e.target.value })}
+                    className="w-full bg-brand-black border border-brand-border px-3 py-2 text-sm text-brand-ivory rounded-sm focus:border-brand-gold focus:outline-none text-right font-sans"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-mono text-brand-cream/70 mb-1">
+                    {isAr ? 'العنوان الرئيسي (عربي)' : 'Title (Arabic)'}
+                  </label>
+                  <input
+                    type="text"
+                    value={content.storyTitleAr || ''}
+                    onChange={(e) => setContent({ ...content, storyTitleAr: e.target.value })}
+                    className="w-full bg-brand-black border border-brand-border px-3 py-2 text-sm text-brand-ivory rounded-sm focus:border-brand-gold focus:outline-none text-right font-sans"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Paragraph 1 */}
+            <div className="bg-brand-charcoal border border-brand-border/80 rounded-sm p-6 space-y-4 md:col-span-2">
+              <div className="text-sm font-bold text-brand-ivory">
+                {isAr ? 'الفقرة الأولى من القصة' : 'Story Paragraph 1'}
+              </div>
+              <div>
+                <textarea
+                  rows={3}
+                  value={content.storyParagraph1Ar || ''}
+                  onChange={(e) => setContent({ ...content, storyParagraph1Ar: e.target.value })}
+                  className="w-full bg-brand-black border border-brand-border px-3 py-2 text-sm text-brand-ivory rounded-sm focus:border-brand-gold focus:outline-none text-right font-sans leading-relaxed"
+                />
+              </div>
+            </div>
+
+            {/* Paragraph 2 */}
+            <div className="bg-brand-charcoal border border-brand-border/80 rounded-sm p-6 space-y-4 md:col-span-2">
+              <div className="text-sm font-bold text-brand-ivory">
+                {isAr ? 'الفقرة الثانية من القصة' : 'Story Paragraph 2'}
+              </div>
+              <div>
+                <textarea
+                  rows={3}
+                  value={content.storyParagraph2Ar || ''}
+                  onChange={(e) => setContent({ ...content, storyParagraph2Ar: e.target.value })}
+                  className="w-full bg-brand-black border border-brand-border px-3 py-2 text-sm text-brand-ivory rounded-sm focus:border-brand-gold focus:outline-none text-right font-sans leading-relaxed"
+                />
+              </div>
+            </div>
+
+            {/* Quote Card */}
+            <div className="bg-brand-charcoal border border-brand-border/80 rounded-sm p-6 space-y-4 md:col-span-2">
+              <div className="text-sm font-bold text-brand-ivory">
+                {isAr ? 'بطاقة الاقتباس والبيان المعلق' : 'Floating Quote Manifesto'}
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-mono text-brand-cream/70 mb-1">
+                    {isAr ? 'نص الاقتباس (عربي)' : 'Quote Text (Arabic)'}
+                  </label>
+                  <input
+                    type="text"
+                    value={content.storyQuoteAr || ''}
+                    onChange={(e) => setContent({ ...content, storyQuoteAr: e.target.value })}
+                    className="w-full bg-brand-black border border-brand-border px-3 py-2 text-sm text-brand-ivory rounded-sm focus:border-brand-gold focus:outline-none text-right font-sans"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-mono text-brand-cream/70 mb-1">
+                    {isAr ? 'توقيع الاقتباس (عربي)' : 'Quote Author (Arabic)'}
+                  </label>
+                  <input
+                    type="text"
+                    value={content.storyQuoteAuthorAr || ''}
+                    onChange={(e) => setContent({ ...content, storyQuoteAuthorAr: e.target.value })}
+                    className="w-full bg-brand-black border border-brand-border px-3 py-2 text-sm text-brand-ivory rounded-sm focus:border-brand-gold focus:outline-none text-right font-sans"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* 3 Technical Metrics */}
+            <div className="bg-brand-charcoal border border-brand-border/80 rounded-sm p-6 space-y-4 md:col-span-2">
+              <div className="text-sm font-bold text-brand-ivory">
+                {isAr ? 'المقاييس والمواصفات الثلاثة أسفل القصة' : '3 Story Technical Specs'}
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="p-3 bg-brand-black border border-brand-border rounded-xs space-y-2">
+                  <span className="text-xs font-mono font-bold text-brand-gold block">{isAr ? 'المعيار 1' : 'Metric 1'}</span>
+                  <input
+                    type="text"
+                    placeholder="القيمة (مثال: 500)"
+                    value={content.storyMetric1Value || ''}
+                    onChange={(e) => setContent({ ...content, storyMetric1Value: e.target.value })}
+                    className="w-full bg-brand-charcoal border border-brand-border px-2 py-1.5 text-xs text-brand-ivory rounded-xs font-mono"
+                  />
+                  <input
+                    type="text"
+                    placeholder="الوصف (عربي)"
+                    value={content.storyMetric1LabelAr || ''}
+                    onChange={(e) => setContent({ ...content, storyMetric1LabelAr: e.target.value })}
+                    className="w-full bg-brand-charcoal border border-brand-border px-2 py-1.5 text-xs text-brand-ivory rounded-xs text-right"
+                  />
+                </div>
+
+                <div className="p-3 bg-brand-black border border-brand-border rounded-xs space-y-2">
+                  <span className="text-xs font-mono font-bold text-brand-gold block">{isAr ? 'المعيار 2' : 'Metric 2'}</span>
+                  <input
+                    type="text"
+                    placeholder="القيمة (مثال: 0%)"
+                    value={content.storyMetric2Value || ''}
+                    onChange={(e) => setContent({ ...content, storyMetric2Value: e.target.value })}
+                    className="w-full bg-brand-charcoal border border-brand-border px-2 py-1.5 text-xs text-brand-ivory rounded-xs font-mono"
+                  />
+                  <input
+                    type="text"
+                    placeholder="الوصف (عربي)"
+                    value={content.storyMetric2LabelAr || ''}
+                    onChange={(e) => setContent({ ...content, storyMetric2LabelAr: e.target.value })}
+                    className="w-full bg-brand-charcoal border border-brand-border px-2 py-1.5 text-xs text-brand-ivory rounded-xs text-right"
+                  />
+                </div>
+
+                <div className="p-3 bg-brand-black border border-brand-border rounded-xs space-y-2">
+                  <span className="text-xs font-mono font-bold text-brand-gold block">{isAr ? 'المعيار 3' : 'Metric 3'}</span>
+                  <input
+                    type="text"
+                    placeholder="القيمة (مثال: 100%)"
+                    value={content.storyMetric3Value || ''}
+                    onChange={(e) => setContent({ ...content, storyMetric3Value: e.target.value })}
+                    className="w-full bg-brand-charcoal border border-brand-border px-2 py-1.5 text-xs text-brand-ivory rounded-xs font-mono"
+                  />
+                  <input
+                    type="text"
+                    placeholder="الوصف (عربي)"
+                    value={content.storyMetric3LabelAr || ''}
+                    onChange={(e) => setContent({ ...content, storyMetric3LabelAr: e.target.value })}
+                    className="w-full bg-brand-charcoal border border-brand-border px-2 py-1.5 text-xs text-brand-ivory rounded-xs text-right"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* TAB 4: FUTURE DROP TEASER */}
+      {activeTab === 'future' && (
+        <div className="space-y-8 animate-fade-in">
+          {/* Section Overview & Visibility */}
+          <div className="bg-brand-charcoal border border-brand-border/80 rounded-sm p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <div className="flex items-center space-x-2 rtl:space-x-reverse text-sm font-bold text-brand-ivory">
+                <Clock className="w-4 h-4 text-brand-gold" />
+                <span>{isAr ? 'قسم الإصدار القادم / التي شيرتات (Future Drop Teaser)' : 'Future Drop Teaser Section'}</span>
+              </div>
+              <p className="text-xs text-brand-cream/60 mt-1 font-mono">
+                {isAr ? 'الصندوق الترويجي للتي شيرتات القادمة 320 GSM مع نموذج إشعارات الإطلاق للعملاء.' : 'Upcoming drop teaser card with VIP email signup form.'}
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setContent({ ...content, showFutureTeaser: content.showFutureTeaser === false ? true : false })}
+              className={`px-4 py-2 text-xs font-mono font-bold rounded-xs transition-colors flex items-center space-x-1.5 rtl:space-x-reverse self-start sm:self-auto ${
+                content.showFutureTeaser !== false
+                  ? 'bg-emerald-600 text-white'
+                  : 'bg-brand-stone/60 text-brand-cream/40 border border-brand-border'
+              }`}
+            >
+              {content.showFutureTeaser !== false ? (
+                <>
+                  <Check className="w-3.5 h-3.5" />
+                  <span>{isAr ? 'القسم مفعل وظاهر للعميل' : 'Section Visible'}</span>
+                </>
+              ) : (
+                <span>{isAr ? 'القسم معطل ومخفي' : 'Section Hidden'}</span>
+              )}
+            </button>
+          </div>
+
+          {/* Future Image Manager */}
+          <div className="bg-brand-charcoal border border-brand-border/80 rounded-sm p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="text-sm font-bold text-brand-ivory flex items-center space-x-2 rtl:space-x-reverse">
+                <Camera className="w-4 h-4 text-brand-gold" />
+                <span>{isAr ? 'صورة التي شيرت / الإصدار القادم' : 'Future Drop Teaser Photo'}</span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+              <div className="md:col-span-4">
+                <div className="relative aspect-square rounded-sm overflow-hidden border-2 border-brand-gold/40 bg-brand-black group shadow-lg">
+                  <div
+                    className="w-full h-full bg-cover bg-center"
+                    style={{ backgroundImage: `url('${content.futureImage || defaultHomepageContent.futureImage}')` }}
+                  />
+                  {uploadingFuture && (
+                    <div className="absolute inset-0 bg-brand-black/80 flex items-center justify-center">
+                      <RefreshCw className="w-6 h-6 animate-spin text-brand-gold" />
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="md:col-span-8 space-y-4">
+                <div className="space-y-1">
+                  <h3 className="text-sm font-bold text-brand-ivory">
+                    {isAr ? 'ارفع صورة الإصدار القادم من جهازك' : 'Upload Future Drop Visual from Device'}
+                  </h3>
+                  <p className="text-xs text-brand-cream/60 leading-relaxed">
+                    {isAr
+                      ? 'ارفع صورة التي شيرت أو المنتج الجديد الذي تعمل على تجهيزه لإثارة حماس عملائك.'
+                      : 'Upload high-res teaser pictures of your upcoming product release.'}
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => futureFileInputRef.current?.click()}
+                    disabled={uploadingFuture}
+                    className="flex items-center space-x-2 rtl:space-x-reverse px-6 py-3 bg-brand-gold text-brand-black text-xs font-mono font-bold tracking-wider hover:bg-brand-gold-hover transition-colors rounded-sm shadow-gold disabled:opacity-50"
+                  >
+                    {uploadingFuture ? (
+                      <RefreshCw className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Upload className="w-4 h-4" />
+                    )}
+                    <span>
+                      {uploadingFuture
+                        ? (isAr ? 'جاري الرفع...' : 'Uploading...')
+                        : (isAr ? 'ارفع صورة من جهازك / الاستوديو' : 'Upload from Device Gallery')}
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setContent({ ...content, futureImage: defaultHomepageContent.futureImage })}
+                    className="flex items-center space-x-1.5 rtl:space-x-reverse px-4 py-3 bg-brand-black hover:bg-rose-950/40 border border-brand-border/80 hover:border-rose-500/60 text-brand-cream/70 hover:text-rose-300 text-xs font-mono transition-colors rounded-sm"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>{isAr ? 'استعادة الافتراضية' : 'Reset'}</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Texts & Chips */}
+          <div className="bg-brand-charcoal border border-brand-border/80 rounded-sm p-6 space-y-4">
+            <div className="text-sm font-bold text-brand-ivory flex items-center space-x-2 rtl:space-x-reverse">
+              <Type className="w-4 h-4 text-brand-gold" />
+              <span>{isAr ? 'نصوص وتفاصيل الإصدار القادم' : 'Future Drop Texts & Chips'}</span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-mono text-brand-cream/70 mb-1">
+                  {isAr ? 'الشارة العلوية (عربي)' : 'Badge (Arabic)'}
+                </label>
+                <input
+                  type="text"
+                  value={content.futureBadgeAr || ''}
+                  onChange={(e) => setContent({ ...content, futureBadgeAr: e.target.value })}
+                  className="w-full bg-brand-black border border-brand-border px-3 py-2 text-sm text-brand-ivory rounded-sm focus:border-brand-gold focus:outline-none text-right font-sans"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-mono text-brand-cream/70 mb-1">
+                  {isAr ? 'العنوان الرئيسي (عربي)' : 'Title (Arabic)'}
+                </label>
+                <input
+                  type="text"
+                  value={content.futureTitleAr || ''}
+                  onChange={(e) => setContent({ ...content, futureTitleAr: e.target.value })}
+                  className="w-full bg-brand-black border border-brand-border px-3 py-2 text-sm text-brand-ivory rounded-sm focus:border-brand-gold focus:outline-none text-right font-sans"
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="block text-xs font-mono text-brand-cream/70 mb-1">
+                  {isAr ? 'الوصف التفصيلي (عربي)' : 'Description (Arabic)'}
+                </label>
+                <textarea
+                  rows={3}
+                  value={content.futureDescAr || ''}
+                  onChange={(e) => setContent({ ...content, futureDescAr: e.target.value })}
+                  className="w-full bg-brand-black border border-brand-border px-3 py-2 text-sm text-brand-ivory rounded-sm focus:border-brand-gold focus:outline-none text-right font-sans leading-relaxed"
+                />
+              </div>
+
+              {/* 3 Chips */}
+              <div>
+                <label className="block text-xs font-mono text-brand-cream/70 mb-1">
+                  {isAr ? 'الوسم 1 (Chip 1)' : 'Chip 1'}
+                </label>
+                <input
+                  type="text"
+                  value={content.futureChip1 || ''}
+                  onChange={(e) => setContent({ ...content, futureChip1: e.target.value })}
+                  className="w-full bg-brand-black border border-brand-border px-3 py-2 text-sm text-brand-ivory rounded-sm focus:border-brand-gold focus:outline-none font-sans"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-mono text-brand-cream/70 mb-1">
+                  {isAr ? 'الوسم 2 (Chip 2)' : 'Chip 2'}
+                </label>
+                <input
+                  type="text"
+                  value={content.futureChip2 || ''}
+                  onChange={(e) => setContent({ ...content, futureChip2: e.target.value })}
+                  className="w-full bg-brand-black border border-brand-border px-3 py-2 text-sm text-brand-ivory rounded-sm focus:border-brand-gold focus:outline-none font-sans"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-mono text-brand-cream/70 mb-1">
+                  {isAr ? 'الوسم 3 (Chip 3)' : 'Chip 3'}
+                </label>
+                <input
+                  type="text"
+                  value={content.futureChip3 || ''}
+                  onChange={(e) => setContent({ ...content, futureChip3: e.target.value })}
+                  className="w-full bg-brand-black border border-brand-border px-3 py-2 text-sm text-brand-ivory rounded-sm focus:border-brand-gold focus:outline-none font-sans"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-mono text-brand-cream/70 mb-1">
+                  {isAr ? 'الشارة على الصورة (عربي)' : 'Photo Overlay Badge'}
+                </label>
+                <input
+                  type="text"
+                  value={content.futureBadgeBottomAr || ''}
+                  onChange={(e) => setContent({ ...content, futureBadgeBottomAr: e.target.value })}
+                  className="w-full bg-brand-black border border-brand-border px-3 py-2 text-sm text-brand-ivory rounded-sm focus:border-brand-gold focus:outline-none text-right font-sans"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* TAB 5: LUXURY FEATURES & GUARANTEES */}
+      {activeTab === 'features' && (
+        <div className="space-y-8 animate-fade-in">
+          {/* Section Overview & Visibility */}
+          <div className="bg-brand-charcoal border border-brand-border/80 rounded-sm p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <div className="flex items-center space-x-2 rtl:space-x-reverse text-sm font-bold text-brand-ivory">
+                <ShieldCheck className="w-4 h-4 text-brand-gold" />
+                <span>{isAr ? 'قسم مميزات وضمانات المتجر (Store Guarantees & COD)' : 'Store Guarantees & COD Services'}</span>
+              </div>
+              <p className="text-xs text-brand-cream/60 mt-1 font-mono">
+                {isAr ? 'البطاقات الأربعة لخدمات التوصيل والمعاينة وضمان النسيج 500 GSM وخدمة العملاء.' : 'The 4 guarantee cards displayed near the footer of the customer storefront.'}
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setContent({ ...content, showFeatures: content.showFeatures === false ? true : false })}
+              className={`px-4 py-2 text-xs font-mono font-bold rounded-xs transition-colors flex items-center space-x-1.5 rtl:space-x-reverse self-start sm:self-auto ${
+                content.showFeatures !== false
+                  ? 'bg-emerald-600 text-white'
+                  : 'bg-brand-stone/60 text-brand-cream/40 border border-brand-border'
+              }`}
+            >
+              {content.showFeatures !== false ? (
+                <>
+                  <Check className="w-3.5 h-3.5" />
+                  <span>{isAr ? 'القسم مفعل وظاهر للعميل' : 'Section Visible'}</span>
+                </>
+              ) : (
+                <span>{isAr ? 'القسم معطل ومخفي' : 'Section Hidden'}</span>
+              )}
+            </button>
+          </div>
+
+          {/* The 4 Guarantee Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Card 1 */}
+            <div className="p-6 bg-brand-charcoal border border-brand-border/80 rounded-sm space-y-4">
+              <span className="text-xs font-mono font-bold text-brand-gold block">{isAr ? 'البطاقة 1: جودة وبناء النسيج' : 'Card 1: Fabric Architecture'}</span>
+              <div>
+                <label className="block text-[11px] font-mono text-brand-cream/70 mb-1">{isAr ? 'العنوان (عربي)' : 'Title (Arabic)'}</label>
+                <input
+                  type="text"
+                  value={content.feature1TitleAr || ''}
+                  onChange={(e) => setContent({ ...content, feature1TitleAr: e.target.value })}
+                  className="w-full bg-brand-black border border-brand-border px-3 py-2 text-sm text-brand-ivory rounded-sm text-right"
+                />
+              </div>
+              <div>
+                <label className="block text-[11px] font-mono text-brand-cream/70 mb-1">{isAr ? 'الوصف (عربي)' : 'Description (Arabic)'}</label>
+                <textarea
+                  rows={2}
+                  value={content.feature1DescAr || ''}
+                  onChange={(e) => setContent({ ...content, feature1DescAr: e.target.value })}
+                  className="w-full bg-brand-black border border-brand-border px-3 py-2 text-xs text-brand-ivory rounded-sm text-right leading-relaxed"
+                />
+              </div>
+            </div>
+
+            {/* Card 2 */}
+            <div className="p-6 bg-brand-charcoal border border-brand-border/80 rounded-sm space-y-4">
+              <span className="text-xs font-mono font-bold text-brand-gold block">{isAr ? 'البطاقة 2: الشحن السريع والدفع عند الاستلام' : 'Card 2: COD Delivery'}</span>
+              <div>
+                <label className="block text-[11px] font-mono text-brand-cream/70 mb-1">{isAr ? 'العنوان (عربي)' : 'Title (Arabic)'}</label>
+                <input
+                  type="text"
+                  value={content.feature2TitleAr || ''}
+                  onChange={(e) => setContent({ ...content, feature2TitleAr: e.target.value })}
+                  className="w-full bg-brand-black border border-brand-border px-3 py-2 text-sm text-brand-ivory rounded-sm text-right"
+                />
+              </div>
+              <div>
+                <label className="block text-[11px] font-mono text-brand-cream/70 mb-1">{isAr ? 'الوصف (عربي)' : 'Description (Arabic)'}</label>
+                <textarea
+                  rows={2}
+                  value={content.feature2DescAr || ''}
+                  onChange={(e) => setContent({ ...content, feature2DescAr: e.target.value })}
+                  className="w-full bg-brand-black border border-brand-border px-3 py-2 text-xs text-brand-ivory rounded-sm text-right leading-relaxed"
+                />
+              </div>
+            </div>
+
+            {/* Card 3 */}
+            <div className="p-6 bg-brand-charcoal border border-brand-border/80 rounded-sm space-y-4">
+              <span className="text-xs font-mono font-bold text-brand-gold block">{isAr ? 'البطاقة 3: نقاء القطن وخلوه من البوليستر' : 'Card 3: Pure Natural Cotton'}</span>
+              <div>
+                <label className="block text-[11px] font-mono text-brand-cream/70 mb-1">{isAr ? 'العنوان (عربي)' : 'Title (Arabic)'}</label>
+                <input
+                  type="text"
+                  value={content.feature3TitleAr || ''}
+                  onChange={(e) => setContent({ ...content, feature3TitleAr: e.target.value })}
+                  className="w-full bg-brand-black border border-brand-border px-3 py-2 text-sm text-brand-ivory rounded-sm text-right"
+                />
+              </div>
+              <div>
+                <label className="block text-[11px] font-mono text-brand-cream/70 mb-1">{isAr ? 'الوصف (عربي)' : 'Description (Arabic)'}</label>
+                <textarea
+                  rows={2}
+                  value={content.feature3DescAr || ''}
+                  onChange={(e) => setContent({ ...content, feature3DescAr: e.target.value })}
+                  className="w-full bg-brand-black border border-brand-border px-3 py-2 text-xs text-brand-ivory rounded-sm text-right leading-relaxed"
+                />
+              </div>
+            </div>
+
+            {/* Card 4 */}
+            <div className="p-6 bg-brand-charcoal border border-brand-border/80 rounded-sm space-y-4">
+              <span className="text-xs font-mono font-bold text-brand-gold block">{isAr ? 'البطاقة 4: خدمة العملاء والكونسيرج' : 'Card 4: Live Concierge'}</span>
+              <div>
+                <label className="block text-[11px] font-mono text-brand-cream/70 mb-1">{isAr ? 'العنوان (عربي)' : 'Title (Arabic)'}</label>
+                <input
+                  type="text"
+                  value={content.feature4TitleAr || ''}
+                  onChange={(e) => setContent({ ...content, feature4TitleAr: e.target.value })}
+                  className="w-full bg-brand-black border border-brand-border px-3 py-2 text-sm text-brand-ivory rounded-sm text-right"
+                />
+              </div>
+              <div>
+                <label className="block text-[11px] font-mono text-brand-cream/70 mb-1">{isAr ? 'الوصف (عربي)' : 'Description (Arabic)'}</label>
+                <textarea
+                  rows={2}
+                  value={content.feature4DescAr || ''}
+                  onChange={(e) => setContent({ ...content, feature4DescAr: e.target.value })}
+                  className="w-full bg-brand-black border border-brand-border px-3 py-2 text-xs text-brand-ivory rounded-sm text-right leading-relaxed"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Floating Save Footer */}
       <div className="pt-6 border-t border-brand-border/60 flex items-center justify-between">
         <span className="text-xs font-mono text-brand-cream/50">
@@ -1097,7 +2116,7 @@ export default function AdminContentPage() {
 
         <button
           onClick={() => handleSave()}
-          disabled={saving || uploadingHero || uploadingHeroVideo || uploadingCategoryIdx !== null}
+          disabled={saving || uploadingHero || uploadingHeroVideo || uploadingCategoryIdx !== null || uploadingStory || uploadingFuture}
           className="flex items-center space-x-2 rtl:space-x-reverse px-7 py-3 bg-brand-gold text-brand-black text-xs font-mono font-bold tracking-wider hover:bg-brand-gold-hover transition-all duration-200 shadow-gold rounded-sm disabled:opacity-50"
         >
           {saving ? (
