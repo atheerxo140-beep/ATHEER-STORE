@@ -22,7 +22,7 @@ export default function AdminLoginPage() {
   const isAr = language === 'ar';
 
   const [email, setEmail] = useState('admin@atheer.store');
-  const [password, setPassword] = useState('••••••••••••');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [supabaseConfigured, setSupabaseConfigured] = useState(false);
