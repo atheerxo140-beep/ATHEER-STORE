@@ -12,8 +12,6 @@ import {
   Globe,
   Heart,
   Flame,
-  ShieldCheck,
-  UserCheck,
 } from 'lucide-react';
 
 export const Header: React.FC = () => {
@@ -57,24 +55,12 @@ export const Header: React.FC = () => {
             <span>{t('announcementText')}</span>
           </div>
 
-          {/* Quick Selectors & Admin Link */}
+          {/* Quick Selectors */}
           <div className="hidden md:flex items-center space-x-4 rtl:space-x-reverse text-[11px]">
             {/* Currency Indicator (EGP Only) */}
             <span className="font-mono text-brand-gold/90 font-bold px-2 py-0.5 bg-brand-charcoal border border-brand-border text-[10px]">
               EGP | ج.م
             </span>
-
-            <span className="text-brand-border">|</span>
-
-            {/* Admin Portal Link */}
-            <Link
-              href="/admin"
-              className="text-brand-cream/70 hover:text-brand-gold transition-colors flex items-center font-mono text-[11px]"
-              title="Admin Dashboard"
-            >
-              <UserCheck className="w-3.5 h-3.5 mr-1 rtl:ml-1 rtl:mr-0 inline" />
-              <span>{t('navAdmin')}</span>
-            </Link>
 
             <span className="text-brand-border">|</span>
 
@@ -264,14 +250,7 @@ export const Header: React.FC = () => {
                   </Link>
                 ))}
 
-                {/* Mobile Admin Link */}
-                <Link
-                  href="/admin"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="block text-sm uppercase tracking-widest py-2 text-brand-gold font-mono border-b border-brand-border/30"
-                >
-                  {t('navAdmin')}
-                </Link>
+
               </div>
 
               <div className="pt-4 border-t border-brand-border space-y-4">

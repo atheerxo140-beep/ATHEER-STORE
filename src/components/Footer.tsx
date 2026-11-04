@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useLanguage } from '@/context/LanguageContext';
-import { Flame, ArrowRight, ArrowLeft, Check, MapPin, Phone, UserCheck } from 'lucide-react';
+import { Flame, ArrowRight, ArrowLeft, Check, MapPin, Phone } from 'lucide-react';
 import Link from 'next/link';
 
 export const Footer: React.FC = () => {
@@ -186,15 +186,7 @@ export const Footer: React.FC = () => {
                   {language === 'ar' ? 'مجتمع شباب أثير في مصر' : 'ATHEER Egypt Youth Club'}
                 </a>
               </li>
-              <li>
-                <Link
-                  href="/admin"
-                  className="text-brand-gold/80 hover:text-brand-gold transition-colors flex items-center font-mono"
-                >
-                  <UserCheck className="w-3.5 h-3.5 mr-1 rtl:ml-1 rtl:mr-0 inline" />
-                  <span>{language === 'ar' ? 'بوابة إدارة المتجر' : 'Admin Portal'}</span>
-                </Link>
-              </li>
+
             </ul>
           </div>
         </div>
