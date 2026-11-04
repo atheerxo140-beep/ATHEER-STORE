@@ -10,6 +10,8 @@ export const defaultHomepageContent: HomepageContent = {
   heroSubtitleEn: 'Ultra-dense 500 GSM specification French terry cotton. Sculpted drop-shoulder boxy silhouette. No drawstrings, pure structural volume.',
   heroSubtitleAr: 'قطن فرنش تيري كثيف بمواصفات 500 GSM. قصّة بوكسي عريضة وأكتاف ساقطة تمنح قواماً ثابتاً وفخامة مينيمالية خالية من التعقيد.',
   heroBgImage: 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?q=80&w=2200&auto=format&fit=crop',
+  heroMediaType: 'image',
+  heroBgVideo: '',
   heroCtaPrimaryEn: 'Shop The Hoodies Drop',
   heroCtaPrimaryAr: 'تسوق تشكيلة الهوديز',
   heroCtaSecondaryEn: 'Explore Sweatshirts',

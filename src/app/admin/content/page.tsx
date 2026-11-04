@@ -24,26 +24,12 @@ import {
   Camera,
   FolderOpen,
   Check,
+  Film,
+  Video,
+  Play,
 } from 'lucide-react';
 
-const PRESET_HERO_IMAGES = [
-  {
-    name: 'Flat Lay Streetwear',
-    url: 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?q=80&w=2200&auto=format&fit=crop',
-  },
-  {
-    name: 'Onyx Black Hoodie Model',
-    url: 'https://images.unsplash.com/photo-1578632767115-351597cf2477?q=80&w=2200&auto=format&fit=crop',
-  },
-  {
-    name: 'Urban Streetwear Mood',
-    url: 'https://images.unsplash.com/photo-1509967419530-da38b4704bc6?q=80&w=2200&auto=format&fit=crop',
-  },
-  {
-    name: 'Heavyweight Studio Shoot',
-    url: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=2200&auto=format&fit=crop',
-  },
-];
+
 
 export default function AdminContentPage() {
   const { language, isRtl } = useLanguage();
@@ -57,8 +43,10 @@ export default function AdminContentPage() {
 
   // File Upload States
   const [uploadingHero, setUploadingHero] = useState(false);
+  const [uploadingHeroVideo, setUploadingHeroVideo] = useState(false);
   const [uploadingCategoryIdx, setUploadingCategoryIdx] = useState<number | null>(null);
   const heroFileInputRef = useRef<HTMLInputElement>(null);
+  const heroVideoFileInputRef = useRef<HTMLInputElement>(null);
   const categoryFileInputRefs = useRef<{ [key: number]: HTMLInputElement | null }>({});
 
   const fetchContent = async () => {
@@ -81,7 +69,7 @@ export default function AdminContentPage() {
   }, []);
 
   // Upload handler to upload file from local device/studio directly to Supabase Storage
-  const uploadImageFile = async (file: File, folder: string): Promise<string | null> => {
+  const uploadMediaFile = async (file: File, folder: string): Promise<string | null> => {
     const token = typeof window !== 'undefined' ? localStorage.getItem('atheer_admin_token') : '';
 
     const formData = new FormData();
@@ -99,11 +87,11 @@ export default function AdminContentPage() {
       if (data.success && data.url) {
         return data.url;
       } else {
-        alert(data.error || (isAr ? 'فشل رفع الصورة' : 'Failed to upload image'));
+        alert(data.error || (isAr ? 'فشل رفع الملف' : 'Failed to upload file'));
         return null;
       }
     } catch (err: any) {
-      alert(err.message || (isAr ? 'حدث خطأ أثناء رفع الصورة' : 'Upload error'));
+      alert(err.message || (isAr ? 'حدث خطأ أثناء رفع الملف' : 'Upload error'));
       return null;
     }
   };
@@ -113,16 +101,16 @@ export default function AdminContentPage() {
     if (!file || !content) return;
 
     setUploadingHero(true);
-    const uploadedUrl = await uploadImageFile(file, 'hero');
+    const uploadedUrl = await uploadMediaFile(file, 'hero');
     setUploadingHero(false);
 
     if (uploadedUrl) {
-      setContent({ ...content, heroBgImage: uploadedUrl });
+      setContent({ ...content, heroBgImage: uploadedUrl, heroMediaType: 'image' });
       setFeedback({
         type: 'success',
         message: isAr
-          ? 'تم رفع صورتك من الاستوديو بنجاح! لا تنسَ الضغط على "حفظ ونشر التعديلات".'
-          : 'Image uploaded successfully from your device! Remember to click Save & Publish.',
+          ? 'تم رفع صورة البانر من الاستوديو بنجاح! لا تنسَ الضغط على "حفظ ونشر التعديلات".'
+          : 'Hero image uploaded successfully from your device! Remember to click Save & Publish.',
       });
       setTimeout(() => setFeedback(null), 5000);
     }
@@ -132,12 +120,40 @@ export default function AdminContentPage() {
     }
   };
 
+  const handleHeroVideoFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !content) return;
+
+    setUploadingHeroVideo(true);
+    const uploadedUrl = await uploadMediaFile(file, 'hero-video');
+    setUploadingHeroVideo(false);
+
+    if (uploadedUrl) {
+      setContent({
+        ...content,
+        heroMediaType: 'video',
+        heroBgVideo: uploadedUrl,
+      });
+      setFeedback({
+        type: 'success',
+        message: isAr
+          ? 'تم رفع مقطع الفيديو للبانر بنجاح! لا تنسَ الضغط على "حفظ ونشر التعديلات".'
+          : 'Hero video uploaded successfully! Remember to click Save & Publish.',
+      });
+      setTimeout(() => setFeedback(null), 5000);
+    }
+
+    if (heroVideoFileInputRef.current) {
+      heroVideoFileInputRef.current.value = '';
+    }
+  };
+
   const handleCategoryFileSelect = async (e: React.ChangeEvent<HTMLInputElement>, idx: number) => {
     const file = e.target.files?.[0];
     if (!file || !content) return;
 
     setUploadingCategoryIdx(idx);
-    const uploadedUrl = await uploadImageFile(file, 'categories');
+    const uploadedUrl = await uploadMediaFile(file, 'categories');
     setUploadingCategoryIdx(null);
 
     if (uploadedUrl) {
@@ -208,6 +224,8 @@ export default function AdminContentPage() {
     setContent({
       ...content,
       heroBgImage: defaultHomepageContent.heroBgImage,
+      heroMediaType: 'image',
+      heroBgVideo: '',
     });
   };
 
@@ -268,7 +286,7 @@ export default function AdminContentPage() {
 
           <button
             onClick={() => handleSave()}
-            disabled={saving || uploadingHero || uploadingCategoryIdx !== null}
+            disabled={saving || uploadingHero || uploadingHeroVideo || uploadingCategoryIdx !== null}
             className="flex items-center space-x-2 rtl:space-x-reverse px-6 py-2.5 bg-brand-gold text-brand-black text-xs font-mono font-bold tracking-wider hover:bg-brand-gold-hover transition-all duration-200 shadow-gold rounded-sm disabled:opacity-50"
           >
             {saving ? (
@@ -332,11 +350,23 @@ export default function AdminContentPage() {
       {activeTab === 'hero' && (
         <div className="space-y-8 animate-fade-in">
           {/* Live Preview Card */}
-          <div className="relative rounded-sm overflow-hidden border border-brand-border/80 bg-brand-black p-6 sm:p-10 text-center">
-            <div
-              className="absolute inset-0 z-0 bg-cover bg-center opacity-35"
-              style={{ backgroundImage: `url('${content.heroBgImage}')` }}
-            />
+          <div className="relative rounded-sm overflow-hidden border border-brand-border/80 bg-brand-black p-6 sm:p-10 text-center min-h-[280px] flex items-center justify-center">
+            {content.heroMediaType === 'video' && content.heroBgVideo ? (
+              <video
+                autoPlay
+                loop
+                muted
+                playsInline
+                poster={content.heroBgImage}
+                src={content.heroBgVideo}
+                className="absolute inset-0 w-full h-full object-cover opacity-40 z-0"
+              />
+            ) : (
+              <div
+                className="absolute inset-0 z-0 bg-cover bg-center opacity-35"
+                style={{ backgroundImage: `url('${content.heroBgImage}')` }}
+              />
+            )}
             <div className="absolute inset-0 bg-gradient-to-t from-brand-black via-brand-black/90 to-brand-black/70 z-0" />
 
             <div className="relative z-10 max-w-2xl mx-auto space-y-4">
@@ -362,106 +392,245 @@ export default function AdminContentPage() {
               </div>
             </div>
 
-            <div className="absolute bottom-2 right-3 rtl:right-auto rtl:left-3 text-[10px] font-mono text-brand-cream/40">
-              {isAr ? 'معاينة حية للصورة والنصوص' : 'Live Preview'}
+            <div className="absolute bottom-2 right-3 rtl:right-auto rtl:left-3 text-[10px] font-mono text-brand-cream/50 bg-brand-black/80 px-2 py-0.5 rounded-xs border border-brand-border/60">
+              {content.heroMediaType === 'video' && content.heroBgVideo
+                ? (isAr ? 'معاينة حية: فيديو خلفية نشط' : 'Live Preview: Active Video')
+                : (isAr ? 'معاينة حية: صورة نشطة' : 'Live Preview: Active Image')}
             </div>
           </div>
 
-          {/* Direct File Upload Box for Hero Image */}
-          <div className="bg-brand-charcoal border-2 border-dashed border-brand-gold/60 hover:border-brand-gold rounded-sm p-6 sm:p-8 transition-colors">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
-              <div className="flex items-center space-x-4 rtl:space-x-reverse">
-                <div className="w-20 h-20 rounded-sm overflow-hidden border border-brand-border bg-brand-black flex-shrink-0 relative">
-                  <div
-                    className="w-full h-full bg-cover bg-center"
-                    style={{ backgroundImage: `url('${content.heroBgImage}')` }}
-                  />
-                  {uploadingHero && (
-                    <div className="absolute inset-0 bg-brand-black/80 flex items-center justify-center">
-                      <RefreshCw className="w-5 h-5 animate-spin text-brand-gold" />
-                    </div>
-                  )}
+          {/* ------------------------------------------------------------- */}
+          {/* ISOLATED HERO BACKGROUND MANAGER (PHOTO OR VIDEO)             */}
+          {/* ------------------------------------------------------------- */}
+          <div className="bg-brand-charcoal border border-brand-border/80 rounded-sm p-6 sm:p-8 space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-brand-border/60 pb-5">
+              <div>
+                <div className="flex items-center space-x-2 rtl:space-x-reverse mb-1">
+                  <span className="text-base font-serif font-black text-brand-ivory">
+                    {isAr ? 'خلفية البانر الرئيسي للمتجر' : 'Hero Section Background Media'}
+                  </span>
+                  <span className="text-[10px] font-mono px-2 py-0.5 bg-brand-gold/20 text-brand-gold border border-brand-gold/30 rounded-xs font-bold">
+                    {content.heroMediaType === 'video' && content.heroBgVideo
+                      ? (isAr ? '🎬 فيديو' : 'Video')
+                      : (isAr ? '📷 صورة' : 'Image')}
+                  </span>
                 </div>
-
-                <div className="space-y-1">
-                  <div className="flex items-center space-x-2 rtl:space-x-reverse">
-                    <span className="text-sm font-bold text-brand-ivory">
-                      {isAr ? 'صورة خلفية البانر الرئيسية' : 'Hero Main Visual'}
-                    </span>
-                    <span className="text-[10px] font-mono px-2 py-0.5 bg-brand-gold/20 text-brand-gold border border-brand-gold/30 rounded-xs font-bold">
-                      {isAr ? 'نشطة حالياً' : 'Active'}
-                    </span>
-                  </div>
-                  <p className="text-xs text-brand-cream/60">
-                    {isAr
-                      ? 'يمكنك رفع أي صورة من استوديو هاتفك أو جهازك (PNG, JPEG, WebP) بأعلى جودة.'
-                      : 'Upload any high-res picture from your device studio or gallery.'}
-                  </p>
-                </div>
+                <p className="text-xs text-brand-cream/60">
+                  {isAr
+                    ? 'تحكم منفصل وخاص بخلفية البانر فقط. اختر نوع الخلفية (صورة أو فيديو) وارفع ملفك مباشرة من جهازك.'
+                    : 'Independent background control. Choose media format and upload directly from your device.'}
+                </p>
               </div>
 
-              {/* Action Buttons: Upload from Device & Delete/Reset */}
-              <div className="flex flex-wrap items-center gap-2.5">
+              {/* Media Type Switcher: Image vs Video */}
+              <div className="inline-flex items-center p-1 bg-brand-black border border-brand-border/80 rounded-xs text-xs font-mono">
                 <button
                   type="button"
-                  onClick={() => heroFileInputRef.current?.click()}
-                  disabled={uploadingHero}
-                  className="flex items-center space-x-2 rtl:space-x-reverse px-5 py-3 bg-brand-gold text-brand-black text-xs font-mono font-bold tracking-wider hover:bg-brand-gold-hover transition-colors rounded-sm shadow-gold disabled:opacity-50"
+                  onClick={() => setContent({ ...content, heroMediaType: 'image' })}
+                  className={`flex items-center space-x-1.5 rtl:space-x-reverse px-4 py-2 rounded-xs font-bold transition-all ${
+                    content.heroMediaType !== 'video'
+                      ? 'bg-brand-gold text-brand-black shadow-sm'
+                      : 'text-brand-cream/60 hover:text-brand-ivory'
+                  }`}
                 >
-                  {uploadingHero ? (
-                    <RefreshCw className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Upload className="w-4 h-4" />
-                  )}
-                  <span>
-                    {uploadingHero
-                      ? (isAr ? 'جاري الرفع...' : 'Uploading...')
-                      : (isAr ? 'ارفع صورة من جهازك / الاستوديو' : 'Upload from Device / Studio')}
-                  </span>
+                  <ImageIcon className="w-3.5 h-3.5" />
+                  <span>{isAr ? 'صورة ثابتة' : 'Static Image'}</span>
                 </button>
 
                 <button
                   type="button"
-                  onClick={resetHeroImage}
-                  className="flex items-center space-x-1.5 rtl:space-x-reverse px-4 py-3 bg-brand-black hover:bg-rose-950/40 border border-brand-border/80 hover:border-rose-500/60 text-brand-cream/70 hover:text-rose-300 text-xs font-mono transition-colors rounded-sm"
-                  title={isAr ? 'استعادة الصورة الافتراضية' : 'Reset to default'}
+                  onClick={() => setContent({ ...content, heroMediaType: 'video' })}
+                  className={`flex items-center space-x-1.5 rtl:space-x-reverse px-4 py-2 rounded-xs font-bold transition-all ${
+                    content.heroMediaType === 'video'
+                      ? 'bg-brand-gold text-brand-black shadow-sm'
+                      : 'text-brand-cream/60 hover:text-brand-ivory'
+                  }`}
                 >
-                  <Trash2 className="w-3.5 h-3.5" />
-                  <span>{isAr ? 'استعادة الافتراضية' : 'Reset'}</span>
+                  <Film className="w-3.5 h-3.5" />
+                  <span>{isAr ? 'فيديو سينمائي' : 'Cinematic Video'}</span>
                 </button>
               </div>
             </div>
 
-            {/* Quick Streetwear Visuals Pickers (Alternative) */}
-            <div className="mt-6 pt-5 border-t border-brand-border/60">
-              <span className="text-[11px] font-mono text-brand-cream/60 block mb-2">
-                {isAr ? 'أو اختر صورة ستريتوير جاهزة:' : 'Or pick an editorial visual:'}
-              </span>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                {PRESET_HERO_IMAGES.map((preset) => (
-                  <button
-                    key={preset.url}
-                    type="button"
-                    onClick={() => setContent({ ...content, heroBgImage: preset.url })}
-                    className={`relative aspect-video rounded-sm overflow-hidden border text-left transition-all ${
-                      content.heroBgImage === preset.url
-                        ? 'border-brand-gold ring-2 ring-brand-gold/40'
-                        : 'border-brand-border hover:border-brand-gold/60 opacity-60 hover:opacity-100'
-                    }`}
-                  >
+            {/* Hidden File Inputs */}
+            <input
+              ref={heroFileInputRef}
+              type="file"
+              accept="image/png,image/jpeg,image/webp,image/jpg"
+              className="hidden"
+              onChange={handleHeroFileSelect}
+            />
+            <input
+              ref={heroVideoFileInputRef}
+              type="file"
+              accept="video/mp4,video/webm,video/quicktime,video/mov,video/x-m4v"
+              className="hidden"
+              onChange={handleHeroVideoFileSelect}
+            />
+
+            {/* OPTION 1: IMAGE BACKGROUND */}
+            {content.heroMediaType !== 'video' && (
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+                <div className="md:col-span-5 lg:col-span-4">
+                  <div className="relative aspect-video rounded-sm overflow-hidden border-2 border-brand-gold/40 bg-brand-black group shadow-lg">
                     <div
                       className="w-full h-full bg-cover bg-center"
-                      style={{ backgroundImage: `url('${preset.url}')` }}
+                      style={{ backgroundImage: `url('${content.heroBgImage}')` }}
                     />
-                    <div className="absolute inset-0 bg-brand-black/60 flex items-end p-2">
-                      <span className="text-[10px] font-mono text-brand-ivory truncate font-bold">
-                        {preset.name}
-                      </span>
+                    <div className="absolute inset-0 bg-brand-black/20 group-hover:bg-brand-black/5 transition-colors" />
+                    {uploadingHero && (
+                      <div className="absolute inset-0 bg-brand-black/80 flex items-center justify-center">
+                        <RefreshCw className="w-6 h-6 animate-spin text-brand-gold" />
+                      </div>
+                    )}
+                    <div className="absolute bottom-2 right-2 text-[10px] font-mono px-2 py-0.5 bg-brand-black/90 text-brand-gold rounded-xs border border-brand-gold/30">
+                      {isAr ? 'صورة الواجهة الحالية' : 'Current Photo'}
                     </div>
-                  </button>
-                ))}
+                  </div>
+                </div>
+
+                <div className="md:col-span-7 lg:col-span-8 space-y-4">
+                  <div className="space-y-1">
+                    <h3 className="text-sm font-bold text-brand-ivory">
+                      {isAr ? 'تغيير صورة البانر الرئيسية' : 'Change Main Hero Photo'}
+                    </h3>
+                    <p className="text-xs text-brand-cream/60 leading-relaxed">
+                      {isAr
+                        ? 'ارفع أي صورة تريدها من جهازك أو استوديو هاتفك (PNG, JPG, WebP) لعرضها فوراً في خلفية المتجر.'
+                        : 'Upload any high-res picture from your device studio or gallery.'}
+                    </p>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-3 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => heroFileInputRef.current?.click()}
+                      disabled={uploadingHero}
+                      className="flex items-center space-x-2 rtl:space-x-reverse px-6 py-3 bg-brand-gold text-brand-black text-xs font-mono font-bold tracking-wider hover:bg-brand-gold-hover transition-colors rounded-sm shadow-gold disabled:opacity-50"
+                    >
+                      {uploadingHero ? (
+                        <RefreshCw className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Upload className="w-4 h-4" />
+                      )}
+                      <span>
+                        {uploadingHero
+                          ? (isAr ? 'جاري رفع الصورة...' : 'Uploading Image...')
+                          : (isAr ? 'ارفع صورة من جهازك / الاستوديو' : 'Upload Photo From Device')}
+                      </span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={resetHeroImage}
+                      className="flex items-center space-x-1.5 rtl:space-x-reverse px-4 py-3 bg-brand-black hover:bg-rose-950/40 border border-brand-border/80 hover:border-rose-500/60 text-brand-cream/70 hover:text-rose-300 text-xs font-mono transition-colors rounded-sm"
+                      title={isAr ? 'استعادة الصورة الافتراضية' : 'Reset to default photo'}
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      <span>{isAr ? 'استعادة الافتراضية' : 'Reset'}</span>
+                    </button>
+                  </div>
+                </div>
               </div>
-            </div>
+            )}
+
+            {/* OPTION 2: VIDEO BACKGROUND */}
+            {content.heroMediaType === 'video' && (
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+                <div className="md:col-span-5 lg:col-span-4">
+                  <div className="relative aspect-video rounded-sm overflow-hidden border-2 border-brand-gold/60 bg-brand-black shadow-lg">
+                    {content.heroBgVideo ? (
+                      <video
+                        autoPlay
+                        loop
+                        muted
+                        playsInline
+                        src={content.heroBgVideo}
+                        poster={content.heroBgImage}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex flex-col items-center justify-center p-4 text-center text-brand-cream/40 space-y-2">
+                        <Video className="w-8 h-8 text-brand-gold/60 animate-pulse" />
+                        <span className="text-[11px] font-mono">
+                          {isAr ? 'لم يتم تعيين فيديو بعد' : 'No video selected yet'}
+                        </span>
+                      </div>
+                    )}
+                    {uploadingHeroVideo && (
+                      <div className="absolute inset-0 bg-brand-black/85 flex flex-col items-center justify-center space-y-2">
+                        <RefreshCw className="w-6 h-6 animate-spin text-brand-gold" />
+                        <span className="text-[11px] font-mono text-brand-gold">
+                          {isAr ? 'جاري رفع الفيديو إلى السيرفر...' : 'Uploading video to server...'}
+                        </span>
+                      </div>
+                    )}
+                    <div className="absolute bottom-2 right-2 text-[10px] font-mono px-2 py-0.5 bg-brand-black/90 text-brand-gold rounded-xs border border-brand-gold/30">
+                      {isAr ? 'معاينة الفيديو' : 'Video Preview'}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="md:col-span-7 lg:col-span-8 space-y-4">
+                  <div className="space-y-1">
+                    <h3 className="text-sm font-bold text-brand-ivory flex items-center space-x-2 rtl:space-x-reverse">
+                      <Film className="w-4 h-4 text-brand-gold" />
+                      <span>{isAr ? 'تغيير فيديو البانر الرئيسي' : 'Change Hero Video Background'}</span>
+                    </h3>
+                    <p className="text-xs text-brand-cream/60 leading-relaxed">
+                      {isAr
+                        ? 'ارفع مقطع فيديو من جهازك (MP4, WebM, MOV) ليعمل في خلفية المتجر تلقائياً في حلقة مستمرة بدون صوت وبمظهر سينمائي راقٍ.'
+                        : 'Upload an atmospheric short video loop for a dynamic luxury streetwear storefront experience.'}
+                    </p>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-3 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => heroVideoFileInputRef.current?.click()}
+                      disabled={uploadingHeroVideo}
+                      className="flex items-center space-x-2 rtl:space-x-reverse px-6 py-3 bg-brand-gold text-brand-black text-xs font-mono font-bold tracking-wider hover:bg-brand-gold-hover transition-colors rounded-sm shadow-gold disabled:opacity-50"
+                    >
+                      {uploadingHeroVideo ? (
+                        <RefreshCw className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Upload className="w-4 h-4" />
+                      )}
+                      <span>
+                        {uploadingHeroVideo
+                          ? (isAr ? 'جاري رفع الفيديو...' : 'Uploading Video...')
+                          : (isAr ? 'ارفع فيديو من جهازك / الاستوديو' : 'Upload Video From Device')}
+                      </span>
+                    </button>
+
+                    {content.heroBgVideo && (
+                      <button
+                        type="button"
+                        onClick={() => setContent({ ...content, heroBgVideo: '', heroMediaType: 'image' })}
+                        className="flex items-center space-x-1.5 rtl:space-x-reverse px-4 py-3 bg-brand-black hover:bg-rose-950/40 border border-brand-border/80 hover:border-rose-500/60 text-brand-cream/70 hover:text-rose-300 text-xs font-mono transition-colors rounded-sm"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span>{isAr ? 'حذف الفيديو والرجوع للصورة' : 'Remove Video'}</span>
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Optional Direct Video URL Input */}
+                  <div className="pt-2">
+                    <label className="block text-[11px] font-mono text-brand-cream/70 mb-1">
+                      {isAr ? 'أو اكتب / الصق رابط فيديو مباشر (MP4 URL):' : 'Or enter a direct video URL:'}
+                    </label>
+                    <input
+                      type="url"
+                      value={content.heroBgVideo || ''}
+                      onChange={(e) => setContent({ ...content, heroBgVideo: e.target.value, heroMediaType: 'video' })}
+                      placeholder="https://example.com/streetwear-video.mp4"
+                      className="w-full bg-brand-black border border-brand-border px-3 py-2 text-xs font-mono text-brand-ivory rounded-sm focus:border-brand-gold focus:outline-none"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Form Fields: Announcement & Hero Texts */}
@@ -871,7 +1040,7 @@ export default function AdminContentPage() {
 
         <button
           onClick={() => handleSave()}
-          disabled={saving || uploadingHero || uploadingCategoryIdx !== null}
+          disabled={saving || uploadingHero || uploadingHeroVideo || uploadingCategoryIdx !== null}
           className="flex items-center space-x-2 rtl:space-x-reverse px-7 py-3 bg-brand-gold text-brand-black text-xs font-mono font-bold tracking-wider hover:bg-brand-gold-hover transition-all duration-200 shadow-gold rounded-sm disabled:opacity-50"
         >
           {saving ? (

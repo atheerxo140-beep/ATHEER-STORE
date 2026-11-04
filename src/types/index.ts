@@ -146,6 +146,8 @@ export interface HomepageContent {
   heroSubtitleEn: string;
   heroSubtitleAr: string;
   heroBgImage: string;
+  heroMediaType?: 'image' | 'video';
+  heroBgVideo?: string;
   heroCtaPrimaryEn: string;
   heroCtaPrimaryAr: string;
   heroCtaSecondaryEn: string;

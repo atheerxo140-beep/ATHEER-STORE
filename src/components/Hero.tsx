@@ -12,6 +12,8 @@ export const Hero: React.FC = () => {
   const ArrowIcon = isRtl ? ArrowLeft : ArrowRight;
 
   const bgImage = content.heroBgImage || 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?q=80&w=2200&auto=format&fit=crop';
+  const isVideo = content.heroMediaType === 'video' || Boolean(content.heroBgVideo && content.heroBgVideo.trim().length > 0);
+  const videoUrl = content.heroBgVideo?.trim() || '';
   const badge = isAr ? content.heroBadgeAr || t('heroBadge') : content.heroBadgeEn || t('heroBadge');
   const title = isAr ? content.heroTitleAr || t('heroTitle') : content.heroTitleEn || t('heroTitle');
   const subtitle = isAr ? content.heroSubtitleAr || t('heroSubtitle') : content.heroSubtitleEn || t('heroSubtitle');
@@ -20,14 +22,28 @@ export const Hero: React.FC = () => {
 
   return (
     <section className="relative min-h-[92vh] flex items-center justify-center overflow-hidden bg-brand-black text-brand-ivory border-b border-brand-border/60">
-      {/* High-Resolution Editorial Streetwear Hoodie Background */}
-      <div className="absolute inset-0 z-0">
-        <div
-          className="w-full h-full bg-cover bg-[center_top_15%] sm:bg-center scale-105 transition-transform duration-1000 ease-out"
-          style={{
-            backgroundImage: `url('${bgImage}')`,
-          }}
-        />
+      {/* High-Resolution Editorial Streetwear Hoodie Background (Image or Video) */}
+      <div className="absolute inset-0 z-0 overflow-hidden">
+        {isVideo && videoUrl ? (
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            poster={bgImage}
+            className="w-full h-full object-cover scale-105 transition-transform duration-1000 ease-out"
+          >
+            <source src={videoUrl} type="video/mp4" />
+            <source src={videoUrl} type="video/webm" />
+          </video>
+        ) : (
+          <div
+            className="w-full h-full bg-cover bg-[center_top_15%] sm:bg-center scale-105 transition-transform duration-1000 ease-out"
+            style={{
+              backgroundImage: `url('${bgImage}')`,
+            }}
+          />
+        )}
         <div className="absolute inset-0 bg-gradient-to-t from-brand-black via-brand-black/80 to-brand-black/65" />
         <div className="absolute inset-0 bg-radial-gradient from-transparent via-brand-black/50 to-brand-black/90" />
       </div>
