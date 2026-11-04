@@ -710,10 +710,10 @@ export default function AdminOrdersPage() {
                     أثير · PREMIUM YOUTH STREETWEAR
                   </p>
                   <p className="text-[11px] text-gray-500 mt-2">
-                    Cairo, Egypt · CR: 104928-EG · VAT Tax Reg: 729-194-820
+                    Cairo, Egypt · Commercial Registration & Tax ID: Pending Official Filing (قيد التسجيل الرسمي)
                   </p>
                   <p className="text-[11px] text-gray-500">
-                    Concierge WhatsApp: +20 10 0000 0000
+                    Concierge Support: concierge@atheer.store
                   </p>
                 </div>
                 <div className="text-right rtl:text-left font-mono">
@@ -819,7 +819,7 @@ export default function AdminOrdersPage() {
               {/* Delivery Courier Notice */}
               <div className="pt-6 border-t border-gray-200 text-[11px] text-gray-500 leading-relaxed text-center font-mono">
                 Thank you for choosing ATHEER | أثير. Please inspect garment packaging before accepting COD delivery.
-                For inquiries or exchanges, reach our Cairo concierge on WhatsApp: +20 10 0000 0000.
+                For inquiries or customer support, reach our Cairo concierge at concierge@atheer.store.
               </div>
             </div>
           </div>

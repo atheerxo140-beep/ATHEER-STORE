@@ -92,13 +92,17 @@ export const Footer: React.FC = () => {
                 <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
                 <span>
                   {language === 'ar'
-                    ? 'صالات العرض والتوزيع: القاهرة (التجمع الخامس) · الجيزة (الشيخ زايد)'
-                    : 'Showrooms & Flagship: New Cairo (Fifth Settlement) · Sheikh Zayed'}
+                    ? 'الأتيليه الرقمي (القاهرة، مصر) · مواقع المعارض المؤقتة تُعلن مع كل إصدار موسمي'
+                    : 'Digital Flagship Atelier (Cairo, Egypt) · Seasonal Pop-up Locations Announced Per Drop'}
                 </span>
               </p>
               <p className="flex items-center space-x-2 rtl:space-x-reverse">
                 <Phone className="w-3.5 h-3.5 flex-shrink-0" />
-                <span>+20 10 0000 0000 | concierge@atheer.store</span>
+                <span>
+                  {process.env.NEXT_PUBLIC_WHATSAPP_NUMBER && !process.env.NEXT_PUBLIC_WHATSAPP_NUMBER.includes('0000')
+                    ? `+${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER} | concierge@atheer.store`
+                    : 'concierge@atheer.store · Line assignment in progress'}
+                </span>
               </p>
             </div>
           </div>

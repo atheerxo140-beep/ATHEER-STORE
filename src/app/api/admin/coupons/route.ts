@@ -1,7 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAllCoupons, createCoupon, toggleCouponActive, deleteCoupon } from '@/data/couponsStore';
+import { verifyAdminRequest } from '@/lib/adminAuth';
 
-export async function GET() {
+export const dynamic = 'force-dynamic';
+
+export async function GET(req: NextRequest) {
+  const auth = await verifyAdminRequest(req);
+  if (!auth.authorized) {
+    return NextResponse.json({ success: false, error: auth.error }, { status: auth.statusCode });
+  }
+
   const coupons = getAllCoupons();
   return NextResponse.json({
     success: true,
@@ -10,6 +18,11 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  const auth = await verifyAdminRequest(req);
+  if (!auth.authorized) {
+    return NextResponse.json({ success: false, error: auth.error }, { status: auth.statusCode });
+  }
+
   try {
     const body = await req.json();
     const { code, discountType, discountValue, minOrderAmount, usageLimit } = body;
@@ -37,6 +50,11 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PUT(req: NextRequest) {
+  const auth = await verifyAdminRequest(req);
+  if (!auth.authorized) {
+    return NextResponse.json({ success: false, error: auth.error }, { status: auth.statusCode });
+  }
+
   try {
     const body = await req.json();
     const { id } = body;
@@ -57,6 +75,11 @@ export async function PUT(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
+  const auth = await verifyAdminRequest(req);
+  if (!auth.authorized) {
+    return NextResponse.json({ success: false, error: auth.error }, { status: auth.statusCode });
+  }
+
   try {
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');

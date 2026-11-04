@@ -7,6 +7,7 @@ import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { useCart } from '@/context/CartContext';
 import { useLanguage } from '@/context/LanguageContext';
+import { PaymentMethodConfig } from '@/types';
 import {
   EGYPTIAN_GOVERNORATES,
   getZoneByGovernorate,
@@ -16,6 +17,11 @@ import {
   ShieldCheck,
   Truck,
   Banknote,
+  Smartphone,
+  CreditCard,
+  Building2,
+  Copy,
+  Check,
   ArrowRight,
   ArrowLeft,
   AlertCircle,
@@ -39,6 +45,26 @@ export default function CheckoutPage() {
   const [shippingDistrict, setShippingDistrict] = useState('');
   const [shippingAddress, setShippingAddress] = useState('');
   const [deliveryNotes, setDeliveryNotes] = useState('');
+
+  // Payment Methods State
+  const [paymentMethods, setPaymentMethods] = useState<PaymentMethodConfig[]>([]);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>('cod');
+  const [paymentReference, setPaymentReference] = useState('');
+  const [copiedAccount, setCopiedAccount] = useState(false);
+
+  useEffect(() => {
+    fetch('/api/payment-methods')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && Array.isArray(data.methods)) {
+          setPaymentMethods(data.methods);
+          const def = data.methods.find((m: PaymentMethodConfig) => m.isDefault);
+          if (def) setSelectedPaymentMethod(def.id);
+          else if (data.methods.length > 0) setSelectedPaymentMethod(data.methods[0].id);
+        }
+      })
+      .catch((err) => console.error('Failed to load payment methods:', err));
+  }, []);
 
   // Coupon State
   const [couponInput, setCouponInput] = useState('');
@@ -171,6 +197,8 @@ export default function CheckoutPage() {
         shippingAddress: fullDetailedAddress,
         shippingZoneId: activeZone.id,
         couponCode: appliedCoupon?.code,
+        paymentMethod: selectedPaymentMethod,
+        paymentReference: paymentReference.trim() || undefined,
         notes: deliveryNotes.trim() || undefined,
         items: items.map((i) => ({
           productId: i.product.id,
@@ -447,34 +475,136 @@ export default function CheckoutPage() {
                 </div>
               </div>
 
-              {/* Step 3: Payment Method (Cash on Delivery in Egypt) */}
+              {/* Step 3: Payment Method (Dynamic Egyptian Payment Rails) */}
               <div className="p-6 sm:p-8 bg-brand-charcoal border border-brand-border space-y-4">
                 <div className="flex items-center space-x-2 rtl:space-x-reverse border-b border-brand-border/60 pb-3">
                   <span className="w-6 h-6 rounded-full bg-brand-gold text-brand-black text-xs font-mono font-bold flex items-center justify-center">
                     3
                   </span>
                   <h2 className="font-sans font-bold text-base sm:text-lg uppercase tracking-wider">
-                    {language === 'ar' ? 'طريقة الدفع في مصر' : 'Payment Method (Egypt)'}
+                    {language === 'ar' ? 'اختر طريقة الدفع المناسبة' : 'Select Payment Method (Egypt)'}
                   </h2>
                 </div>
 
-                <div className="p-4 bg-brand-black border-2 border-brand-gold flex items-start space-x-3.5 rtl:space-x-reverse">
-                  <Banknote className="w-6 h-6 text-brand-gold flex-shrink-0 mt-0.5" />
-                  <div className="space-y-1">
-                    <div className="flex items-center space-x-2 rtl:space-x-reverse">
-                      <span className="font-sans font-bold text-sm text-brand-ivory">
-                        {language === 'ar' ? 'الدفع نقدياً عند الاستلام (COD)' : 'Cash on Delivery (COD)'}
-                      </span>
-                      <span className="text-[10px] font-mono bg-brand-gold text-brand-black px-2 py-0.5 font-bold uppercase">
-                        {language === 'ar' ? 'الجنيه المصري EGP' : 'EGP'}
-                      </span>
-                    </div>
-                    <p className="text-xs text-brand-cream/80 leading-relaxed font-light">
-                      {language === 'ar'
-                        ? 'ادفع نقداً لمندوب شركة الشحن عند استلام شحنتك وفحص العبوة في منزلك.'
-                        : 'Pay in Egyptian Pounds upon courier delivery directly to your residence.'}
-                    </p>
-                  </div>
+                <div className="space-y-3">
+                  {paymentMethods.map((method) => {
+                    const isSelected = selectedPaymentMethod === method.id;
+                    const getIcon = () => {
+                      switch (method.type) {
+                        case 'cash_on_delivery':
+                          return <Banknote className="w-5 h-5 text-brand-gold" />;
+                        case 'instapay':
+                          return <Smartphone className="w-5 h-5 text-emerald-400" />;
+                        case 'vodafone_cash':
+                          return <Smartphone className="w-5 h-5 text-rose-400" />;
+                        case 'credit_card':
+                          return <CreditCard className="w-5 h-5 text-blue-400" />;
+                        case 'bank_transfer':
+                          return <Building2 className="w-5 h-5 text-amber-400" />;
+                        default:
+                          return <Banknote className="w-5 h-5 text-brand-gold" />;
+                      }
+                    };
+
+                    return (
+                      <div
+                        key={method.id}
+                        onClick={() => setSelectedPaymentMethod(method.id)}
+                        className={`p-4 bg-brand-black border-2 transition-all cursor-pointer rounded-xs ${
+                          isSelected
+                            ? 'border-brand-gold bg-brand-stone/30 shadow-md'
+                            : 'border-brand-border/60 hover:border-brand-border opacity-85 hover:opacity-100'
+                        }`}
+                      >
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-start space-x-3.5 rtl:space-x-reverse">
+                            <div className="mt-0.5">{getIcon()}</div>
+                            <div className="space-y-1">
+                              <div className="flex items-center space-x-2 rtl:space-x-reverse">
+                                <span className="font-sans font-bold text-sm text-brand-ivory">
+                                  {language === 'ar' ? method.nameAr : method.nameEn}
+                                </span>
+                                {method.type === 'cash_on_delivery' && (
+                                  <span className="text-[10px] font-mono bg-brand-gold text-brand-black px-1.5 py-0.5 font-bold uppercase">
+                                    COD
+                                  </span>
+                                )}
+                                {method.type === 'instapay' && (
+                                  <span className="text-[10px] font-mono bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 px-1.5 py-0.5 font-bold">
+                                    InstaPay ⚡
+                                  </span>
+                                )}
+                                {method.type === 'vodafone_cash' && (
+                                  <span className="text-[10px] font-mono bg-rose-500/20 text-rose-400 border border-rose-500/40 px-1.5 py-0.5 font-bold">
+                                    Wallet 📱
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-xs text-brand-cream/70 leading-relaxed font-light">
+                                {language === 'ar' ? method.descriptionAr : method.descriptionEn}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center justify-center w-5 h-5 rounded-full border border-brand-border mt-0.5">
+                            {isSelected && <div className="w-2.5 h-2.5 rounded-full bg-brand-gold" />}
+                          </div>
+                        </div>
+
+                        {/* Expandable Payment Instructions & Transfer Details */}
+                        {isSelected && method.accountDetails && method.type !== 'cash_on_delivery' && (
+                          <div className="mt-4 pt-3.5 border-t border-brand-border/60 space-y-3 text-xs bg-brand-stone/40 p-3 rounded-xs font-sans">
+                            <div className="flex items-center justify-between">
+                              <span className="text-brand-cream/60 font-mono text-[11px] uppercase tracking-wider">
+                                {language === 'ar' ? 'بيانات التحويل المعتمدة:' : 'Official Transfer Destination:'}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (method.accountDetails) {
+                                    navigator.clipboard.writeText(method.accountDetails);
+                                    setCopiedAccount(true);
+                                    setTimeout(() => setCopiedAccount(false), 2000);
+                                  }
+                                }}
+                                className="flex items-center space-x-1 rtl:space-x-reverse text-[11px] font-mono text-brand-gold hover:underline"
+                              >
+                                {copiedAccount ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                                <span>{copiedAccount ? (language === 'ar' ? 'تم النسخ' : 'Copied') : (language === 'ar' ? 'نسخ' : 'Copy')}</span>
+                              </button>
+                            </div>
+
+                            <div className="p-2 bg-brand-black border border-brand-border font-mono text-xs text-brand-ivory font-bold tracking-wide select-all">
+                              {method.accountDetails}
+                            </div>
+
+                            {method.instructionsAr && (
+                              <p className="text-[11px] text-brand-cream/80 leading-relaxed">
+                                {language === 'ar' ? method.instructionsAr : method.instructionsEn}
+                              </p>
+                            )}
+
+                            <div>
+                              <label className="block text-[11px] font-mono text-brand-cream/80 mb-1">
+                                {language === 'ar'
+                                  ? 'رقم المعاملة / رقم المحفظة المحول منها (اختياري للتحقق السريع):'
+                                  : 'Transaction Reference or Sender Phone (Optional):'}
+                              </label>
+                              <input
+                                type="text"
+                                value={paymentReference}
+                                onChange={(e) => setPaymentReference(e.target.value)}
+                                onClick={(e) => e.stopPropagation()}
+                                placeholder={language === 'ar' ? 'مثال: 948201948 أو 010xxxxxxxx' : 'e.g. 948201948'}
+                                className="w-full bg-brand-black border border-brand-border px-3 py-2 text-xs text-brand-ivory placeholder-brand-muted focus:outline-none focus:border-brand-gold font-mono rounded-xs"
+                              />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             </div>
@@ -573,7 +703,7 @@ export default function CheckoutPage() {
 
                   <div className="flex justify-between items-center">
                     <span className="text-brand-cream/70">
-                      {language === 'ar' ? `شحن (${activeZone.nameAr}):` : `Shipping (${activeZone.nameEn}):`}
+                      {language === 'ar' ? `شحن تقديري (${activeZone.nameAr}):` : `Shipping (${activeZone.nameEn} · Provisional):`}
                     </span>
                     <span className="font-bold">
                       {isFreeShipping ? (

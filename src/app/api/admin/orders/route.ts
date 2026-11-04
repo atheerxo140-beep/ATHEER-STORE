@@ -6,14 +6,22 @@ import {
   OrderStatus,
   PaymentStatus,
 } from '@/data/localOrdersStore';
+import { verifyAdminRequest } from '@/lib/adminAuth';
+
+export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
+  const auth = await verifyAdminRequest(req);
+  if (!auth.authorized) {
+    return NextResponse.json({ success: false, error: auth.error }, { status: auth.statusCode });
+  }
+
   try {
     const { searchParams } = new URL(req.url);
     const status = searchParams.get('status');
     const paymentStatus = searchParams.get('paymentStatus');
     const search = searchParams.get('search')?.toLowerCase().trim();
-    const dateFilter = searchParams.get('date'); // 'today', 'week', 'month', 'all'
+    const dateFilter = searchParams.get('date');
 
     let orders = getAllLocalOrders();
 
@@ -61,6 +69,11 @@ export async function GET(req: NextRequest) {
 }
 
 export async function PUT(req: NextRequest) {
+  const auth = await verifyAdminRequest(req);
+  if (!auth.authorized) {
+    return NextResponse.json({ success: false, error: auth.error }, { status: auth.statusCode });
+  }
+
   try {
     const body = await req.json();
     const { id, orderStatus, paymentStatus, notes } = body;

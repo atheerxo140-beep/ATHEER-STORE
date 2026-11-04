@@ -29,6 +29,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [showDbInfo, setShowDbInfo] = useState(false);
   const [supabaseStatus, setSupabaseStatus] = useState<{ configured: boolean }>({ configured: false });
+  const [isVerifyingAuth, setIsVerifyingAuth] = useState(true);
 
   // If on /admin/login, don't show the dashboard shell
   const isLoginPage = pathname === '/admin/login';
@@ -36,15 +37,69 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   useEffect(() => {
     // Check if Supabase keys exist in public environment
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    const publishableKey =
+      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
     const isConfigured = Boolean(
-      url && anon && !url.includes('your-project-id') && !anon.includes('...')
+      url &&
+      publishableKey &&
+      !url.includes('your-project-id') &&
+      !url.includes('<') &&
+      !publishableKey.includes('...') &&
+      !publishableKey.includes('<')
     );
     setSupabaseStatus({ configured: isConfigured });
-  }, []);
+
+    if (isLoginPage) {
+      setIsVerifyingAuth(false);
+      return;
+    }
+
+    // Verify Admin Session Cookie or localStorage token
+    const hasCookie = typeof document !== 'undefined' && document.cookie.includes('atheer_admin_token=');
+    const hasLocal = typeof window !== 'undefined' && localStorage.getItem('atheer_admin_token');
+
+    if (!hasCookie && !hasLocal) {
+      // Unauthenticated: redirect to login
+      router.push('/admin/login');
+    } else {
+      setIsVerifyingAuth(false);
+    }
+  }, [pathname, isLoginPage, router]);
+
+  const handleLogout = async () => {
+    if (typeof document !== 'undefined') {
+      document.cookie = 'atheer_admin_token=; path=/; max-age=0; SameSite=Lax';
+    }
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('atheer_admin_token');
+    }
+
+    // If Supabase is connected, sign out from Supabase client
+    try {
+      const { getSupabaseClient } = await import('@/lib/supabaseClient');
+      const client = getSupabaseClient();
+      if (client) {
+        await client.auth.signOut();
+      }
+    } catch (e) {
+      // Ignore
+    }
+
+    router.push('/admin/login');
+  };
 
   if (isLoginPage) {
     return <div className="min-h-screen bg-brand-black text-brand-ivory">{children}</div>;
+  }
+
+  if (isVerifyingAuth) {
+    return (
+      <div className="min-h-screen bg-brand-black flex items-center justify-center font-mono text-xs text-brand-gold">
+        <ShieldCheck className="w-5 h-5 animate-pulse mr-2 rtl:ml-2" />
+        <span>Verifying Administrator Access...</span>
+      </div>
+    );
   }
 
   const menuItems = [
@@ -115,7 +170,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           >
             <span className="flex items-center space-x-1.5 rtl:space-x-reverse">
               <Database className="w-3.5 h-3.5" />
-              <span>{supabaseStatus.configured ? 'Supabase: Connected' : 'Supabase: Local Mode'}</span>
+              <span>{supabaseStatus.configured ? 'Supabase: Connected' : 'Supabase: Not Configured'}</span>
             </span>
             <span className="w-2 h-2 rounded-full bg-current animate-pulse" />
           </button>
@@ -131,6 +186,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <span>{language === 'ar' ? 'عرض المتجر للعملاء' : 'View Storefront'}</span>
             </span>
           </Link>
+
+          {/* Sign Out Button */}
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center justify-between p-2.5 text-xs text-rose-400/80 hover:text-rose-300 hover:bg-rose-950/20 font-mono border border-rose-900/30 transition-colors"
+          >
+            <span className="flex items-center space-x-2 rtl:space-x-reverse">
+              <LogOut className="w-3.5 h-3.5" />
+              <span>{language === 'ar' ? 'تسجيل الخروج' : 'Sign Out'}</span>
+            </span>
+          </button>
         </div>
       </aside>
 
@@ -166,81 +232,86 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               admin@atheer.store
             </span>
 
-            {/* Logout Link */}
-            <Link
-              href="/admin/login"
-              className="p-2 text-brand-muted hover:text-rose-400 transition-colors"
+            {/* Logout Button */}
+            <button
+              onClick={handleLogout}
+              className="p-2 text-brand-cream/60 hover:text-rose-400 transition-colors"
               title="Logout"
             >
               <LogOut className="w-4 h-4" />
-            </Link>
+            </button>
           </div>
         </header>
 
         {/* Database Status Modal */}
         {showDbInfo && (
-          <div className="p-4 bg-brand-black border-b border-brand-border text-xs font-mono animate-slide-down">
-            <div className="max-w-4xl mx-auto flex items-start justify-between">
-              <div className="flex items-start space-x-3 rtl:space-x-reverse">
-                <AlertTriangle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
-                <div className="space-y-1">
-                  <p className="font-bold text-brand-gold">
-                    {supabaseStatus.configured
-                      ? 'Production Supabase Database Connected'
-                      : 'Notice: Operating in Local Administrative Runtime'}
-                  </p>
-                  <p className="text-[11px] text-brand-cream/70 leading-relaxed font-sans">
-                    {supabaseStatus.configured
-                      ? 'Orders, products, inventory movements, and shipping zones are synchronized with your Supabase PostgreSQL cluster.'
-                      : 'Supabase project credentials have not yet been configured in `.env.local`. The dashboard is functioning with high-fidelity local memory storage. All migrations are ready in `supabase/migrations/`.'}
-                  </p>
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+            <div className="bg-brand-charcoal border border-brand-border w-full max-w-md p-6 rounded-sm shadow-2xl space-y-4">
+              <div className="flex items-center justify-between border-b border-brand-border/80 pb-3">
+                <div className="flex items-center space-x-2 rtl:space-x-reverse text-brand-gold font-mono text-xs uppercase font-bold">
+                  <Database className="w-4 h-4" />
+                  <span>Database & Authentication Status</span>
                 </div>
+                <button onClick={() => setShowDbInfo(false)} className="text-brand-cream/50 hover:text-brand-ivory">
+                  <X className="w-4 h-4" />
+                </button>
               </div>
-              <button
-                onClick={() => setShowDbInfo(false)}
-                className="text-brand-muted hover:text-brand-ivory p-1"
-              >
-                <X className="w-4 h-4" />
-              </button>
+
+              <div className="space-y-3 font-mono text-xs leading-relaxed">
+                <div className="p-3 bg-brand-stone/30 border border-brand-border rounded-xs">
+                  <span className="text-brand-cream/60 block text-[10px] uppercase">Supabase Cloud Connection:</span>
+                  <span className="font-bold text-brand-ivory">
+                    {supabaseStatus.configured ? 'Active (Cloud Database)' : 'Not Connected (Missing Credentials)'}
+                  </span>
+                </div>
+
+                <p className="text-brand-cream/70 text-[11px]">
+                  {supabaseStatus.configured
+                    ? 'All products, inventory logs, and customer orders persist directly in your Supabase PostgreSQL cluster.'
+                    : 'The application is running with in-memory development runtime stores. To achieve production persistence, supply NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY in your .env.local file.'}
+                </p>
+              </div>
+
+              <div className="pt-2 flex justify-end">
+                <button
+                  onClick={() => setShowDbInfo(false)}
+                  className="px-4 py-2 bg-brand-stone border border-brand-border text-brand-ivory text-xs font-mono rounded-xs"
+                >
+                  Close
+                </button>
+              </div>
             </div>
           </div>
         )}
 
-        {/* Page Content Viewport */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto">
-          {children}
-        </main>
+        {/* Page Content */}
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 min-w-0">{children}</main>
       </div>
 
-      {/* Mobile Sidebar Overlay */}
+      {/* Mobile Drawer */}
       {mobileSidebarOpen && (
-        <div className="fixed inset-0 z-50 lg:hidden">
+        <div className="fixed inset-0 z-50 lg:hidden flex">
           <div
-            className="fixed inset-0 bg-black/85 backdrop-blur-sm"
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm"
             onClick={() => setMobileSidebarOpen(false)}
           />
-
-          <div
-            className={`fixed inset-y-0 ${
-              isRtl ? 'right-0' : 'left-0'
-            } max-w-xs w-full bg-brand-charcoal border-r rtl:border-l rtl:border-r-0 border-brand-border shadow-2xl p-6 flex flex-col justify-between overflow-y-auto`}
-          >
+          <div className="relative w-72 bg-brand-charcoal border-r border-brand-border p-5 flex flex-col justify-between z-10 font-sans">
             <div>
-              <div className="flex items-center justify-between pb-6 border-b border-brand-border">
+              <div className="flex items-center justify-between pb-4 border-b border-brand-border/60 mb-6">
                 <div className="flex items-center space-x-2 rtl:space-x-reverse">
-                  <span className="font-sans font-black text-xl text-brand-ivory">ATHEER</span>
+                  <span className="font-bold text-lg text-brand-ivory">ATHEER</span>
                   <span className="text-brand-gold">/</span>
-                  <span className="font-arabic font-bold text-xl text-brand-gold">أثير</span>
+                  <span className="font-arabic font-bold text-lg text-brand-gold">أثير</span>
                 </div>
                 <button
                   onClick={() => setMobileSidebarOpen(false)}
-                  className="p-1 text-brand-ivory/80 hover:text-brand-gold"
+                  className="p-1 text-brand-cream/60 hover:text-brand-ivory"
                 >
-                  <X className="w-6 h-6" />
+                  <X className="w-5 h-5" />
                 </button>
               </div>
 
-              <nav className="py-6 space-y-2">
+              <nav className="space-y-1">
                 {menuItems.map((item) => {
                   const Icon = item.icon;
                   const isActive =
@@ -253,10 +324,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                       key={item.href}
                       href={item.href}
                       onClick={() => setMobileSidebarOpen(false)}
-                      className={`flex items-center space-x-3 rtl:space-x-reverse px-3.5 py-3 text-xs font-mono tracking-wider transition-all rounded-sm ${
+                      className={`flex items-center space-x-3 rtl:space-x-reverse px-3 py-2.5 text-xs font-mono rounded-sm ${
                         isActive
                           ? 'bg-brand-gold text-brand-black font-bold'
-                          : 'text-brand-cream/80 hover:text-brand-gold'
+                          : 'text-brand-cream/80 hover:bg-brand-stone/40'
                       }`}
                     >
                       <Icon className="w-4 h-4" />
@@ -267,14 +338,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               </nav>
             </div>
 
-            <div className="pt-6 border-t border-brand-border">
-              <Link
-                href="/"
-                target="_blank"
-                className="flex items-center justify-center py-3 text-xs text-brand-gold font-mono border border-brand-gold/60"
+            <div className="pt-4 border-t border-brand-border/60 space-y-2">
+              <button
+                onClick={handleLogout}
+                className="w-full flex items-center justify-center space-x-2 rtl:space-x-reverse py-2 border border-rose-900/40 text-rose-400 text-xs font-mono"
               >
-                <span>{language === 'ar' ? 'عرض المتجر' : 'View Storefront'}</span>
-              </Link>
+                <LogOut className="w-3.5 h-3.5" />
+                <span>{language === 'ar' ? 'تسجيل الخروج' : 'Sign Out'}</span>
+              </button>
             </div>
           </div>
         </div>

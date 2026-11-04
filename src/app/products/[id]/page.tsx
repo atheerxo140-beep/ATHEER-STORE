@@ -211,7 +211,9 @@ export default function ProductDetailPage() {
               <div className="p-4 bg-brand-charcoal/80 border border-brand-border mb-6 text-xs text-brand-ivory/90 space-y-2.5 font-sans">
                 <div className="flex justify-between border-b border-brand-border/40 pb-2">
                   <span className="text-brand-cream/60">{language === 'ar' ? 'مواصفات الوزن والكثافة:' : 'Density & Weight Spec:'}</span>
-                  <span className="text-brand-gold font-mono font-bold">{product.gsm} GSM</span>
+                  <span className="text-brand-gold font-mono font-bold">
+                    {product.gsm} GSM {language === 'ar' ? '(مواصفة مستهدفة)' : '(Target Spec)'}
+                  </span>
                 </div>
                 <div className="flex justify-between border-b border-brand-border/40 pb-2">
                   <span className="text-brand-cream/60">{language === 'ar' ? 'تركيبة النسيج:' : 'Composition:'}</span>

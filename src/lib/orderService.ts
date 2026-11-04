@@ -3,6 +3,7 @@ import { calculateShippingFee, getShippingZoneById, getZoneByGovernorate } from 
 import { getSupabaseServer, isSupabaseConfigured } from '@/lib/supabaseServer';
 import { localOrdersStore, saveLocalOrder, StoredOrder } from '@/data/localOrdersStore';
 import { getCouponByCode } from '@/data/couponsStore';
+import { addInventoryLog } from '@/data/inventoryLogsStore';
 
 export interface CreateOrderItemInput {
   productId: string;
@@ -23,6 +24,8 @@ export interface CreateOrderInput {
   shippingPostalCode?: string;
   shippingZoneId?: string;
   couponCode?: string;
+  paymentMethod?: string;
+  paymentReference?: string;
   notes?: string;
   items: CreateOrderItemInput[];
 }
@@ -107,8 +110,30 @@ export const createOrder = async (input: CreateOrderInput): Promise<OrderCreatio
     };
   }
 
+  // 5.1. Duplicate Order Prevention (Idempotency Guard within 60 seconds)
+  const nowMs = Date.now();
+  const existingDuplicate = localOrdersStore.find((o) => {
+    if (o.customerPhone !== phoneCheck.normalized) return false;
+    const orderAgeMs = nowMs - new Date(o.createdAt).getTime();
+    if (orderAgeMs > 60000) return false; // More than 60s ago
+    if (o.items.length !== input.items.length) return false;
+    return o.items.every(
+      (it, idx) =>
+        it.productId === input.items[idx]?.productId &&
+        it.selectedSize === input.items[idx]?.selectedSize
+    );
+  });
+
+  if (existingDuplicate) {
+    return {
+      success: true,
+      order: existingDuplicate,
+    };
+  }
+
   // 6. Validate Catalog Items & Compute Pricing Strictly on Server
   const validatedItems: StoredOrder['items'] = [];
+  const matchedProducts: { product: any; quantity: number }[] = [];
   let calculatedSubtotal = 0;
 
   for (const itemInput of input.items) {
@@ -139,6 +164,16 @@ export const createOrder = async (input: CreateOrderInput): Promise<OrderCreatio
       };
     }
 
+    // Check Inventory Availability
+    const currentStock = product.inventory ?? 0;
+    if (currentStock < itemInput.quantity) {
+      return {
+        success: false,
+        error: `Insufficient stock for "${product.nameEn}". Requested: ${itemInput.quantity}, Available: ${currentStock}.`,
+        errorAr: `المخزون المتوفر من "${product.nameAr}" غير كافٍ. الكمية المتاحة: ${currentStock}.`,
+      };
+    }
+
     if (!product.sizes.includes(itemInput.selectedSize)) {
       return {
         success: false,
@@ -164,6 +199,8 @@ export const createOrder = async (input: CreateOrderInput): Promise<OrderCreatio
       image: product.image,
       gsm: product.gsm,
     });
+
+    matchedProducts.push({ product, quantity: itemInput.quantity });
   }
 
   // 7. Calculate Shipping Fee Strictly on Server from Egyptian Zones
@@ -223,8 +260,12 @@ export const createOrder = async (input: CreateOrderInput): Promise<OrderCreatio
     couponCode: validatedCouponCode,
     totalAmount,
     currency: 'EGP',
-    paymentMethod: 'cash_on_delivery',
-    paymentStatus: 'pending_cod',
+    paymentMethod: input.paymentMethod || 'cash_on_delivery',
+    paymentReference: input.paymentReference?.trim(),
+    paymentStatus:
+      input.paymentMethod && input.paymentMethod !== 'cash_on_delivery'
+        ? 'pending_verification'
+        : 'pending_cod',
     orderStatus: 'confirmed',
     notes: input.notes?.trim(),
     items: validatedItems,
@@ -237,7 +278,7 @@ export const createOrder = async (input: CreateOrderInput): Promise<OrderCreatio
     const supabase = getSupabaseServer();
     if (supabase) {
       try {
-        const { data: orderData, error: orderError } = await supabase
+        let { data: orderData, error: orderError } = await supabase
           .from('orders')
           .insert({
             order_reference: orderReference,
@@ -253,13 +294,48 @@ export const createOrder = async (input: CreateOrderInput): Promise<OrderCreatio
             shipping_fee: newOrder.shippingFee,
             total_amount: newOrder.totalAmount,
             currency: 'EGP',
-            payment_method: 'cash_on_delivery',
-            payment_status: 'pending_cod',
+            payment_method: newOrder.paymentMethod,
+            payment_status: newOrder.paymentStatus,
             order_status: 'confirmed',
-            notes: newOrder.notes,
+            notes: newOrder.paymentReference
+              ? `${newOrder.notes ? newOrder.notes + ' · ' : ''}Ref: ${newOrder.paymentReference}`
+              : newOrder.notes,
           })
           .select('id')
           .single();
+
+        // Fallback for older database check constraints on payment_status
+        if (orderError && (orderError.code === '23514' || orderError.message?.includes('payment_status'))) {
+          console.warn('[Supabase Order] Check constraint fallback applied:', orderError.message);
+          const fallbackRes = await supabase
+            .from('orders')
+            .insert({
+              order_reference: orderReference,
+              customer_name: newOrder.customerName,
+              customer_phone: newOrder.customerPhone,
+              customer_email: newOrder.customerEmail,
+              shipping_country: 'Egypt',
+              shipping_city: newOrder.shippingCity,
+              shipping_address: newOrder.shippingAddress,
+              shipping_postal_code: newOrder.shippingPostalCode,
+              shipping_zone_id: newOrder.shippingZoneId,
+              subtotal: newOrder.subtotal,
+              shipping_fee: newOrder.shippingFee,
+              total_amount: newOrder.totalAmount,
+              currency: 'EGP',
+              payment_method: newOrder.paymentMethod,
+              payment_status: 'pending_cod',
+              order_status: 'confirmed',
+              notes: newOrder.paymentReference
+                ? `${newOrder.notes ? newOrder.notes + ' · ' : ''}Ref: ${newOrder.paymentReference} [Method: ${newOrder.paymentMethod}]`
+                : newOrder.notes,
+            })
+            .select('id')
+            .single();
+
+          orderData = fallbackRes.data;
+          orderError = fallbackRes.error;
+        }
 
         if (!orderError && orderData) {
           newOrder.id = orderData.id;
@@ -287,6 +363,28 @@ export const createOrder = async (input: CreateOrderInput): Promise<OrderCreatio
 
   // Always save in-memory / local runtime store
   saveLocalOrder(newOrder);
+
+  // Deduct Inventory Consistently and record movement logs
+  for (const item of matchedProducts) {
+    item.product.inventory = Math.max(0, (item.product.inventory ?? 0) - item.quantity);
+    addInventoryLog({
+      id: `inv_sale_${Date.now()}_${item.product.id}`,
+      productId: item.product.id,
+      productName: item.product.nameEn,
+      adjustment: -item.quantity,
+      newTotal: item.product.inventory,
+      reason: 'sale',
+      notes: `Order confirmed (${orderReference})`,
+      timestamp: nowIso,
+    });
+  }
+
+  // Production Persistence Alert
+  if (!isSupabaseConfigured() && process.env.NODE_ENV === 'production') {
+    console.error(
+      `[SECURITY/PERSISTENCE WARNING]: Order ${orderReference} saved only to temporary process memory. Real Supabase cloud database is required for production persistence!`
+    );
+  }
 
   return {
     success: true,

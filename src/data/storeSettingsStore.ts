@@ -5,12 +5,14 @@ export const defaultStoreSettings: StoreSettings = {
   storeNameAr: 'أثير',
   taglineEn: 'PREMIUM YOUTH STREETWEAR',
   taglineAr: 'أزياء الشارع الراقية للشباب',
-  whatsappNumber: '201000000000',
+  whatsappNumber: process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '',
   supportEmail: 'concierge@atheer.store',
-  supportPhone: '+20 10 0000 0000',
+  supportPhone: process.env.NEXT_PUBLIC_WHATSAPP_NUMBER
+    ? `+${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER}`
+    : 'Pending Official Assignment',
   defaultCurrency: 'EGP',
-  cairoShowroomsEn: 'New Cairo (Fifth Settlement) · Sheikh Zayed',
-  cairoShowroomsAr: 'القاهرة الجديدة (التجمع الخامس) · الشيخ زايد',
+  cairoShowroomsEn: 'Digital Flagship Atelier (Cairo, Egypt) · Seasonal Pop-ups Announced Per Drop',
+  cairoShowroomsAr: 'الأتيليه الرقمي (القاهرة، مصر) · مواقع المعارض المؤقتة تُعلن مع كل إصدار',
   socialInstagram: 'https://instagram.com/atheer.store',
   socialTiktok: 'https://tiktok.com/@atheer.store',
 };
@@ -18,6 +20,7 @@ export const defaultStoreSettings: StoreSettings = {
 const globalForSettings = global as unknown as { currentStoreSettings?: StoreSettings };
 export const currentStoreSettings: StoreSettings =
   globalForSettings.currentStoreSettings || { ...defaultStoreSettings };
+
 if (process.env.NODE_ENV !== 'production') {
   globalForSettings.currentStoreSettings = currentStoreSettings;
 }

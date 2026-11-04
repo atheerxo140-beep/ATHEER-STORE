@@ -77,6 +77,7 @@ export interface ShippingZone {
   estimatedDaysAr: string;
   codAvailable: boolean;
   isActive: boolean;
+  isProvisional?: boolean;
 }
 
 export interface Coupon {
@@ -91,6 +92,20 @@ export interface Coupon {
   timesUsed: number;
   isActive: boolean;
   createdAt: string;
+}
+
+export interface PaymentMethodConfig {
+  id: string;
+  nameEn: string;
+  nameAr: string;
+  type: 'cash_on_delivery' | 'instapay' | 'vodafone_cash' | 'credit_card' | 'bank_transfer' | 'custom';
+  descriptionEn: string;
+  descriptionAr: string;
+  accountDetails?: string;
+  instructionsEn?: string;
+  instructionsAr?: string;
+  isActive: boolean;
+  isDefault?: boolean;
 }
 
 export interface StoreSettings {

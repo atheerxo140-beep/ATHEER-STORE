@@ -1,8 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAllProducts, addProduct, updateProduct, deleteProduct } from '@/data/mockProducts';
 import { Product } from '@/types';
+import { verifyAdminRequest } from '@/lib/adminAuth';
 
-export async function GET() {
+export const dynamic = 'force-dynamic';
+
+export async function GET(req: NextRequest) {
+  const auth = await verifyAdminRequest(req);
+  if (!auth.authorized) {
+    return NextResponse.json({ success: false, error: auth.error }, { status: auth.statusCode });
+  }
+
   const products = getAllProducts();
   return NextResponse.json({
     success: true,
@@ -12,6 +20,11 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  const auth = await verifyAdminRequest(req);
+  if (!auth.authorized) {
+    return NextResponse.json({ success: false, error: auth.error }, { status: auth.statusCode });
+  }
+
   try {
     const body = (await req.json()) as Partial<Product>;
 
@@ -58,6 +71,11 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PUT(req: NextRequest) {
+  const auth = await verifyAdminRequest(req);
+  if (!auth.authorized) {
+    return NextResponse.json({ success: false, error: auth.error }, { status: auth.statusCode });
+  }
+
   try {
     const body = await req.json();
     const { id, ...updates } = body;
@@ -78,6 +96,11 @@ export async function PUT(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
+  const auth = await verifyAdminRequest(req);
+  if (!auth.authorized) {
+    return NextResponse.json({ success: false, error: auth.error }, { status: auth.statusCode });
+  }
+
   try {
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');

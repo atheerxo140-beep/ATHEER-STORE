@@ -29,9 +29,16 @@ export default function AdminLoginPage() {
 
   useEffect(() => {
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    const publishableKey =
+      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
     const hasKeys = Boolean(
-      url && anon && !url.includes('your-project-id') && !anon.includes('...')
+      url &&
+      publishableKey &&
+      !url.includes('your-project-id') &&
+      !url.includes('<') &&
+      !publishableKey.includes('...') &&
+      !publishableKey.includes('<')
     );
     setSupabaseConfigured(hasKeys);
   }, []);
@@ -41,24 +48,43 @@ export default function AdminLoginPage() {
     setLoading(true);
     setErrorMsg(null);
 
+    const isProd = process.env.NODE_ENV === 'production';
+
+    // In production, NEVER allow simulated login without Supabase credentials!
+    if (isProd && !supabaseConfigured) {
+      setErrorMsg(
+        isAr
+          ? 'تنبيه أمني: لا يمكن تفعيل لوحة الإدارة في بيئة الإنتاج دون ربط مفاتيح Supabase Auth وقاعدة البيانات السحابية. تم حظر التجاوز التجريبي تماماً.'
+          : 'CRITICAL SECURITY: Production mode requires real Supabase Auth credentials. Development bypass is strictly disabled.'
+      );
+      setLoading(false);
+      return;
+    }
+
     // If Supabase keys exist, attempt Supabase authentication
     if (supabaseConfigured) {
       try {
-        const { createClient } = await import('@supabase/supabase-js');
-        const supabase = createClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL!,
-          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-        );
+        const { getSupabaseClient } = await import('@/lib/supabaseClient');
+        const supabase = getSupabaseClient();
+        if (!supabase) {
+          setErrorMsg(isAr ? 'تعذر تهيئة اتصال Supabase' : 'Unable to initialize Supabase client.');
+          setLoading(false);
+          return;
+        }
         const { data, error } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
 
-        if (error) {
-          setErrorMsg(error.message);
+        if (error || !data.session) {
+          setErrorMsg(error?.message || 'Authentication failed');
           setLoading(false);
           return;
         }
+
+        const token = data.session.access_token;
+        document.cookie = `atheer_admin_token=${token}; path=/; max-age=86400; SameSite=Lax`;
+        localStorage.setItem('atheer_admin_token', token);
 
         router.push('/admin');
       } catch (err: any) {
@@ -66,10 +92,13 @@ export default function AdminLoginPage() {
         setLoading(false);
       }
     } else {
-      // Local runtime simulation: verified admin login
+      // Controlled Development Session Token (allowed strictly in non-production)
+      const devToken = 'dev-admin-session-atheer';
+      document.cookie = `atheer_admin_token=${devToken}; path=/; max-age=86400; SameSite=Lax`;
+      localStorage.setItem('atheer_admin_token', devToken);
       setTimeout(() => {
         router.push('/admin');
-      }, 500);
+      }, 400);
     }
   };
 
