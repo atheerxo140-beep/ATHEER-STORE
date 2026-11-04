@@ -10,7 +10,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ success: false, error: auth.error }, { status: auth.statusCode });
   }
 
-  const settings = getStoreSettings();
+  const settings = await getStoreSettings();
   return NextResponse.json({
     success: true,
     settings,
@@ -25,7 +25,7 @@ export async function PUT(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const updated = updateStoreSettings(body);
+    const updated = await updateStoreSettings(body);
     return NextResponse.json({
       success: true,
       settings: updated,

@@ -2,11 +2,13 @@
 
 import React, { useState } from 'react';
 import { useLanguage } from '@/context/LanguageContext';
+import { useStoreSettings } from '@/hooks/useStoreSettings';
 import { Flame, ArrowRight, ArrowLeft, Check, MapPin, Phone } from 'lucide-react';
 import Link from 'next/link';
 
 export const Footer: React.FC = () => {
   const { t, language, isRtl } = useLanguage();
+  const { settings } = useStoreSettings();
   const ArrowIcon = isRtl ? ArrowLeft : ArrowRight;
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
@@ -99,9 +101,9 @@ export const Footer: React.FC = () => {
               <p className="flex items-center space-x-2 rtl:space-x-reverse">
                 <Phone className="w-3.5 h-3.5 flex-shrink-0" />
                 <span>
-                  {process.env.NEXT_PUBLIC_WHATSAPP_NUMBER && !process.env.NEXT_PUBLIC_WHATSAPP_NUMBER.includes('0000')
-                    ? `+${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER} | concierge@atheer.store`
-                    : 'concierge@atheer.store · Line assignment in progress'}
+                  {settings.whatsappNumber && !settings.whatsappNumber.includes('0000')
+                    ? `+${settings.whatsappNumber} | ${settings.supportEmail || 'concierge@atheer.store'}`
+                    : (settings.supportEmail || 'concierge@atheer.store')}
                 </span>
               </p>
             </div>

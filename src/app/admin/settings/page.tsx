@@ -573,8 +573,10 @@ export default function AdminSettingsPage() {
                 placeholder="201000000000"
                 className="w-full bg-brand-stone/40 border border-brand-border px-3 py-2 text-brand-ivory rounded-sm focus:border-brand-gold focus:outline-none"
               />
-              <p className="text-[10px] text-brand-cream/50 mt-1">
-                e.g. 201000000000 (Egyptian WhatsApp link format)
+              <p className="text-[10px] text-brand-gold/70 mt-1">
+                {isAr
+                  ? 'اكتب رقمك العادي (مثال: 01012345678 أو 201012345678) وسيتم ربطه تلقائياً برابط الواتساب المباشر للعميل.'
+                  : 'Enter regular Egyptian mobile (010..., 011...) or international (201...) format.'}
               </p>
             </div>
 
