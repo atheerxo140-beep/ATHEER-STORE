@@ -20,6 +20,7 @@ import {
   X,
   ShieldCheck,
   AlertTriangle,
+  Image as ImageIcon,
 } from 'lucide-react';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -109,6 +110,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { labelEn: 'Inventory', labelAr: 'المخزون', href: '/admin/inventory', icon: Layers },
     { labelEn: 'Egypt Shipping', labelAr: 'شحن المحافظات', href: '/admin/shipping', icon: Truck },
     { labelEn: 'Coupons', labelAr: 'كوبونات الخصم', href: '/admin/coupons', icon: Tag },
+    { labelEn: 'Homepage CMS', labelAr: 'محتوى الواجهة والصور', href: '/admin/content', icon: ImageIcon },
     { labelEn: 'Store Settings', labelAr: 'إعدادات المتجر', href: '/admin/settings', icon: Settings },
   ];
 

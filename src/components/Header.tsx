@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useLanguage } from '@/context/LanguageContext';
 import { useCart } from '@/context/CartContext';
+import { useHomepageContent } from '@/hooks/useHomepageContent';
 import {
   ShoppingBag,
   Search,
@@ -16,7 +17,12 @@ import {
 
 export const Header: React.FC = () => {
   const { language, setLanguage, isRtl, t } = useLanguage();
+  const { content } = useHomepageContent();
   const { totalCount, setIsCartOpen } = useCart();
+  const isAr = language === 'ar';
+  const announcementText = isAr
+    ? content.announcementTextAr || t('announcementText')
+    : content.announcementTextEn || t('announcementText');
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -52,7 +58,7 @@ export const Header: React.FC = () => {
 
           <div className="mx-auto text-center font-medium tracking-wider text-[11px] text-brand-ivory flex items-center justify-center space-x-2 rtl:space-x-reverse">
             <Flame className="w-3.5 h-3.5 text-brand-gold flex-shrink-0" />
-            <span>{t('announcementText')}</span>
+            <span>{announcementText}</span>
           </div>
 
           {/* Quick Selectors */}

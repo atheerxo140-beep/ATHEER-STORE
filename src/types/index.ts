@@ -122,3 +122,40 @@ export interface StoreSettings {
   socialInstagram: string;
   socialTiktok: string;
 }
+
+export interface ShowcaseCategoryItem {
+  id: string;
+  titleEn: string;
+  titleAr: string;
+  descEn: string;
+  descAr: string;
+  tagEn: string;
+  tagAr: string;
+  image: string;
+  href: string;
+  isPrimary?: boolean;
+}
+
+export interface HomepageContent {
+  announcementTextEn: string;
+  announcementTextAr: string;
+  heroBadgeEn: string;
+  heroBadgeAr: string;
+  heroTitleEn: string;
+  heroTitleAr: string;
+  heroSubtitleEn: string;
+  heroSubtitleAr: string;
+  heroBgImage: string;
+  heroCtaPrimaryEn: string;
+  heroCtaPrimaryAr: string;
+  heroCtaSecondaryEn: string;
+  heroCtaSecondaryAr: string;
+  categoriesSubtitleEn: string;
+  categoriesSubtitleAr: string;
+  categoriesTitleEn: string;
+  categoriesTitleAr: string;
+  categoriesDescriptionEn: string;
+  categoriesDescriptionAr: string;
+  categories: ShowcaseCategoryItem[];
+  updatedAt?: string;
+}

@@ -2,11 +2,21 @@
 
 import React from 'react';
 import { useLanguage } from '@/context/LanguageContext';
+import { useHomepageContent } from '@/hooks/useHomepageContent';
 import { ArrowRight, ArrowLeft, Flame, Sparkles } from 'lucide-react';
 
 export const Hero: React.FC = () => {
   const { t, isRtl, language } = useLanguage();
+  const { content } = useHomepageContent();
+  const isAr = language === 'ar';
   const ArrowIcon = isRtl ? ArrowLeft : ArrowRight;
+
+  const bgImage = content.heroBgImage || 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?q=80&w=2200&auto=format&fit=crop';
+  const badge = isAr ? content.heroBadgeAr || t('heroBadge') : content.heroBadgeEn || t('heroBadge');
+  const title = isAr ? content.heroTitleAr || t('heroTitle') : content.heroTitleEn || t('heroTitle');
+  const subtitle = isAr ? content.heroSubtitleAr || t('heroSubtitle') : content.heroSubtitleEn || t('heroSubtitle');
+  const ctaPrimary = isAr ? content.heroCtaPrimaryAr || t('heroCtaPrimary') : content.heroCtaPrimaryEn || t('heroCtaPrimary');
+  const ctaSecondary = isAr ? content.heroCtaSecondaryAr || t('heroCtaSecondary') : content.heroCtaSecondaryEn || t('heroCtaSecondary');
 
   return (
     <section className="relative min-h-[92vh] flex items-center justify-center overflow-hidden bg-brand-black text-brand-ivory border-b border-brand-border/60">
@@ -15,7 +25,7 @@ export const Hero: React.FC = () => {
         <div
           className="w-full h-full bg-cover bg-[center_top_15%] sm:bg-center scale-105 transition-transform duration-1000 ease-out"
           style={{
-            backgroundImage: `url('https://images.unsplash.com/photo-1556905055-8f358a7a47b2?q=80&w=2200&auto=format&fit=crop')`,
+            backgroundImage: `url('${bgImage}')`,
           }}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-brand-black via-brand-black/80 to-brand-black/65" />
@@ -28,18 +38,18 @@ export const Hero: React.FC = () => {
         <div className="inline-flex items-center space-x-2 rtl:space-x-reverse px-4 py-1.5 rounded-full border border-brand-gold/50 bg-brand-black/80 backdrop-blur-md mb-6 shadow-gold animate-fade-in">
           <Flame className="w-3.5 h-3.5 text-brand-gold" />
           <span className="text-[10px] sm:text-xs font-mono tracking-[0.2em] uppercase text-brand-gold font-semibold">
-            {t('heroBadge')}
+            {badge}
           </span>
         </div>
 
         {/* Hero Title */}
-        <h1 className="font-sans font-black text-4xl sm:text-6xl md:text-7xl lg:text-8xl tracking-tight leading-[1.05] text-brand-ivory uppercase max-w-5xl">
-          {t('heroTitle')}
+        <h1 className="font-sans font-black text-4xl sm:text-6xl md:text-7xl lg:text-8xl tracking-tight leading-[1.05] text-brand-ivory uppercase max-w-5xl whitespace-pre-line">
+          {title}
         </h1>
 
         {/* Hero Subtitle */}
-        <p className="mt-6 sm:mt-8 max-w-2xl text-sm sm:text-base md:text-lg text-brand-cream/90 font-sans leading-relaxed tracking-wide font-light">
-          {t('heroSubtitle')}
+        <p className="mt-6 sm:mt-8 max-w-2xl text-sm sm:text-base md:text-lg text-brand-cream/90 font-sans leading-relaxed tracking-wide font-light whitespace-pre-line">
+          {subtitle}
         </p>
 
         {/* Flagship Hoodie Specification Chips */}
@@ -61,7 +71,7 @@ export const Hero: React.FC = () => {
             href="#products"
             className="w-full sm:w-auto inline-flex items-center justify-center px-9 py-4 bg-brand-gold text-brand-black text-xs uppercase tracking-[0.2em] font-bold hover:bg-brand-gold-hover transition-all duration-300 shadow-gold group font-mono"
           >
-            <span>{t('heroCtaPrimary')}</span>
+            <span>{ctaPrimary}</span>
             <ArrowIcon className="w-4 h-4 ml-2.5 rtl:mr-2.5 rtl:ml-0 transition-transform duration-300 group-hover:translate-x-1 rtl:group-hover:-translate-x-1" />
           </a>
 
@@ -69,7 +79,7 @@ export const Hero: React.FC = () => {
             href="#collections"
             className="w-full sm:w-auto inline-flex items-center justify-center px-9 py-4 border border-brand-ivory/40 text-brand-ivory hover:border-brand-gold hover:text-brand-gold bg-brand-black/60 backdrop-blur-sm text-xs uppercase tracking-[0.2em] font-semibold transition-all duration-300 font-mono"
           >
-            <span>{t('heroCtaSecondary')}</span>
+            <span>{ctaSecondary}</span>
           </a>
         </div>
 
