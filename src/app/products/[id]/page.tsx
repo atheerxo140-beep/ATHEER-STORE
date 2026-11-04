@@ -2,8 +2,8 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { notFound, useParams } from 'next/navigation';
-import { mockProducts } from '@/data/mockProducts';
+import { useParams } from 'next/navigation';
+import { mockProducts, currentProducts } from '@/data/mockProducts';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { CartDrawer } from '@/components/CartDrawer';
@@ -21,14 +21,15 @@ import {
   Ruler,
   ChevronRight,
   ChevronLeft,
-  Sparkles,
   Clock,
 } from 'lucide-react';
 
 export default function ProductDetailPage() {
   const params = useParams();
   const productId = params?.id as string;
-  const product = mockProducts.find((p) => p.id === productId);
+  const product =
+    currentProducts.find((p) => p.id === productId) ||
+    mockProducts.find((p) => p.id === productId);
 
   const { language, t, formatPrice, isRtl } = useLanguage();
   const { addItem } = useCart();
@@ -50,7 +51,7 @@ export default function ProductDetailPage() {
           </p>
           <Link
             href="/"
-            className="px-8 py-3.5 bg-brand-gold text-brand-black text-xs font-bold uppercase tracking-widest hover:bg-brand-gold-hover transition-colors"
+            className="px-8 py-3.5 bg-brand-gold text-brand-black text-xs font-bold uppercase tracking-widest hover:bg-brand-gold-hover transition-colors font-mono"
           >
             {language === 'ar' ? 'العودة للمتجر' : 'Return to Storefront'}
           </Link>
@@ -60,7 +61,7 @@ export default function ProductDetailPage() {
     );
   }
 
-  // State for gallery and variant selection
+  // Gallery & Variant State
   const galleryImages = [product.image, product.hoverImage];
   const [selectedImage, setSelectedImage] = useState(galleryImages[0]);
   const [selectedColor, setSelectedColor] = useState(product.colors[0] || 'Onyx');
@@ -80,7 +81,7 @@ export default function ProductDetailPage() {
     if (product.isComingSoon) {
       alert(
         language === 'ar'
-          ? 'هذه القطعة ضمن الإصدار القادم. انضم لقائمة الإطلاق لتصلك دعوة الشراء فور طرحها!'
+          ? 'هذه القطعة ضمن الإصدار القادم في مصر. انضم لقائمة الإطلاق لتصلك دعوة الشراء فور طرحها!'
           : 'This item is part of our upcoming drop. Join the Drop List to get notified on release!'
       );
       return;
@@ -197,11 +198,11 @@ export default function ProductDetailPage() {
                 <span className="text-xs uppercase tracking-wider text-emerald-400 font-mono font-medium ml-2 rtl:mr-2 rtl:ml-0">
                   {product.isComingSoon
                     ? language === 'ar' ? 'إصدار قادم' : 'Upcoming Drop'
-                    : language === 'ar' ? 'متوفر للشحن الفوري' : 'In Stock'}
+                    : language === 'ar' ? 'متوفر للشحن في مصر' : 'In Stock (Egypt)'}
                 </span>
               </div>
 
-              {/* Editorial Description */}
+              {/* Description */}
               <p className="text-sm text-brand-cream/85 font-sans leading-relaxed mb-6 font-light">
                 {description}
               </p>
@@ -209,7 +210,7 @@ export default function ProductDetailPage() {
               {/* Technical Streetwear Matrix */}
               <div className="p-4 bg-brand-charcoal/80 border border-brand-border mb-6 text-xs text-brand-ivory/90 space-y-2.5 font-sans">
                 <div className="flex justify-between border-b border-brand-border/40 pb-2">
-                  <span className="text-brand-cream/60">{language === 'ar' ? 'وزن القماش والكثافة:' : 'Fabric Weight & Density:'}</span>
+                  <span className="text-brand-cream/60">{language === 'ar' ? 'مواصفات الوزن والكثافة:' : 'Density & Weight Spec:'}</span>
                   <span className="text-brand-gold font-mono font-bold">{product.gsm} GSM</span>
                 </div>
                 <div className="flex justify-between border-b border-brand-border/40 pb-2">
@@ -276,7 +277,6 @@ export default function ProductDetailPage() {
                   ))}
                 </div>
 
-                {/* Size Guide Drawer */}
                 {showSizeGuide && (
                   <div className="mt-3 p-4 bg-brand-charcoal border border-brand-border text-xs font-mono text-brand-cream/80 animate-slide-down space-y-2">
                     <p className="font-bold text-brand-gold uppercase">
@@ -292,9 +292,8 @@ export default function ProductDetailPage() {
                 )}
               </div>
 
-              {/* Quantity Controls & Add to Cart */}
+              {/* Quantity & Add to Bag */}
               <div className="flex items-center gap-4 mb-8">
-                {/* Quantity */}
                 <div className="flex items-center border border-brand-border bg-brand-charcoal h-14 px-3">
                   <button
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
@@ -315,7 +314,6 @@ export default function ProductDetailPage() {
                   </button>
                 </div>
 
-                {/* Add to Bag Button */}
                 <button
                   onClick={handleAddToCart}
                   className={`flex-1 h-14 flex items-center justify-center space-x-2 rtl:space-x-reverse text-xs uppercase tracking-[0.2em] font-bold transition-all duration-300 shadow-gold ${
@@ -345,18 +343,18 @@ export default function ProductDetailPage() {
                 </button>
               </div>
 
-              {/* Trust & Guarantee Badges */}
+              {/* Trust & Guarantee Badges for Egypt */}
               <div className="pt-6 border-t border-brand-border/40 grid grid-cols-2 gap-4 text-xs text-brand-cream/70 font-sans">
                 <div className="flex items-center space-x-2.5 rtl:space-x-reverse">
                   <Truck className="w-4 h-4 text-brand-gold flex-shrink-0" />
                   <span>
-                    {language === 'ar' ? 'شحن سريع ودفع عند الاستلام' : 'Express Delivery & Cash on Delivery'}
+                    {language === 'ar' ? 'توصيل سريع ودفع عند الاستلام في مصر' : 'Fast Delivery & Cash on Delivery'}
                   </span>
                 </div>
                 <div className="flex items-center space-x-2.5 rtl:space-x-reverse">
                   <RotateCcw className="w-4 h-4 text-brand-gold flex-shrink-0" />
                   <span>
-                    {language === 'ar' ? 'استبدال مجاني للمقاس خلال ٧ أيام' : 'Complimentary 7-Day Size Exchange'}
+                    {language === 'ar' ? 'معاينة واستبدال المقاس عند الاستلام' : 'Inspection & 7-Day Size Exchange'}
                   </span>
                 </div>
               </div>

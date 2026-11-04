@@ -2,7 +2,8 @@
 
 import React, { useState } from 'react';
 import { useLanguage } from '@/context/LanguageContext';
-import { Flame, ArrowRight, ArrowLeft, Check, ShieldCheck, Mail, MapPin, Phone } from 'lucide-react';
+import { Flame, ArrowRight, ArrowLeft, Check, MapPin, Phone, UserCheck } from 'lucide-react';
+import Link from 'next/link';
 
 export const Footer: React.FC = () => {
   const { t, language, isRtl } = useLanguage();
@@ -89,11 +90,15 @@ export const Footer: React.FC = () => {
             <div className="pt-2 text-xs text-brand-gold space-y-1.5 font-mono">
               <p className="flex items-center space-x-2 rtl:space-x-reverse">
                 <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
-                <span>{language === 'ar' ? 'مقر الدار والتوزيع: الرياض · دبي' : 'Flagship & Fulfilment: Riyadh · Dubai'}</span>
+                <span>
+                  {language === 'ar'
+                    ? 'صالات العرض والتوزيع: القاهرة (التجمع الخامس) · الجيزة (الشيخ زايد)'
+                    : 'Showrooms & Flagship: New Cairo (Fifth Settlement) · Sheikh Zayed'}
+                </span>
               </p>
               <p className="flex items-center space-x-2 rtl:space-x-reverse">
                 <Phone className="w-3.5 h-3.5 flex-shrink-0" />
-                <span>+966 50 000 0000 | concierge@atheer.store</span>
+                <span>+20 10 0000 0000 | concierge@atheer.store</span>
               </p>
             </div>
           </div>
@@ -105,22 +110,22 @@ export const Footer: React.FC = () => {
             </h4>
             <ul className="space-y-3 text-xs text-brand-cream/70 font-light">
               <li>
-                <a href="#products" className="hover:text-brand-gold transition-colors font-medium text-brand-ivory">
+                <a href="/#products" className="hover:text-brand-gold transition-colors font-medium text-brand-ivory">
                   {language === 'ar' ? 'الهوديز الثقيلة 500 GSM (الأساسي)' : 'Core 500 GSM Hoodies'}
                 </a>
               </li>
               <li>
-                <a href="#products" className="hover:text-brand-gold transition-colors">
+                <a href="/#products" className="hover:text-brand-gold transition-colors">
                   {language === 'ar' ? 'سويت شيرتات الكرو نيك' : 'Atelier Crewneck Sweatshirts'}
                 </a>
               </li>
               <li>
-                <a href="#products" className="hover:text-brand-gold transition-colors">
+                <a href="/#products" className="hover:text-brand-gold transition-colors">
                   {language === 'ar' ? 'سويت شيرتات الهاف زيب' : 'Quarter-Zip Pullovers'}
                 </a>
               </li>
               <li>
-                <a href="#future-drop" className="hover:text-brand-gold transition-colors text-brand-gold/90 font-mono">
+                <a href="/#future-drop" className="hover:text-brand-gold transition-colors text-brand-gold/90 font-mono">
                   {language === 'ar' ? 'تي شيرتات 320 GSM (قريباً)' : '320 GSM Tees (Coming Soon)'}
                 </a>
               </li>
@@ -134,7 +139,7 @@ export const Footer: React.FC = () => {
             </h4>
             <ul className="space-y-3 text-xs text-brand-cream/70 font-light">
               <li>
-                <a href="#fabric-fit" className="hover:text-brand-gold transition-colors">
+                <a href="/#fabric-fit" className="hover:text-brand-gold transition-colors">
                   {language === 'ar' ? 'دليل مقاسات البوكسي أوفرسايز' : 'Boxy Oversized Size Guide'}
                 </a>
               </li>
@@ -144,47 +149,56 @@ export const Footer: React.FC = () => {
                 </span>
               </li>
               <li>
-                <a href="#fabric-fit" className="hover:text-brand-gold transition-colors">
+                <a href="/#fabric-fit" className="hover:text-brand-gold transition-colors">
                   {language === 'ar' ? 'إرشادات غسيل القطن الثقيل' : 'Heavy Cotton Care Guide'}
                 </a>
               </li>
               <li>
-                <a href="#products" className="hover:text-brand-gold transition-colors">
-                  {language === 'ar' ? 'سياسة الاستبدال السلس' : 'Seamless Exchange Policy'}
+                <a href="/#products" className="hover:text-brand-gold transition-colors">
+                  {language === 'ar' ? 'سياسة الاستبدال والمعاينة' : 'Inspection & Exchange Policy'}
                 </a>
               </li>
             </ul>
           </div>
 
-          {/* Links 3: The Brand */}
+          {/* Links 3: The Brand & Admin */}
           <div>
             <h4 className="font-sans font-bold text-xs uppercase tracking-widest text-brand-gold mb-5">
               {t('footerCol3')}
             </h4>
             <ul className="space-y-3 text-xs text-brand-cream/70 font-light">
               <li>
-                <a href="#about" className="hover:text-brand-gold transition-colors">
+                <a href="/#about" className="hover:text-brand-gold transition-colors">
                   {language === 'ar' ? 'فلسفة أثير للستريتوير' : 'The ATHEER Streetwear Story'}
                 </a>
               </li>
               <li>
-                <a href="#about" className="hover:text-brand-gold transition-colors">
-                  {language === 'ar' ? 'معايير أقمشة 500 GSM' : '500 GSM Fabric Standards'}
+                <a href="/#about" className="hover:text-brand-gold transition-colors">
+                  {language === 'ar' ? 'مواصفات أقمشة 500 GSM' : '500 GSM Fabric Standards'}
                 </a>
               </li>
               <li>
-                <a href="#about" className="hover:text-brand-gold transition-colors">
-                  {language === 'ar' ? 'مجتمع شباب أثير' : 'ATHEER Youth Community'}
+                <a href="/#about" className="hover:text-brand-gold transition-colors">
+                  {language === 'ar' ? 'مجتمع شباب أثير في مصر' : 'ATHEER Egypt Youth Club'}
                 </a>
+              </li>
+              <li>
+                <Link
+                  href="/admin"
+                  className="text-brand-gold/80 hover:text-brand-gold transition-colors flex items-center font-mono"
+                >
+                  <UserCheck className="w-3.5 h-3.5 mr-1 rtl:ml-1 rtl:mr-0 inline" />
+                  <span>{language === 'ar' ? 'بوابة إدارة المتجر' : 'Admin Portal'}</span>
+                </Link>
               </li>
             </ul>
           </div>
         </div>
 
-        {/* Delivery Countries Banner */}
+        {/* Egypt Delivery Coverage Banner */}
         <div className="mt-12 pt-8 border-t border-brand-border/40 text-center font-mono">
           <p className="text-[11px] text-brand-gold/85 uppercase tracking-wider">
-            {t('footerGCCDelivery')}
+            {t('footerEgyptDelivery')}
           </p>
         </div>
 
@@ -195,10 +209,11 @@ export const Footer: React.FC = () => {
           </div>
 
           <div className="flex items-center space-x-3 rtl:space-x-reverse text-[10px] tracking-wider uppercase font-mono text-brand-cream/70">
-            <span className="px-2.5 py-1 border border-brand-border bg-brand-charcoal text-brand-gold">Cash on Delivery</span>
-            <span className="px-2.5 py-1 border border-brand-border bg-brand-charcoal">Apple Pay</span>
-            <span className="px-2.5 py-1 border border-brand-border bg-brand-charcoal">Mada</span>
-            <span className="px-2.5 py-1 border border-brand-border bg-brand-charcoal">Visa / MC</span>
+            <span className="px-2.5 py-1 border border-brand-border bg-brand-charcoal text-brand-gold">
+              الدفع عند الاستلام (EGP)
+            </span>
+            <span className="px-2.5 py-1 border border-brand-border bg-brand-charcoal">Cash on Delivery</span>
+            <span className="px-2.5 py-1 border border-brand-border bg-brand-charcoal">POS Mobile Card</span>
           </div>
         </div>
       </div>

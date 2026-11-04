@@ -1,6 +1,35 @@
 export type Language = 'en' | 'ar';
 
-export type Currency = 'SAR' | 'AED' | 'USD';
+export type Currency = 'EGP';
+
+export type EgyptianGovernorate =
+  | 'Cairo'
+  | 'Giza'
+  | 'Alexandria'
+  | 'Qalyubia'
+  | 'Sharqia'
+  | 'Dakahlia'
+  | 'Beheira'
+  | 'Gharbia'
+  | 'Monufia'
+  | 'Kafr El Sheikh'
+  | 'Damietta'
+  | 'Port Said'
+  | 'Ismailia'
+  | 'Suez'
+  | 'Faiyum'
+  | 'Beni Suef'
+  | 'Minya'
+  | 'Asyut'
+  | 'Sohag'
+  | 'Qena'
+  | 'Luxor'
+  | 'Aswan'
+  | 'Red Sea'
+  | 'South Sinai'
+  | 'North Sinai'
+  | 'Matrouh'
+  | 'New Valley';
 
 export interface Product {
   id: string;
@@ -9,7 +38,7 @@ export interface Product {
   category: 'hoodies' | 'sweatshirts' | 'tshirts';
   categoryLabelEn: string;
   categoryLabelAr: string;
-  price: number; // in SAR
+  price: number; // in EGP
   originalPrice?: number;
   image: string;
   hoverImage: string;
@@ -17,9 +46,9 @@ export interface Product {
   badgeAr?: string;
   descriptionEn: string;
   descriptionAr: string;
-  gsm: number; // e.g. 500 GSM
-  fitEn: string; // e.g. "Boxy Oversized"
-  fitAr: string; // e.g. "قصّة بوكسي أوفرسايز"
+  gsm: number; // e.g. 500 GSM spec
+  fitEn: string;
+  fitAr: string;
   fabricEn: string;
   fabricAr: string;
   colors: string[];
@@ -27,6 +56,7 @@ export interface Product {
   isNewArrival?: boolean;
   isBestseller?: boolean;
   isComingSoon?: boolean;
+  inventory?: number;
 }
 
 export interface CartItem {
@@ -34,4 +64,46 @@ export interface CartItem {
   quantity: number;
   selectedSize: string;
   selectedColor?: string;
+}
+
+export interface ShippingZone {
+  id: string;
+  nameEn: string;
+  nameAr: string;
+  governorates: string[];
+  baseFee: number; // in EGP
+  freeShippingThreshold: number; // in EGP
+  estimatedDaysEn: string;
+  estimatedDaysAr: string;
+  codAvailable: boolean;
+  isActive: boolean;
+}
+
+export interface Coupon {
+  id: string;
+  code: string;
+  discountType: 'percentage' | 'fixed';
+  discountValue: number; // percentage (e.g. 10 for 10%) or fixed EGP (e.g. 100 for 100 EGP)
+  minOrderAmount?: number;
+  maxDiscountAmount?: number;
+  expiresAt?: string;
+  usageLimit?: number;
+  timesUsed: number;
+  isActive: boolean;
+  createdAt: string;
+}
+
+export interface StoreSettings {
+  storeNameEn: string;
+  storeNameAr: string;
+  taglineEn: string;
+  taglineAr: string;
+  whatsappNumber: string; // e.g. +20 10 0000 0000
+  supportEmail: string;
+  supportPhone: string;
+  defaultCurrency: Currency;
+  cairoShowroomsEn: string;
+  cairoShowroomsAr: string;
+  socialInstagram: string;
+  socialTiktok: string;
 }

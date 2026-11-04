@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getShippingZones, updateShippingZone } from '@/data/shippingZones';
 
-export async function GET() {
+export const dynamic = 'force-dynamic';
+
+export async function GET(_req: NextRequest) {
   const zones = getShippingZones();
   return NextResponse.json({
     success: true,

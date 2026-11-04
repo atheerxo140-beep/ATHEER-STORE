@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { useLanguage } from '@/context/LanguageContext';
 import { useCart } from '@/context/CartContext';
 import {
@@ -9,21 +10,19 @@ import {
   Menu,
   X,
   Globe,
-  ChevronDown,
-  Sparkles,
   Heart,
   Flame,
+  ShieldCheck,
+  UserCheck,
 } from 'lucide-react';
-import { Currency } from '@/types';
 
 export const Header: React.FC = () => {
-  const { language, setLanguage, currency, setCurrency, isRtl, t } = useLanguage();
+  const { language, setLanguage, isRtl, t } = useLanguage();
   const { totalCount, setIsCartOpen } = useCart();
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [currencyDropdownOpen, setCurrencyDropdownOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -33,19 +32,17 @@ export const Header: React.FC = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const currencies: Currency[] = ['SAR', 'AED', 'USD'];
-
   const navLinks = [
-    { label: t('navHoodies'), href: '#products', highlight: true },
-    { label: t('navSweatshirts'), href: '#products' },
-    { label: t('navTeesFuture'), href: '#future-drop' },
-    { label: t('navFitLab'), href: '#fabric-fit' },
-    { label: t('navBrand'), href: '#about' },
+    { label: t('navHoodies'), href: '/#products', highlight: true },
+    { label: t('navSweatshirts'), href: '/#products' },
+    { label: t('navTeesFuture'), href: '/#future-drop' },
+    { label: t('navFitLab'), href: '/#fabric-fit' },
+    { label: t('navBrand'), href: '/#about' },
   ];
 
   return (
     <>
-      {/* Top Streetwear Drop Announcement */}
+      {/* Top Announcement Bar — Egypt Delivery */}
       <div className="bg-brand-black text-brand-gold text-[11px] tracking-widest uppercase border-b border-brand-border/60 py-2.5 px-4 font-sans select-none">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="hidden md:flex items-center space-x-2 rtl:space-x-reverse text-brand-ivory/80 text-[10px] tracking-widest">
@@ -60,39 +57,24 @@ export const Header: React.FC = () => {
             <span>{t('announcementText')}</span>
           </div>
 
-          {/* Quick Selectors */}
+          {/* Quick Selectors & Admin Link */}
           <div className="hidden md:flex items-center space-x-4 rtl:space-x-reverse text-[11px]">
-            {/* Currency Picker */}
-            <div className="relative">
-              <button
-                onClick={() => setCurrencyDropdownOpen(!currencyDropdownOpen)}
-                className="flex items-center text-brand-ivory/80 hover:text-brand-gold transition-colors py-1"
-                aria-label="Select currency"
-              >
-                <span>{currency}</span>
-                <ChevronDown className="w-3 h-3 ml-1 rtl:mr-1 rtl:ml-0 opacity-70" />
-              </button>
-              {currencyDropdownOpen && (
-                <div className="absolute right-0 rtl:left-0 rtl:right-auto mt-1 w-24 bg-brand-charcoal border border-brand-border shadow-luxury-dark py-1 z-50 rounded-sm">
-                  {currencies.map((cur) => (
-                    <button
-                      key={cur}
-                      onClick={() => {
-                        setCurrency(cur);
-                        setCurrencyDropdownOpen(false);
-                      }}
-                      className={`w-full text-left rtl:text-right px-3 py-1.5 text-xs transition-colors ${
-                        currency === cur
-                          ? 'text-brand-gold font-semibold bg-brand-stone/40'
-                          : 'text-brand-ivory/80 hover:text-brand-gold hover:bg-brand-stone/20'
-                      }`}
-                    >
-                      {cur}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
+            {/* Currency Indicator (EGP Only) */}
+            <span className="font-mono text-brand-gold/90 font-bold px-2 py-0.5 bg-brand-charcoal border border-brand-border text-[10px]">
+              EGP | ج.م
+            </span>
+
+            <span className="text-brand-border">|</span>
+
+            {/* Admin Portal Link */}
+            <Link
+              href="/admin"
+              className="text-brand-cream/70 hover:text-brand-gold transition-colors flex items-center font-mono text-[11px]"
+              title="Admin Dashboard"
+            >
+              <UserCheck className="w-3.5 h-3.5 mr-1 rtl:ml-1 rtl:mr-0 inline" />
+              <span>{t('navAdmin')}</span>
+            </Link>
 
             <span className="text-brand-border">|</span>
 
@@ -109,7 +91,7 @@ export const Header: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Youth Streetwear Header */}
+      {/* Main Navigation Header */}
       <header
         className={`sticky top-0 z-40 transition-all duration-300 ${
           isScrolled
@@ -119,7 +101,7 @@ export const Header: React.FC = () => {
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
-            {/* Left: Mobile hamburger & Desktop Nav */}
+            {/* Left: Mobile menu & Desktop Nav */}
             <div className="flex items-center">
               <button
                 type="button"
@@ -132,7 +114,7 @@ export const Header: React.FC = () => {
 
               <nav className="hidden lg:flex items-center space-x-7 rtl:space-x-reverse">
                 {navLinks.map((link, idx) => (
-                  <a
+                  <Link
                     key={idx}
                     href={link.href}
                     className={`text-xs uppercase tracking-widest transition-colors font-medium relative group py-1 ${
@@ -147,14 +129,14 @@ export const Header: React.FC = () => {
                         link.highlight ? 'w-full' : 'w-0 group-hover:w-full'
                       }`}
                     />
-                  </a>
+                  </Link>
                 ))}
               </nav>
             </div>
 
-            {/* Center: Brand Mark (Modern, bold, minimalist) */}
+            {/* Center: Brand Identity */}
             <div className="text-center flex-1 lg:flex-none">
-              <a href="#" className="inline-block group">
+              <Link href="/" className="inline-block group">
                 <div className="flex items-center justify-center space-x-2.5 rtl:space-x-reverse">
                   <span className="font-sans font-black text-2xl sm:text-3xl tracking-[0.2em] text-brand-ivory uppercase group-hover:text-brand-gold transition-colors">
                     {t('brandName')}
@@ -167,7 +149,7 @@ export const Header: React.FC = () => {
                 <p className="text-[9px] sm:text-[10px] tracking-[0.3em] uppercase text-brand-cream/70 font-sans font-medium mt-0.5">
                   {t('brandTagline')}
                 </p>
-              </a>
+              </Link>
             </div>
 
             {/* Right: Actions */}
@@ -189,16 +171,16 @@ export const Header: React.FC = () => {
                 {language === 'en' ? 'عربي' : 'EN'}
               </button>
 
-              {/* Wishlist Icon */}
-              <a
-                href="#products"
+              {/* Wishlist */}
+              <Link
+                href="/#products"
                 className="hidden sm:inline-flex p-2 text-brand-ivory/80 hover:text-brand-gold transition-colors"
                 aria-label="Wishlist"
               >
                 <Heart className="w-5 h-5 stroke-[1.5]" />
-              </a>
+              </Link>
 
-              {/* Shopping Bag Icon with Badge */}
+              {/* Shopping Bag Button with Badge */}
               <button
                 onClick={() => setIsCartOpen(true)}
                 className="p-2 text-brand-ivory hover:text-brand-gold transition-colors relative flex items-center"
@@ -206,7 +188,7 @@ export const Header: React.FC = () => {
               >
                 <ShoppingBag className="w-5 h-5 stroke-[1.5]" />
                 {totalCount > 0 && (
-                  <span className="absolute -top-1 -right-1 rtl:-left-1 rtl:right-auto bg-brand-gold text-brand-black text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center animate-fade-in shadow-gold">
+                  <span className="absolute -top-1 -right-1 rtl:-left-1 rtl:right-auto bg-brand-gold text-brand-black text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center animate-fade-in shadow-gold font-mono">
                     {totalCount}
                   </span>
                 )}
@@ -215,7 +197,7 @@ export const Header: React.FC = () => {
           </div>
         </div>
 
-        {/* Search Bar Overlay */}
+        {/* Search Drawer */}
         {searchOpen && (
           <div className="border-t border-brand-border/60 bg-brand-charcoal/95 backdrop-blur-md px-4 py-4 animate-slide-down">
             <div className="max-w-3xl mx-auto flex items-center">
@@ -270,7 +252,7 @@ export const Header: React.FC = () => {
 
               <div className="py-6 space-y-4">
                 {navLinks.map((link, idx) => (
-                  <a
+                  <Link
                     key={idx}
                     href={link.href}
                     onClick={() => setMobileMenuOpen(false)}
@@ -279,28 +261,25 @@ export const Header: React.FC = () => {
                     }`}
                   >
                     {link.label}
-                  </a>
+                  </Link>
                 ))}
+
+                {/* Mobile Admin Link */}
+                <Link
+                  href="/admin"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block text-sm uppercase tracking-widest py-2 text-brand-gold font-mono border-b border-brand-border/30"
+                >
+                  {t('navAdmin')}
+                </Link>
               </div>
 
               <div className="pt-4 border-t border-brand-border space-y-4">
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-brand-muted uppercase tracking-wider">{t('currencyLabel')}</span>
-                  <div className="flex space-x-2 rtl:space-x-reverse">
-                    {currencies.map((cur) => (
-                      <button
-                        key={cur}
-                        onClick={() => setCurrency(cur)}
-                        className={`px-2.5 py-1 text-xs border ${
-                          currency === cur
-                            ? 'border-brand-gold text-brand-gold bg-brand-gold/10'
-                            : 'border-brand-border text-brand-ivory/60'
-                        }`}
-                      >
-                        {cur}
-                      </button>
-                    ))}
-                  </div>
+                  <span className="font-mono text-brand-gold font-bold px-2.5 py-1 bg-brand-charcoal border border-brand-border">
+                    EGP | ج.م
+                  </span>
                 </div>
 
                 <div className="flex items-center justify-between text-xs pt-2">
@@ -319,7 +298,7 @@ export const Header: React.FC = () => {
 
             <div className="pt-6 border-t border-brand-border text-xs text-brand-muted space-y-1">
               <p className="text-brand-gold font-mono font-medium">ATHEER YOUTH STREETWEAR</p>
-              <p className="text-[11px] text-brand-cream/70">500 GSM Heavyweight Drops across KSA & GCC.</p>
+              <p className="text-[11px] text-brand-cream/70">Heavyweight 500 GSM Drops Across Egypt.</p>
             </div>
           </div>
         </div>

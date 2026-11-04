@@ -49,13 +49,13 @@ export const CartDrawer: React.FC = () => {
             </button>
           </div>
 
-          {/* Complimentary Shipping Notice Banner */}
+          {/* Complimentary Shipping Notice Banner for Egypt */}
           <div className="bg-brand-black px-6 py-2.5 border-b border-brand-border/40 text-[11px] text-brand-gold flex items-center justify-center space-x-1.5 rtl:space-x-reverse font-mono">
             <Flame className="w-3.5 h-3.5 flex-shrink-0 text-brand-gold" />
             <span>
               {language === 'ar'
-                ? 'شحن سريع ومجاني للطلبات فوق 500 ر.س'
-                : 'Free GCC Express Delivery on orders 500+ SAR'}
+                ? 'شحن سريع لجميع محافظات مصر | الدفع عند الاستلام متاح'
+                : 'Fast Delivery Across Egypt | Cash on Delivery Available'}
             </span>
           </div>
 
@@ -153,7 +153,7 @@ export const CartDrawer: React.FC = () => {
                           </button>
                         </div>
 
-                        {/* Line Total */}
+                        {/* Line Total in EGP */}
                         <span className="font-mono text-sm text-brand-gold font-bold">
                           {formatPrice(item.product.price * item.quantity)}
                         </span>
@@ -179,8 +179,8 @@ export const CartDrawer: React.FC = () => {
 
               <p className="text-[11px] text-brand-cream/60 leading-relaxed font-sans">
                 {language === 'ar'
-                  ? 'يتم احتساب رسوم التوصيل وفق منطقتك وتأكيد خيار الدفع عند الاستلام في صفحة الدفع.'
-                  : 'Shipping fee and Cash on Delivery option confirmed at checkout.'}
+                  ? 'يتم احتساب رسوم التوصيل وفق محافظتك في مصر وتأكيد الدفع عند الاستلام.'
+                  : 'Courier shipping fees calculated by Egyptian governorate at checkout.'}
               </p>
 
               {/* Checkout Button */}

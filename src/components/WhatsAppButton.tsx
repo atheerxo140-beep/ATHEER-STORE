@@ -8,13 +8,18 @@ export const WhatsAppButton: React.FC = () => {
   const { language, t, isRtl } = useLanguage();
   const [isHovered, setIsHovered] = useState(false);
 
-  const whatsappNumber = '966500000000'; // ATHEER Maison official line
+  // Read configured WhatsApp from environment variable or default Egyptian support line
+  // Format: 201XXXXXXXXX (Egyptian international dialing format)
+  const configuredNumber =
+    process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '201000000000';
+  const cleanNumber = configuredNumber.replace(/[^0-9]/g, '');
+
   const whatsappMessage =
     language === 'ar'
-      ? 'مرحباً، أود الاستفسار عن تصاميم دار أثير وحجز موعد استشارة خاصة.'
-      : 'Greetings, I would like to inquire about the ATHEER Haute Couture collection and bespoke styling.';
+      ? 'مرحباً أثير مصر، أود الاستفسار عن مقاسات الهوديز وتفاصيل التوصيل داخل مصر.'
+      : 'Greetings ATHEER Egypt, I would like to inquire about hoodie sizing, fits, and delivery.';
 
-  const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(whatsappMessage)}`;
+  const whatsappUrl = `https://wa.me/${cleanNumber}?text=${encodeURIComponent(whatsappMessage)}`;
 
   return (
     <div
@@ -43,13 +48,13 @@ export const WhatsAppButton: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Circular Luxury Action Button */}
+      {/* Main Circular Action Button */}
       <a
         href={whatsappUrl}
         target="_blank"
         rel="noopener noreferrer"
         className="w-13 h-13 sm:w-14 sm:h-14 bg-brand-black border-2 border-brand-gold text-brand-gold hover:bg-brand-gold hover:text-brand-black transition-all duration-300 rounded-full flex items-center justify-center shadow-gold hover:scale-105 active:scale-95"
-        aria-label="Contact ATHEER VIP Stylist on WhatsApp"
+        aria-label="Contact ATHEER Egypt on WhatsApp"
       >
         <MessageCircle className="w-6 h-6 stroke-[1.8]" />
       </a>

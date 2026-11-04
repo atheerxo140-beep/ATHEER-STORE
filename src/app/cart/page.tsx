@@ -16,10 +16,8 @@ import {
   Minus,
   ArrowRight,
   ArrowLeft,
-  Truck,
   ShieldCheck,
   Flame,
-  Check,
 } from 'lucide-react';
 
 export default function CartPage() {
@@ -29,14 +27,14 @@ export default function CartPage() {
   const ArrowIcon = isRtl ? ArrowLeft : ArrowRight;
 
   const shippingZones = getShippingZones();
-  const [selectedZoneId, setSelectedZoneId] = useState(shippingZones[0]?.id || 'ksa-main');
+  const [selectedZoneId, setSelectedZoneId] = useState(shippingZones[0]?.id || 'cairo-giza');
 
   const { fee: shippingFee, isFree: isFreeShipping, zone: activeZone } = calculateShippingFee(
     selectedZoneId,
     subtotal
   );
 
-  const freeThreshold = activeZone?.freeShippingThreshold || 500;
+  const freeThreshold = activeZone?.freeShippingThreshold || 1800;
   const remainingForFreeShipping = Math.max(0, freeThreshold - subtotal);
   const progressPercent = Math.min(100, Math.round((subtotal / freeThreshold) * 100));
   const finalTotal = subtotal + shippingFee;
@@ -53,8 +51,8 @@ export default function CartPage() {
             </h1>
             <p className="text-xs text-brand-cream/70 font-mono mt-1">
               {language === 'ar'
-                ? `لديك ${totalCount} قطع في حقيبتك`
-                : `${totalCount} streetwear pieces in your bag`}
+                ? `لديك ${totalCount} قطع في حقيبتك (بالجنيه المصري EGP)`
+                : `${totalCount} streetwear pieces in your bag (EGP)`}
             </p>
           </div>
 
@@ -76,7 +74,7 @@ export default function CartPage() {
             </h2>
             <p className="text-xs sm:text-sm text-brand-cream/70 font-light leading-relaxed mb-8">
               {language === 'ar'
-                ? 'استكشف تشكيلة الهوديز الثقيلة بوزن 500 GSM والسويت شيرتات المصممة للشباب.'
+                ? 'استكشف تشكيلة الهوديز الثقيلة بوزن 500 GSM والسويت شيرتات المصممة للشباب في مصر.'
                 : 'Explore our launch collection of 500 GSM heavyweight hoodies and stylish sweatshirts.'}
             </p>
             <Link
@@ -97,7 +95,7 @@ export default function CartPage() {
                   <span className="flex items-center text-brand-gold font-bold">
                     <Flame className="w-4 h-4 mr-1.5 rtl:ml-1.5 rtl:mr-0 inline text-brand-gold" />
                     {isFreeShipping ? (
-                      language === 'ar' ? 'مؤهل للتوصيل المجاني!' : 'Unlocked Free Express Delivery!'
+                      language === 'ar' ? 'مؤهل للتوصيل المجاني داخل مصر!' : 'Unlocked Free Express Delivery in Egypt!'
                     ) : (
                       language === 'ar'
                         ? `أضف بقيمة ${formatPrice(remainingForFreeShipping)} للحصول على شحن مجاني!`
@@ -221,13 +219,13 @@ export default function CartPage() {
             <div className="lg:col-span-4">
               <div className="p-6 bg-brand-charcoal border border-brand-border sticky top-28 space-y-6">
                 <h3 className="font-sans font-bold text-base uppercase tracking-wider border-b border-brand-border pb-3">
-                  {language === 'ar' ? 'ملخص الطلب' : 'Order Summary'}
+                  {language === 'ar' ? 'ملخص الفاتورة (EGP)' : 'Order Summary (EGP)'}
                 </h3>
 
-                {/* Shipping Zone Selector */}
+                {/* Egyptian Shipping Zone Selector */}
                 <div>
                   <label className="block text-xs font-mono uppercase tracking-wider text-brand-cream/80 mb-2">
-                    {language === 'ar' ? 'منطقة الشحن والتوصيل:' : 'Select Delivery Zone:'}
+                    {language === 'ar' ? 'منطقة الشحن داخل مصر:' : 'Select Egypt Delivery Region:'}
                   </label>
                   <select
                     value={selectedZoneId}
@@ -236,8 +234,7 @@ export default function CartPage() {
                   >
                     {shippingZones.map((z) => (
                       <option key={z.id} value={z.id}>
-                        {language === 'ar' ? z.nameAr : z.nameEn} (
-                        {z.baseFee} {language === 'ar' ? 'ر.س' : 'SAR'})
+                        {language === 'ar' ? z.nameAr : z.nameEn} ({z.baseFee} ج.م)
                       </option>
                     ))}
                   </select>
@@ -257,7 +254,7 @@ export default function CartPage() {
 
                   <div className="flex justify-between items-center">
                     <span className="text-brand-cream/70">
-                      {language === 'ar' ? 'رسوم الشحن السريع:' : 'Express Shipping:'}
+                      {language === 'ar' ? 'رسوم الشحن:' : 'Courier Shipping:'}
                     </span>
                     <span className="font-bold">
                       {isFreeShipping ? (
@@ -280,16 +277,16 @@ export default function CartPage() {
                   </div>
                 </div>
 
-                {/* Payment method notice */}
+                {/* Payment notice */}
                 <div className="p-3 bg-brand-black border border-brand-border/80 text-[11px] text-brand-cream/80 space-y-1 font-sans">
                   <p className="text-brand-gold font-bold flex items-center">
                     <ShieldCheck className="w-3.5 h-3.5 mr-1.5 rtl:ml-1.5 rtl:mr-0 inline" />
-                    {language === 'ar' ? 'الدفع عند الاستلام (COD)' : 'Cash on Delivery (COD)'}
+                    {language === 'ar' ? 'الدفع نقدياً عند الاستلام (COD)' : 'Cash on Delivery (COD)'}
                   </p>
                   <p className="text-[10px] text-brand-cream/70 leading-relaxed">
                     {language === 'ar'
-                      ? 'ادفع نقداً أو عبر بطاقة مدى/Apple Pay لمندوب التوصيل عند استلام طلبك.'
-                      : 'Pay upon delivery via cash or card terminal directly to the courier.'}
+                      ? 'ادفع نقداً لمندوب شركة الشحن عند استلام وفحص طلبيتك في منزلك.'
+                      : 'Pay upon delivery via cash or card directly to the courier.'}
                   </p>
                 </div>
 

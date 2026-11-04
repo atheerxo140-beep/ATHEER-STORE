@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useLanguage } from '@/context/LanguageContext';
-import { ArrowRight, ArrowLeft, Flame, ShieldCheck, Sparkles, Layers } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Flame, Sparkles } from 'lucide-react';
 
 export const Hero: React.FC = () => {
   const { t, isRtl, language } = useLanguage();
@@ -18,7 +18,6 @@ export const Hero: React.FC = () => {
             backgroundImage: `url('https://images.unsplash.com/photo-1556905055-8f358a7a47b2?q=80&w=2200&auto=format&fit=crop')`,
           }}
         />
-        {/* Layered streetwear darkness vignette for ultra sharp text legibility */}
         <div className="absolute inset-0 bg-gradient-to-t from-brand-black via-brand-black/80 to-brand-black/65" />
         <div className="absolute inset-0 bg-radial-gradient from-transparent via-brand-black/50 to-brand-black/90" />
       </div>
@@ -38,7 +37,7 @@ export const Hero: React.FC = () => {
           {t('heroTitle')}
         </h1>
 
-        {/* Hero Subtitle focusing on Heavyweight Fabric & Fit */}
+        {/* Hero Subtitle */}
         <p className="mt-6 sm:mt-8 max-w-2xl text-sm sm:text-base md:text-lg text-brand-cream/90 font-sans leading-relaxed tracking-wide font-light">
           {t('heroSubtitle')}
         </p>
@@ -46,13 +45,13 @@ export const Hero: React.FC = () => {
         {/* Flagship Hoodie Specification Chips */}
         <div className="mt-8 flex flex-wrap items-center justify-center gap-2 sm:gap-3 text-[11px] font-mono text-brand-gold uppercase tracking-wider">
           <span className="px-3 py-1 bg-brand-charcoal/90 border border-brand-gold/40">
-            {language === 'ar' ? 'وزن القماش: 500 GSM' : 'Fabric: 500 GSM French Terry'}
+            {language === 'ar' ? 'مواصفات النسيج: 500 GSM' : 'Fabric: 500 GSM Spec Fleece'}
           </span>
           <span className="px-3 py-1 bg-brand-charcoal/90 border border-brand-border">
             {language === 'ar' ? 'قصّة: بوكسي أكتاف ساقطة' : 'Fit: Drop-Shoulder Boxy'}
           </span>
           <span className="px-3 py-1 bg-brand-charcoal/90 border border-brand-border">
-            {language === 'ar' ? 'هودي مزدوج بدون حبال' : 'Seamless Double Hood'}
+            {language === 'ar' ? 'توصيل ودفع عند الاستلام في مصر' : 'COD Delivery Across Egypt'}
           </span>
         </div>
 
@@ -60,21 +59,21 @@ export const Hero: React.FC = () => {
         <div className="mt-10 sm:mt-12 flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 w-full max-w-md sm:max-w-none">
           <a
             href="#products"
-            className="w-full sm:w-auto inline-flex items-center justify-center px-9 py-4 bg-brand-gold text-brand-black text-xs uppercase tracking-[0.2em] font-bold hover:bg-brand-gold-hover transition-all duration-300 shadow-gold group"
+            className="w-full sm:w-auto inline-flex items-center justify-center px-9 py-4 bg-brand-gold text-brand-black text-xs uppercase tracking-[0.2em] font-bold hover:bg-brand-gold-hover transition-all duration-300 shadow-gold group font-mono"
           >
             <span>{t('heroCtaPrimary')}</span>
             <ArrowIcon className="w-4 h-4 ml-2.5 rtl:mr-2.5 rtl:ml-0 transition-transform duration-300 group-hover:translate-x-1 rtl:group-hover:-translate-x-1" />
           </a>
 
           <a
-            href="#sweatshirts"
-            className="w-full sm:w-auto inline-flex items-center justify-center px-9 py-4 border border-brand-ivory/40 text-brand-ivory hover:border-brand-gold hover:text-brand-gold bg-brand-black/60 backdrop-blur-sm text-xs uppercase tracking-[0.2em] font-semibold transition-all duration-300"
+            href="#collections"
+            className="w-full sm:w-auto inline-flex items-center justify-center px-9 py-4 border border-brand-ivory/40 text-brand-ivory hover:border-brand-gold hover:text-brand-gold bg-brand-black/60 backdrop-blur-sm text-xs uppercase tracking-[0.2em] font-semibold transition-all duration-300 font-mono"
           >
             <span>{t('heroCtaSecondary')}</span>
           </a>
         </div>
 
-        {/* 3 Pillars of ATHEER Heavyweight Streetwear */}
+        {/* 3 Pillars of ATHEER Heavyweight Streetwear in Egypt */}
         <div className="mt-16 sm:mt-20 pt-10 border-t border-brand-border/40 grid grid-cols-3 gap-6 sm:gap-12 w-full max-w-3xl">
           <div className="flex flex-col items-center text-center">
             <span className="font-sans font-black text-xl sm:text-3xl text-brand-gold tracking-tight">
@@ -105,7 +104,6 @@ export const Hero: React.FC = () => {
         </div>
       </div>
 
-      {/* Subtle Matte Gold Horizon Line */}
       <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-brand-gold/40 to-transparent" />
     </section>
   );

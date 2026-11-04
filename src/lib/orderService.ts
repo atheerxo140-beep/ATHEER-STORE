@@ -1,7 +1,8 @@
-import { mockProducts } from '@/data/mockProducts';
-import { calculateShippingFee, getShippingZoneById } from '@/data/shippingZones';
+import { mockProducts, currentProducts } from '@/data/mockProducts';
+import { calculateShippingFee, getShippingZoneById, getZoneByGovernorate } from '@/data/shippingZones';
 import { getSupabaseServer, isSupabaseConfigured } from '@/lib/supabaseServer';
 import { localOrdersStore, saveLocalOrder, StoredOrder } from '@/data/localOrdersStore';
+import { getCouponByCode } from '@/data/couponsStore';
 
 export interface CreateOrderItemInput {
   productId: string;
@@ -14,11 +15,14 @@ export interface CreateOrderInput {
   customerName: string;
   customerPhone: string;
   customerEmail?: string;
-  shippingCountry: string;
+  shippingCountry?: string; // defaults to 'Egypt'
+  governorate: string; // e.g. 'Cairo', 'Giza', 'Alexandria'
   shippingCity: string;
-  shippingAddress: string;
+  shippingDistrict?: string;
+  shippingAddress: string; // Street name, building number, apartment
   shippingPostalCode?: string;
-  shippingZoneId: string;
+  shippingZoneId?: string;
+  couponCode?: string;
   notes?: string;
   items: CreateOrderItemInput[];
 }
@@ -30,42 +34,71 @@ export interface OrderCreationResult {
   errorAr?: string;
 }
 
+// Egyptian Mobile Number Validator: Accepts 010..., 011..., 012..., 015... (11 digits) or +2010... (12-13 digits)
+export const validateEgyptianPhone = (phone: string): { isValid: boolean; normalized: string } => {
+  const digitsOnly = phone.replace(/[\s\-\(\)\+]/g, '');
+
+  // Case 1: Standard local 11-digit mobile: 01012345678, 011..., 012..., 015...
+  if (/^01[0125][0-9]{8}$/.test(digitsOnly)) {
+    return { isValid: true, normalized: digitsOnly };
+  }
+
+  // Case 2: International format: 2010..., 2011..., 2012..., 2015...
+  if (/^201[0125][0-9]{8}$/.test(digitsOnly)) {
+    const localFormat = '0' + digitsOnly.slice(2);
+    return { isValid: true, normalized: localFormat };
+  }
+
+  return { isValid: false, normalized: phone };
+};
+
 export const createOrder = async (input: CreateOrderInput): Promise<OrderCreationResult> => {
-  // 1. Basic Customer Information Validation
+  // 1. Validate Customer Name
   if (!input.customerName || input.customerName.trim().length < 3) {
     return {
       success: false,
-      error: 'Please provide a valid full name (at least 3 characters).',
-      errorAr: 'يرجى إدخال الاسم الكامل بشكل صحيح (٣ أحرف على الأقل).',
+      error: 'Please enter a valid full name (at least 3 characters).',
+      errorAr: 'يرجى إدخال الاسم بالكامل بشكل صحيح (٣ أحرف على الأقل).',
     };
   }
 
-  const cleanPhone = input.customerPhone ? input.customerPhone.replace(/[\s\-\(\)]/g, '') : '';
-  if (!cleanPhone || cleanPhone.length < 8) {
+  // 2. Validate Egyptian Mobile Phone Number
+  const phoneCheck = validateEgyptianPhone(input.customerPhone || '');
+  if (!phoneCheck.isValid) {
     return {
       success: false,
-      error: 'Please provide a valid mobile phone number for courier delivery.',
-      errorAr: 'يرجى إدخال رقم جوال صحيح للتنسيق مع مندوب التوصيل.',
+      error: 'Please provide a valid Egyptian mobile number (e.g. 010xxxxxxxx, 011xxxxxxxx, 012xxxxxxxx, or 015xxxxxxxx).',
+      errorAr: 'يرجى إدخال رقم هاتف محمول مصري صحيح يبدأ بـ 010 أو 011 أو 012 أو 015 ومكون من ١١ رقماً.',
     };
   }
 
+  // 3. Validate Egyptian Governorate
+  if (!input.governorate || input.governorate.trim().length < 2) {
+    return {
+      success: false,
+      error: 'Please select an Egyptian governorate for delivery.',
+      errorAr: 'يرجى اختيار المحافظة لتحديد مسار التوصيل.',
+    };
+  }
+
+  // 4. Validate City & Address
   if (!input.shippingCity || input.shippingCity.trim().length < 2) {
     return {
       success: false,
-      error: 'Please provide a valid delivery city.',
-      errorAr: 'يرجى إدخال اسم المدينة بشكل صحيح.',
+      error: 'Please enter your city / area.',
+      errorAr: 'يرجى إدخال المدينة أو المنطقة.',
     };
   }
 
   if (!input.shippingAddress || input.shippingAddress.trim().length < 5) {
     return {
       success: false,
-      error: 'Please provide a detailed delivery address (district, street, house/building).',
-      errorAr: 'يرجى إدخال تفاصيل العنوان (الحي، الشارع، المبنى) بدقة.',
+      error: 'Please provide a detailed street address, building number, and apartment details.',
+      errorAr: 'يرجى إدخال تفاصيل العنوان (الشارع، رقم العمارة، رقم الشقة) لضمان دقة التوصيل.',
     };
   }
 
-  // 2. Validate Items Array
+  // 5. Validate Items
   if (!input.items || !Array.isArray(input.items) || input.items.length === 0) {
     return {
       success: false,
@@ -74,26 +107,26 @@ export const createOrder = async (input: CreateOrderInput): Promise<OrderCreatio
     };
   }
 
-  // 3. Validate Each Item Against Official Server Catalog & Prevent Price Tampering
+  // 6. Validate Catalog Items & Compute Pricing Strictly on Server
   const validatedItems: StoredOrder['items'] = [];
   let calculatedSubtotal = 0;
 
   for (const itemInput of input.items) {
-    // Check quantity validity
     if (!itemInput.quantity || itemInput.quantity <= 0 || !Number.isInteger(itemInput.quantity)) {
       return {
         success: false,
-        error: `Invalid quantity for item ${itemInput.productId}. Quantity must be a positive integer.`,
-        errorAr: 'الكمية المحددة غير صحيحة، يجب أن تكون عدداً صحيحاً أكبر من الصفر.',
+        error: `Invalid quantity for item ${itemInput.productId}. Must be a positive integer.`,
+        errorAr: 'الكمية المحددة غير صحيحة.',
       };
     }
 
-    // Look up product strictly on server
-    const product = mockProducts.find((p) => p.id === itemInput.productId);
+    const product = currentProducts.find((p) => p.id === itemInput.productId) ||
+      mockProducts.find((p) => p.id === itemInput.productId);
+
     if (!product) {
       return {
         success: false,
-        error: `Product ID "${itemInput.productId}" was not found in the catalog.`,
+        error: `Product "${itemInput.productId}" not found.`,
         errorAr: `المنتج برمز "${itemInput.productId}" غير موجود.`,
       };
     }
@@ -106,7 +139,6 @@ export const createOrder = async (input: CreateOrderInput): Promise<OrderCreatio
       };
     }
 
-    // Validate size
     if (!product.sizes.includes(itemInput.selectedSize)) {
       return {
         success: false,
@@ -115,18 +147,8 @@ export const createOrder = async (input: CreateOrderInput): Promise<OrderCreatio
       };
     }
 
-    // Validate color
     const selectedColor = itemInput.selectedColor || product.colors[0] || 'Default';
-    if (product.colors.length > 0 && !product.colors.includes(selectedColor)) {
-      return {
-        success: false,
-        error: `Color "${selectedColor}" is not available for "${product.nameEn}".`,
-        errorAr: `اللون "${selectedColor}" غير متوفر للقطعة "${product.nameAr}".`,
-      };
-    }
-
-    // Unit price is strictly taken from server product.price
-    const unitPrice = product.price;
+    const unitPrice = product.price; // Taken strictly from server product model
     const totalPrice = unitPrice * itemInput.quantity;
     calculatedSubtotal += totalPrice;
 
@@ -144,33 +166,51 @@ export const createOrder = async (input: CreateOrderInput): Promise<OrderCreatio
     });
   }
 
-  // 4. Validate Shipping Zone & Calculate Server Shipping Fee
-  const zone = getShippingZoneById(input.shippingZoneId);
-  if (!zone) {
-    return {
-      success: false,
-      error: `Invalid shipping zone selected: "${input.shippingZoneId}".`,
-      errorAr: 'المنطقة المحددة للشحن غير صحيحة.',
-    };
-  }
+  // 7. Calculate Shipping Fee Strictly on Server from Egyptian Zones
+  const zone = input.shippingZoneId
+    ? getShippingZoneById(input.shippingZoneId) || getZoneByGovernorate(input.governorate)
+    : getZoneByGovernorate(input.governorate);
 
   const { fee: calculatedShippingFee } = calculateShippingFee(zone.id, calculatedSubtotal);
-  const totalAmount = calculatedSubtotal + calculatedShippingFee;
 
-  // 5. Generate Unique Order Reference
+  // 8. Server-Side Coupon Discount Calculation
+  let discountAmount = 0;
+  let validatedCouponCode: string | undefined = undefined;
+
+  if (input.couponCode && input.couponCode.trim()) {
+    const coupon = getCouponByCode(input.couponCode.trim());
+    if (coupon) {
+      if (!coupon.minOrderAmount || calculatedSubtotal >= coupon.minOrderAmount) {
+        if (coupon.discountType === 'percentage') {
+          discountAmount = Math.round((calculatedSubtotal * coupon.discountValue) / 100);
+          if (coupon.maxDiscountAmount && discountAmount > coupon.maxDiscountAmount) {
+            discountAmount = coupon.maxDiscountAmount;
+          }
+        } else {
+          discountAmount = Math.min(coupon.discountValue, calculatedSubtotal);
+        }
+        validatedCouponCode = coupon.code;
+        coupon.timesUsed += 1;
+      }
+    }
+  }
+
+  const totalAmount = Math.max(0, calculatedSubtotal + calculatedShippingFee - discountAmount);
+
+  // 9. Generate Unique Order Reference
   const randomSuffix = Math.floor(1000 + Math.random() * 9000);
-  const orderReference = `ATH-2026-${randomSuffix}`;
+  const orderReference = `ATH-EG-${randomSuffix}`;
   const nowIso = new Date().toISOString();
-  const orderId = `ord_${Date.now()}_${randomSuffix}`;
+  const orderId = `ord_eg_${Date.now()}_${randomSuffix}`;
 
-  // 6. Build the Final Order Record
   const newOrder: StoredOrder = {
     id: orderId,
     orderReference,
     customerName: input.customerName.trim(),
-    customerPhone: cleanPhone,
+    customerPhone: phoneCheck.normalized,
     customerEmail: input.customerEmail?.trim(),
-    shippingCountry: input.shippingCountry,
+    shippingCountry: 'Egypt',
+    governorate: input.governorate,
     shippingCity: input.shippingCity.trim(),
     shippingAddress: input.shippingAddress.trim(),
     shippingPostalCode: input.shippingPostalCode?.trim(),
@@ -179,8 +219,10 @@ export const createOrder = async (input: CreateOrderInput): Promise<OrderCreatio
     shippingZoneNameAr: zone.nameAr,
     subtotal: calculatedSubtotal,
     shippingFee: calculatedShippingFee,
+    discountAmount: discountAmount > 0 ? discountAmount : undefined,
+    couponCode: validatedCouponCode,
     totalAmount,
-    currency: 'SAR',
+    currency: 'EGP',
     paymentMethod: 'cash_on_delivery',
     paymentStatus: 'pending_cod',
     orderStatus: 'confirmed',
@@ -190,7 +232,7 @@ export const createOrder = async (input: CreateOrderInput): Promise<OrderCreatio
     backendStorage: 'local_database',
   };
 
-  // 7. Persist to Supabase if configured
+  // 9. Persist to Supabase if configured
   if (isSupabaseConfigured()) {
     const supabase = getSupabaseServer();
     if (supabase) {
@@ -202,7 +244,7 @@ export const createOrder = async (input: CreateOrderInput): Promise<OrderCreatio
             customer_name: newOrder.customerName,
             customer_phone: newOrder.customerPhone,
             customer_email: newOrder.customerEmail,
-            shipping_country: newOrder.shippingCountry,
+            shipping_country: 'Egypt',
             shipping_city: newOrder.shippingCity,
             shipping_address: newOrder.shippingAddress,
             shipping_postal_code: newOrder.shippingPostalCode,
@@ -210,22 +252,19 @@ export const createOrder = async (input: CreateOrderInput): Promise<OrderCreatio
             subtotal: newOrder.subtotal,
             shipping_fee: newOrder.shippingFee,
             total_amount: newOrder.totalAmount,
-            currency: newOrder.currency,
-            payment_method: newOrder.paymentMethod,
-            payment_status: newOrder.paymentStatus,
-            order_status: newOrder.orderStatus,
+            currency: 'EGP',
+            payment_method: 'cash_on_delivery',
+            payment_status: 'pending_cod',
+            order_status: 'confirmed',
             notes: newOrder.notes,
           })
           .select('id')
           .single();
 
-        if (orderError) {
-          console.error('[Supabase Order Insert Error]', orderError);
-        } else if (orderData) {
+        if (!orderError && orderData) {
           newOrder.id = orderData.id;
           newOrder.backendStorage = 'supabase';
 
-          // Insert order items
           const orderItemsToInsert = validatedItems.map((item) => ({
             order_id: orderData.id,
             product_id: item.productId,
@@ -238,10 +277,7 @@ export const createOrder = async (input: CreateOrderInput): Promise<OrderCreatio
             total_price: item.totalPrice,
           }));
 
-          const { error: itemsError } = await supabase.from('order_items').insert(orderItemsToInsert);
-          if (itemsError) {
-            console.error('[Supabase Order Items Error]', itemsError);
-          }
+          await supabase.from('order_items').insert(orderItemsToInsert);
         }
       } catch (err) {
         console.error('[Supabase Order Exception]', err);
@@ -249,7 +285,7 @@ export const createOrder = async (input: CreateOrderInput): Promise<OrderCreatio
     }
   }
 
-  // Always save to the local memory store as well to support fast retrieval
+  // Always save in-memory / local runtime store
   saveLocalOrder(newOrder);
 
   return {
@@ -259,13 +295,11 @@ export const createOrder = async (input: CreateOrderInput): Promise<OrderCreatio
 };
 
 export const getOrderByIdOrReference = async (idOrRef: string): Promise<StoredOrder | null> => {
-  // Check local store first
   const local = localOrdersStore.find(
     (o) => o.id === idOrRef || o.orderReference.toLowerCase() === idOrRef.toLowerCase()
   );
   if (local) return local;
 
-  // If Supabase is configured, check Supabase
   if (isSupabaseConfigured()) {
     const supabase = getSupabaseServer();
     if (supabase) {
@@ -293,10 +327,10 @@ export const getOrderByIdOrReference = async (idOrRef: string): Promise<StoredOr
             subtotal: Number(data.subtotal),
             shippingFee: Number(data.shipping_fee),
             totalAmount: Number(data.total_amount),
-            currency: data.currency,
-            paymentMethod: data.payment_method,
-            paymentStatus: data.payment_status,
-            orderStatus: data.order_status,
+            currency: 'EGP',
+            paymentMethod: 'cash_on_delivery',
+            paymentStatus: data.payment_status || 'pending_cod',
+            orderStatus: data.order_status || 'confirmed',
             notes: data.notes,
             createdAt: data.created_at,
             backendStorage: 'supabase',
