@@ -1,0 +1,68 @@
+@import url('https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Inter:wght@200;300;400;500;600;700&family=Tajawal:wght@300;400;500;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-cormorant: 'Cormorant Garamond', Georgia, serif;
+  --font-inter: 'Inter', system-ui, sans-serif;
+  --font-tajawal: 'Tajawal', system-ui, sans-serif;
+  --font-amiri: 'Amiri', serif;
+}
+
+html {
+  scroll-behavior: smooth;
+  background-color: #0A0A0A;
+  color: #FBF9F5;
+}
+
+body {
+  font-family: var(--font-inter);
+  background-color: #0A0A0A;
+  color: #FBF9F5;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* RTL typography adjustments */
+[dir="rtl"] body {
+  font-family: var(--font-tajawal);
+}
+
+[dir="rtl"] h1,
+[dir="rtl"] h2,
+[dir="rtl"] h3,
+[dir="rtl"] .font-serif {
+  font-family: var(--font-amiri), var(--font-cormorant), serif;
+}
+
+/* Luxury selection styling */
+::selection {
+  background-color: #C5A880;
+  color: #0A0A0A;
+}
+
+::-moz-selection {
+  background-color: #C5A880;
+  color: #0A0A0A;
+}
+
+/* Custom Luxury Scrollbar */
+::-webkit-scrollbar {
+  width: 7px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0A0A0A;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #2C2C2E;
+  border-radius: 2px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #C5A880;
+}
