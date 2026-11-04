@@ -56,8 +56,9 @@ export const getHomepageContent = async (): Promise<HomepageContent> => {
           try {
             const cloudContent = JSON.parse(data.cairo_showrooms_ar) as HomepageContent;
             if (cloudContent && cloudContent.heroTitleAr) {
-              Object.assign(currentHomepageContent, cloudContent);
-              return cloudContent;
+              const merged: HomepageContent = { ...defaultHomepageContent, ...cloudContent };
+              Object.assign(currentHomepageContent, merged);
+              return merged;
             }
           } catch (jsonErr) {
             console.warn('[HomepageContentStore] JSON parse error:', jsonErr);
