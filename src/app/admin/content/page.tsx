@@ -29,7 +29,24 @@ import {
   Play,
 } from 'lucide-react';
 
-
+const PRESET_HERO_IMAGES = [
+  {
+    name: 'Heavyweight Studio Shoot',
+    url: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=2200&auto=format&fit=crop',
+  },
+  {
+    name: 'Urban Streetwear Mood',
+    url: 'https://images.unsplash.com/photo-1509967419530-da38b4704bc6?q=80&w=2200&auto=format&fit=crop',
+  },
+  {
+    name: 'Onyx Black Hoodie Model',
+    url: 'https://images.unsplash.com/photo-1578632767115-351597cf2477?q=80&w=2200&auto=format&fit=crop',
+  },
+  {
+    name: 'Flat Lay Streetwear',
+    url: 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?q=80&w=2200&auto=format&fit=crop',
+  },
+];
 
 export default function AdminContentPage() {
   const { language, isRtl } = useLanguage();
@@ -52,7 +69,13 @@ export default function AdminContentPage() {
   const fetchContent = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/admin/homepage-content');
+      const token = typeof window !== 'undefined' ? localStorage.getItem('atheer_admin_token') : '';
+      const res = await fetch('/api/admin/homepage-content', {
+        cache: 'no-store',
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      });
       const data = await res.json();
       if (data.success && data.content) {
         setContent(data.content);
@@ -180,9 +203,13 @@ export default function AdminContentPage() {
     setFeedback(null);
 
     try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('atheer_admin_token') : '';
       const res = await fetch('/api/admin/homepage-content', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify(content),
       });
 
@@ -529,6 +556,36 @@ export default function AdminContentPage() {
                       <Trash2 className="w-3.5 h-3.5" />
                       <span>{isAr ? 'استعادة الافتراضية' : 'Reset'}</span>
                     </button>
+                  </div>
+
+                  {/* Preset Visuals Grid */}
+                  <div className="pt-4 border-t border-brand-border/60">
+                    <span className="text-[11px] font-mono text-brand-cream/60 block mb-2">
+                      {isAr ? 'أو اختر صورة ستريتوير جاهزة:' : 'Or pick an editorial visual:'}
+                    </span>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                      {PRESET_HERO_IMAGES.map((preset) => (
+                        <button
+                          key={preset.url}
+                          type="button"
+                          onClick={() => setContent({ ...content, heroBgImage: preset.url, heroMediaType: 'image' })}
+                          className={`relative aspect-video rounded-xs overflow-hidden border-2 transition-all group ${
+                            content.heroBgImage === preset.url && content.heroMediaType !== 'video'
+                              ? 'border-brand-gold shadow-gold ring-1 ring-brand-gold'
+                              : 'border-brand-border/60 hover:border-brand-gold/50 opacity-70 hover:opacity-100'
+                          }`}
+                        >
+                          <div
+                            className="w-full h-full bg-cover bg-center"
+                            style={{ backgroundImage: `url('${preset.url}')` }}
+                          />
+                          <div className="absolute inset-0 bg-brand-black/30 group-hover:bg-brand-black/10 transition-colors" />
+                          <span className="absolute bottom-1 right-1 left-1 text-[9px] font-mono text-brand-ivory truncate bg-brand-black/80 px-1 py-0.5 rounded-2xs text-center">
+                            {preset.name}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>

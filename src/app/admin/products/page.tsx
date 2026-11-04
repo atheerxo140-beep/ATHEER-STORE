@@ -70,7 +70,13 @@ export default function AdminProductsPage() {
   const fetchProducts = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/admin/products');
+      const token = typeof window !== 'undefined' ? localStorage.getItem('atheer_admin_token') : '';
+      const res = await fetch('/api/admin/products', {
+        cache: 'no-store',
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      });
       const data = await res.json();
       if (data.success) {
         setProducts(data.products);
@@ -110,9 +116,13 @@ export default function AdminProductsPage() {
         ? { id: activeProduct?.id, ...formData }
         : formData;
 
+      const token = typeof window !== 'undefined' ? localStorage.getItem('atheer_admin_token') : '';
       const res = await fetch('/api/admin/products', {
         method,
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify(payload),
       });
 
@@ -139,8 +149,12 @@ export default function AdminProductsPage() {
   const handleDeleteProduct = async () => {
     if (!activeProduct) return;
     try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('atheer_admin_token') : '';
       const res = await fetch(`/api/admin/products?id=${activeProduct.id}`, {
         method: 'DELETE',
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
       });
       const data = await res.json();
       if (data.success) {

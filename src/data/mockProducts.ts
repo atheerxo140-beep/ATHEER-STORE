@@ -1,4 +1,5 @@
 import { Product } from '@/types';
+import { getSupabaseServer, isSupabaseConfigured } from '@/lib/supabaseServer';
 
 export const mockProducts: Product[] = [
   {
@@ -196,36 +197,247 @@ export const mockProducts: Product[] = [
   },
 ];
 
-// Editable product repository in memory for admin dashboard
+// Editable product repository in memory & Supabase for admin dashboard & public store
 const globalForProducts = global as unknown as { currentProducts?: Product[] };
 export const currentProducts: Product[] = globalForProducts.currentProducts || [...mockProducts];
 if (process.env.NODE_ENV !== 'production') {
   globalForProducts.currentProducts = currentProducts;
 }
 
-export const getAllProducts = (): Product[] => {
+export const getAllProducts = async (): Promise<Product[]> => {
+  if (isSupabaseConfigured()) {
+    const supabase = getSupabaseServer();
+    if (supabase) {
+      try {
+        const { data: dbProducts, error } = await supabase
+          .from('products')
+          .select('*, product_variants(*)')
+          .eq('is_active', true)
+          .order('created_at', { ascending: true });
+
+        if (!error && dbProducts && dbProducts.length > 0) {
+          const mapped: Product[] = dbProducts.map((p) => {
+            const variants = p.product_variants || [];
+            const sizes = Array.from(new Set(variants.map((v: any) => v.size).filter(Boolean))) as string[];
+            const colors = Array.from(new Set(variants.map((v: any) => v.color).filter(Boolean))) as string[];
+            const totalInventory = variants.reduce((acc: number, v: any) => acc + (v.inventory_quantity || 0), 0);
+
+            return {
+              id: p.id,
+              nameEn: p.name_en,
+              nameAr: p.name_ar,
+              category: p.category as any,
+              categoryLabelEn: p.category_label_en,
+              categoryLabelAr: p.category_label_ar,
+              price: Number(p.price),
+              originalPrice: p.original_price ? Number(p.original_price) : undefined,
+              image: p.image,
+              hoverImage: p.hover_image || p.image,
+              badgeEn: p.badge_en,
+              badgeAr: p.badge_ar,
+              descriptionEn: p.description_en || '',
+              descriptionAr: p.description_ar || '',
+              gsm: p.gsm || 500,
+              fitEn: p.fit_en || 'Signature Boxy Oversized',
+              fitAr: p.fit_ar || 'قصّة بوكسي أوفرسايز معتمدة',
+              fabricEn: p.fabric_en || 'Heavyweight Cotton Fleece Blend (500 GSM Spec)',
+              fabricAr: p.fabric_ar || 'مزيج قطن صوف ثقيل فاخر (مواصفات 500 GSM)',
+              colors: colors.length > 0 ? colors : ['Onyx Black'],
+              sizes: sizes.length > 0 ? sizes : ['S', 'M', 'L', 'XL'],
+              isComingSoon: Boolean(p.is_coming_soon),
+              inventory: totalInventory > 0 ? totalInventory : 50,
+            };
+          });
+
+          // Sync currentProducts in memory
+          currentProducts.length = 0;
+          currentProducts.push(...mapped);
+          return mapped;
+        }
+      } catch (err) {
+        console.warn('[ProductsStore] Supabase product fetch error:', err);
+      }
+    }
+  }
+
   return currentProducts;
 };
 
-export const getProductById = (id: string): Product | undefined => {
-  return currentProducts.find((p) => p.id === id);
+export const getProductById = async (id: string): Promise<Product | undefined> => {
+  const inMem = currentProducts.find((p) => p.id === id);
+  if (inMem) return inMem;
+
+  if (isSupabaseConfigured()) {
+    const supabase = getSupabaseServer();
+    if (supabase) {
+      try {
+        const { data: p, error } = await supabase
+          .from('products')
+          .select('*, product_variants(*)')
+          .eq('id', id)
+          .single();
+
+        if (!error && p) {
+          const variants = p.product_variants || [];
+          const sizes = Array.from(new Set(variants.map((v: any) => v.size).filter(Boolean))) as string[];
+          const colors = Array.from(new Set(variants.map((v: any) => v.color).filter(Boolean))) as string[];
+          const totalInventory = variants.reduce((acc: number, v: any) => acc + (v.inventory_quantity || 0), 0);
+
+          const prod: Product = {
+            id: p.id,
+            nameEn: p.name_en,
+            nameAr: p.name_ar,
+            category: p.category as any,
+            categoryLabelEn: p.category_label_en,
+            categoryLabelAr: p.category_label_ar,
+            price: Number(p.price),
+            originalPrice: p.original_price ? Number(p.original_price) : undefined,
+            image: p.image,
+            hoverImage: p.hover_image || p.image,
+            badgeEn: p.badge_en,
+            badgeAr: p.badge_ar,
+            descriptionEn: p.description_en || '',
+            descriptionAr: p.description_ar || '',
+            gsm: p.gsm || 500,
+            fitEn: p.fit_en || 'Signature Boxy Oversized',
+            fitAr: p.fit_ar || 'قصّة بوكسي أوفرسايز معتمدة',
+            fabricEn: p.fabric_en || 'Heavyweight Cotton Fleece Blend (500 GSM Spec)',
+            fabricAr: p.fabric_ar || 'مزيج قطن صوف ثقيل فاخر (مواصفات 500 GSM)',
+            colors: colors.length > 0 ? colors : ['Onyx Black'],
+            sizes: sizes.length > 0 ? sizes : ['S', 'M', 'L', 'XL'],
+            isComingSoon: Boolean(p.is_coming_soon),
+            inventory: totalInventory > 0 ? totalInventory : 50,
+          };
+          currentProducts.unshift(prod);
+          return prod;
+        }
+      } catch (err) {
+        console.warn('[ProductsStore] ProductById fetch error:', err);
+      }
+    }
+  }
+
+  return mockProducts.find((p) => p.id === id);
 };
 
-export const addProduct = (product: Product): Product => {
+export const addProduct = async (product: Product): Promise<Product> => {
   currentProducts.unshift(product);
+
+  if (isSupabaseConfigured()) {
+    const supabase = getSupabaseServer();
+    if (supabase) {
+      try {
+        await supabase.from('products').upsert({
+          id: product.id,
+          name_en: product.nameEn,
+          name_ar: product.nameAr,
+          category: product.category,
+          category_label_en: product.categoryLabelEn || product.category,
+          category_label_ar: product.categoryLabelAr || product.category,
+          price: product.price,
+          original_price: product.originalPrice || null,
+          gsm: product.gsm || 500,
+          fit_en: product.fitEn || 'Signature Boxy Oversized',
+          fit_ar: product.fitAr || 'قصّة بوكسي أوفرسايز معتمدة',
+          fabric_en: product.fabricEn || 'Heavyweight Cotton Fleece Blend (500 GSM Spec)',
+          fabric_ar: product.fabricAr || 'مزيج قطن صوف ثقيل فاخر (مواصفات 500 GSM)',
+          description_en: product.descriptionEn || '',
+          description_ar: product.descriptionAr || '',
+          image: product.image,
+          hover_image: product.hoverImage || product.image,
+          badge_en: product.badgeEn || null,
+          badge_ar: product.badgeAr || null,
+          is_active: true,
+          is_coming_soon: Boolean(product.isComingSoon),
+          created_at: new Date().toISOString(),
+        });
+
+        // Seed variants if sizes & colors provided
+        if (product.sizes?.length && product.colors?.length) {
+          const variants = [];
+          for (const s of product.sizes) {
+            for (const c of product.colors) {
+              variants.push({
+                product_id: product.id,
+                size: s,
+                color: c,
+                sku: `${product.id}-${s}-${c}`.replace(/[^a-zA-Z0-9_-]/g, '_').toUpperCase(),
+                inventory_quantity: Math.max(1, Math.floor((product.inventory || 50) / (product.sizes.length * product.colors.length))),
+                is_active: true,
+              });
+            }
+          }
+          await supabase.from('product_variants').upsert(variants, { onConflict: 'product_id,size,color' });
+        }
+      } catch (err) {
+        console.warn('[ProductsStore] Supabase product insert error:', err);
+      }
+    }
+  }
+
   return product;
 };
 
-export const updateProduct = (id: string, updates: Partial<Product>): Product | null => {
+export const updateProduct = async (id: string, updates: Partial<Product>): Promise<Product | null> => {
   const index = currentProducts.findIndex((p) => p.id === id);
-  if (index === -1) return null;
-  currentProducts[index] = { ...currentProducts[index], ...updates };
-  return currentProducts[index];
+  if (index !== -1) {
+    currentProducts[index] = { ...currentProducts[index], ...updates };
+  }
+  const product = index !== -1 ? currentProducts[index] : (updates as Product);
+
+  if (isSupabaseConfigured()) {
+    const supabase = getSupabaseServer();
+    if (supabase) {
+      try {
+        const dbUpdates: any = {};
+        if (updates.nameEn !== undefined) dbUpdates.name_en = updates.nameEn;
+        if (updates.nameAr !== undefined) dbUpdates.name_ar = updates.nameAr;
+        if (updates.category !== undefined) dbUpdates.category = updates.category;
+        if (updates.categoryLabelEn !== undefined) dbUpdates.category_label_en = updates.categoryLabelEn;
+        if (updates.categoryLabelAr !== undefined) dbUpdates.category_label_ar = updates.categoryLabelAr;
+        if (updates.price !== undefined) dbUpdates.price = updates.price;
+        if (updates.originalPrice !== undefined) dbUpdates.original_price = updates.originalPrice;
+        if (updates.gsm !== undefined) dbUpdates.gsm = updates.gsm;
+        if (updates.fitEn !== undefined) dbUpdates.fit_en = updates.fitEn;
+        if (updates.fitAr !== undefined) dbUpdates.fit_ar = updates.fitAr;
+        if (updates.fabricEn !== undefined) dbUpdates.fabric_en = updates.fabricEn;
+        if (updates.fabricAr !== undefined) dbUpdates.fabric_ar = updates.fabricAr;
+        if (updates.descriptionEn !== undefined) dbUpdates.description_en = updates.descriptionEn;
+        if (updates.descriptionAr !== undefined) dbUpdates.description_ar = updates.descriptionAr;
+        if (updates.image !== undefined) dbUpdates.image = updates.image;
+        if (updates.hoverImage !== undefined) dbUpdates.hover_image = updates.hoverImage;
+        if (updates.badgeEn !== undefined) dbUpdates.badge_en = updates.badgeEn;
+        if (updates.badgeAr !== undefined) dbUpdates.badge_ar = updates.badgeAr;
+        if (updates.isComingSoon !== undefined) dbUpdates.is_coming_soon = updates.isComingSoon;
+
+        if (Object.keys(dbUpdates).length > 0) {
+          await supabase.from('products').update(dbUpdates).eq('id', id);
+        }
+      } catch (err) {
+        console.warn('[ProductsStore] Supabase product update error:', err);
+      }
+    }
+  }
+
+  return product;
 };
 
-export const deleteProduct = (id: string): boolean => {
+export const deleteProduct = async (id: string): Promise<boolean> => {
   const index = currentProducts.findIndex((p) => p.id === id);
-  if (index === -1) return false;
-  currentProducts.splice(index, 1);
+  if (index !== -1) {
+    currentProducts.splice(index, 1);
+  }
+
+  if (isSupabaseConfigured()) {
+    const supabase = getSupabaseServer();
+    if (supabase) {
+      try {
+        await supabase.from('products').delete().eq('id', id);
+      } catch (err) {
+        console.warn('[ProductsStore] Supabase product delete error:', err);
+      }
+    }
+  }
+
   return true;
 };

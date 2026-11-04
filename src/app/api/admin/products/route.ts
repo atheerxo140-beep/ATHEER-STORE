@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ success: false, error: auth.error }, { status: auth.statusCode });
   }
 
-  const products = getAllProducts();
+  const products = await getAllProducts();
   return NextResponse.json({
     success: true,
     count: products.length,
@@ -63,7 +63,7 @@ export async function POST(req: NextRequest) {
       inventory: body.inventory !== undefined ? Number(body.inventory) : 50,
     };
 
-    const saved = addProduct(newProduct);
+    const saved = await addProduct(newProduct);
     return NextResponse.json({ success: true, product: saved }, { status: 201 });
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
@@ -84,7 +84,7 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'Product ID is required.' }, { status: 400 });
     }
 
-    const updated = updateProduct(id, updates);
+    const updated = await updateProduct(id, updates);
     if (!updated) {
       return NextResponse.json({ success: false, error: 'Product not found.' }, { status: 404 });
     }
@@ -109,7 +109,7 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'Product ID is required.' }, { status: 400 });
     }
 
-    const deleted = deleteProduct(id);
+    const deleted = await deleteProduct(id);
     if (!deleted) {
       return NextResponse.json({ success: false, error: 'Product not found.' }, { status: 404 });
     }

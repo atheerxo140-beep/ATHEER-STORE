@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
+import { Product } from '@/types';
 import { mockProducts, currentProducts } from '@/data/mockProducts';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
@@ -27,13 +28,48 @@ import {
 export default function ProductDetailPage() {
   const params = useParams();
   const productId = params?.id as string;
-  const product =
-    currentProducts.find((p) => p.id === productId) ||
-    mockProducts.find((p) => p.id === productId);
+  const [product, setProduct] = useState<Product | null>(() => {
+    return (
+      currentProducts.find((p) => p.id === productId) ||
+      mockProducts.find((p) => p.id === productId) ||
+      null
+    );
+  });
+  const [loading, setLoading] = useState(!product);
+
+  useEffect(() => {
+    fetch('/api/products', { cache: 'no-store' })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && Array.isArray(data.products)) {
+          const found = data.products.find((p: any) => p.id === productId);
+          if (found) {
+            setProduct(found);
+          }
+        }
+      })
+      .catch((err) => console.warn('Failed to load product detail:', err))
+      .finally(() => setLoading(false));
+  }, [productId]);
 
   const { language, t, formatPrice, isRtl } = useLanguage();
   const { addItem } = useCart();
   const ArrowIcon = isRtl ? ChevronLeft : ChevronRight;
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-brand-black text-brand-ivory flex flex-col justify-between">
+        <Header />
+        <div className="max-w-2xl mx-auto text-center py-32 px-4">
+          <Flame className="w-12 h-12 text-brand-gold mx-auto mb-4 animate-pulse" />
+          <p className="text-xs font-mono text-brand-cream/60">
+            {language === 'ar' ? 'جاري تحميل تفاصيل القطعة...' : 'Loading piece details...'}
+          </p>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   if (!product) {
     return (
@@ -233,7 +269,7 @@ export default function ProductDetailPage() {
                     <span className="text-brand-gold font-semibold">{selectedColor}</span>
                   </div>
                   <div className="flex gap-2">
-                    {product.colors.map((c) => (
+                    {product.colors.map((c: string) => (
                       <button
                         key={c}
                         onClick={() => setSelectedColor(c)}
@@ -264,7 +300,7 @@ export default function ProductDetailPage() {
                 </div>
 
                 <div className="grid grid-cols-5 gap-2">
-                  {product.sizes.map((s) => (
+                  {product.sizes.map((s: string) => (
                     <button
                       key={s}
                       onClick={() => setSelectedSize(s)}

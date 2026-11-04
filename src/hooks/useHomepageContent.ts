@@ -17,8 +17,8 @@ export function useHomepageContent() {
     };
     listeners.add(listener);
 
-    // Initial fetch once
-    fetch('/api/homepage-content')
+    // Initial fetch without stale cache
+    fetch('/api/homepage-content', { cache: 'no-store' })
       .then((res) => res.json())
       .then((data) => {
         if (data.success && data.content) {

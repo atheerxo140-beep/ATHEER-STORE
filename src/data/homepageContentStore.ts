@@ -48,14 +48,20 @@ export const getHomepageContent = async (): Promise<HomepageContent> => {
       try {
         const { data, error } = await supabase
           .from('store_settings')
-          .select('homepage_content')
-          .eq('id', 'main_settings')
+          .select('*')
+          .eq('id', 'homepage_content_row')
           .single();
 
-        if (!error && data && (data as any).homepage_content) {
-          const cloudContent = (data as any).homepage_content as HomepageContent;
-          Object.assign(currentHomepageContent, cloudContent);
-          return cloudContent;
+        if (!error && data && data.cairo_showrooms_ar) {
+          try {
+            const cloudContent = JSON.parse(data.cairo_showrooms_ar) as HomepageContent;
+            if (cloudContent && cloudContent.heroTitleAr) {
+              Object.assign(currentHomepageContent, cloudContent);
+              return cloudContent;
+            }
+          } catch (jsonErr) {
+            console.warn('[HomepageContentStore] JSON parse error:', jsonErr);
+          }
         }
       } catch (err) {
         // Fall back gracefully
@@ -69,8 +75,9 @@ export const getHomepageContent = async (): Promise<HomepageContent> => {
 export const updateHomepageContent = async (
   newContent: Partial<HomepageContent>
 ): Promise<HomepageContent> => {
+  const current = await getHomepageContent();
   const updated: HomepageContent = {
-    ...currentHomepageContent,
+    ...current,
     ...newContent,
     updatedAt: new Date().toISOString(),
   };
@@ -82,13 +89,22 @@ export const updateHomepageContent = async (
     const supabase = getSupabaseServer();
     if (supabase) {
       try {
+        const jsonStr = JSON.stringify(updated);
         await supabase
           .from('store_settings')
-          .update({
-            homepage_content: updated,
+          .upsert({
+            id: 'homepage_content_row',
+            store_name_en: 'HOMEPAGE_CONTENT',
+            store_name_ar: 'محتوى الواجهة',
+            tagline_en: '',
+            tagline_ar: '',
+            whatsapp_number: '',
+            support_email: '',
+            default_currency: 'EGP',
+            cairo_showrooms_en: 'ATH_CMS_STORAGE',
+            cairo_showrooms_ar: jsonStr,
             updated_at: new Date().toISOString(),
-          } as any)
-          .eq('id', 'main_settings');
+          });
       } catch (err) {
         console.warn('[HomepageContentStore] Cloud persistence fallback:', err);
       }

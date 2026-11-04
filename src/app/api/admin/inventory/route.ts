@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAllProducts, getProductById } from '@/data/mockProducts';
+import { getAllProducts, getProductById, updateProduct } from '@/data/mockProducts';
 import { InventoryLog, getInventoryLogs, addInventoryLog } from '@/data/inventoryLogsStore';
 import { verifyAdminRequest } from '@/lib/adminAuth';
 
@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ success: false, error: auth.error }, { status: auth.statusCode });
   }
 
-  const products = getAllProducts();
+  const products = await getAllProducts();
   const inventoryItems = products.map((p) => ({
     id: p.id,
     nameEn: p.nameEn,
@@ -48,7 +48,7 @@ export async function PUT(req: NextRequest) {
       );
     }
 
-    const product = getProductById(productId);
+    const product = await getProductById(productId);
     if (!product) {
       return NextResponse.json({ success: false, error: 'Product not found.' }, { status: 404 });
     }
@@ -66,7 +66,7 @@ export async function PUT(req: NextRequest) {
       );
     }
 
-    product.inventory = newInventory;
+    await updateProduct(productId, { inventory: newInventory });
 
     const log: InventoryLog = {
       id: `inv_log_${Date.now()}`,

@@ -1,4 +1,5 @@
 import { ShippingZone, EgyptianGovernorate } from '@/types';
+import { getSupabaseServer, isSupabaseConfigured } from '@/lib/supabaseServer';
 
 export interface GovernorateInfo {
   id: EgyptianGovernorate;
@@ -136,6 +137,33 @@ export const getShippingZones = (): ShippingZone[] => {
   return currentEgyptianShippingZones.filter((z) => z.isActive);
 };
 
+export const fetchShippingZonesFromDb = async (): Promise<ShippingZone[]> => {
+  if (isSupabaseConfigured()) {
+    const supabase = getSupabaseServer();
+    if (supabase) {
+      try {
+        const { data, error } = await supabase.from('shipping_zones').select('*');
+        if (!error && data && data.length > 0) {
+          data.forEach((row: any) => {
+            const idx = currentEgyptianShippingZones.findIndex((z) => z.id === row.id);
+            if (idx !== -1) {
+              currentEgyptianShippingZones[idx] = {
+                ...currentEgyptianShippingZones[idx],
+                baseFee: Number(row.base_fee),
+                freeShippingThreshold: Number(row.free_shipping_threshold),
+                isActive: Boolean(row.is_active),
+              };
+            }
+          });
+        }
+      } catch (err) {
+        console.warn('[ShippingZones] Supabase fetch error:', err);
+      }
+    }
+  }
+  return currentEgyptianShippingZones;
+};
+
 export const getShippingZoneById = (zoneId: string): ShippingZone | undefined => {
   return currentEgyptianShippingZones.find((z) => z.id === zoneId);
 };
@@ -154,13 +182,32 @@ export const getZoneByGovernorate = (govName: string): ShippingZone => {
   return currentEgyptianShippingZones[0]; // fallback to Cairo/Giza
 };
 
-export const updateShippingZone = (
+export const updateShippingZone = async (
   zoneId: string,
   updates: Partial<Omit<ShippingZone, 'id'>>
-): ShippingZone | null => {
+): Promise<ShippingZone | null> => {
   const index = currentEgyptianShippingZones.findIndex((z) => z.id === zoneId);
   if (index === -1) return null;
   currentEgyptianShippingZones[index] = { ...currentEgyptianShippingZones[index], ...updates };
+
+  if (isSupabaseConfigured()) {
+    const supabase = getSupabaseServer();
+    if (supabase) {
+      try {
+        const dbUpdates: any = {};
+        if (updates.baseFee !== undefined) dbUpdates.base_fee = updates.baseFee;
+        if (updates.freeShippingThreshold !== undefined) dbUpdates.free_shipping_threshold = updates.freeShippingThreshold;
+        if (updates.isActive !== undefined) dbUpdates.is_active = updates.isActive;
+
+        if (Object.keys(dbUpdates).length > 0) {
+          await supabase.from('shipping_zones').update(dbUpdates).eq('id', zoneId);
+        }
+      } catch (err) {
+        console.warn('[ShippingZones] Supabase update error:', err);
+      }
+    }
+  }
+
   return currentEgyptianShippingZones[index];
 };
 

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Product } from '@/types';
 import { mockProducts } from '@/data/mockProducts';
 import { ProductCard } from '@/components/ProductCard';
@@ -11,11 +11,23 @@ import { X, Flame, Check, ShoppingBag, ShieldCheck, Ruler, ArrowRight, ArrowLeft
 export const ProductGrid: React.FC = () => {
   const { t, language, formatPrice, isRtl } = useLanguage();
   const { addItem } = useCart();
+  const [products, setProducts] = useState<Product[]>(mockProducts);
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [modalSize, setModalSize] = useState<string>('');
   const [modalColor, setModalColor] = useState<string>('');
   const [modalAdded, setModalAdded] = useState<boolean>(false);
+
+  useEffect(() => {
+    fetch('/api/products', { cache: 'no-store' })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && Array.isArray(data.products) && data.products.length > 0) {
+          setProducts(data.products);
+        }
+      })
+      .catch((err) => console.warn('Failed to load live products:', err));
+  }, []);
 
   const categories = [
     { id: 'all', label: t('filterAll') },
@@ -24,7 +36,7 @@ export const ProductGrid: React.FC = () => {
     { id: 'tshirts', label: t('filterTees'), isMain: false },
   ];
 
-  const filteredProducts = mockProducts.filter((product) => {
+  const filteredProducts = products.filter((product) => {
     if (activeCategory === 'all') return true;
     return product.category === activeCategory;
   });

@@ -57,7 +57,13 @@ export default function AdminSettingsPage() {
   const fetchSettings = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/admin/settings');
+      const token = typeof window !== 'undefined' ? localStorage.getItem('atheer_admin_token') : '';
+      const res = await fetch('/api/admin/settings', {
+        cache: 'no-store',
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      });
       const data = await res.json();
       if (data.success) {
         setSettings(data.settings);
@@ -72,7 +78,13 @@ export default function AdminSettingsPage() {
   const fetchPaymentMethods = async () => {
     setLoadingMethods(true);
     try {
-      const res = await fetch('/api/admin/payment-methods');
+      const token = typeof window !== 'undefined' ? localStorage.getItem('atheer_admin_token') : '';
+      const res = await fetch('/api/admin/payment-methods', {
+        cache: 'no-store',
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      });
       const data = await res.json();
       if (data.success && Array.isArray(data.methods)) {
         setPaymentMethods(data.methods);
@@ -95,9 +107,13 @@ export default function AdminSettingsPage() {
 
     setSaving(true);
     try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('atheer_admin_token') : '';
       const res = await fetch('/api/admin/settings', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify(settings),
       });
 

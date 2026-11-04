@@ -17,7 +17,7 @@ export function useStoreSettings() {
     };
     listeners.add(listener);
 
-    fetch('/api/settings')
+    fetch('/api/settings', { cache: 'no-store' })
       .then((res) => res.json())
       .then((data) => {
         if (data.success && data.settings) {

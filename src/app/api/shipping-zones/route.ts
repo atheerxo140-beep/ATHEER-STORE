@@ -1,15 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getShippingZones, updateShippingZone } from '@/data/shippingZones';
+import { getShippingZones, updateShippingZone, fetchShippingZonesFromDb } from '@/data/shippingZones';
 import { verifyAdminRequest } from '@/lib/adminAuth';
 
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+export const fetchCache = 'force-no-store';
 
 export async function GET(_req: NextRequest) {
+  await fetchShippingZonesFromDb();
   const zones = getShippingZones();
-  return NextResponse.json({
-    success: true,
-    zones,
-  });
+  return NextResponse.json(
+    { success: true, zones },
+    {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+      },
+    }
+  );
 }
 
 export async function PUT(req: NextRequest) {
@@ -29,7 +36,7 @@ export async function PUT(req: NextRequest) {
       );
     }
 
-    const updated = updateShippingZone(zoneId, {
+    const updated = await updateShippingZone(zoneId, {
       ...(typeof baseFee === 'number' && { baseFee }),
       ...(typeof freeShippingThreshold === 'number' && { freeShippingThreshold }),
       ...(typeof isActive === 'boolean' && { isActive }),

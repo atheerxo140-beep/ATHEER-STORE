@@ -3,11 +3,14 @@ import {
   currentEgyptianShippingZones,
   getShippingZones,
   updateShippingZone,
+  fetchShippingZonesFromDb,
   EGYPTIAN_GOVERNORATES,
 } from '@/data/shippingZones';
 import { verifyAdminRequest } from '@/lib/adminAuth';
 
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+export const fetchCache = 'force-no-store';
 
 export async function GET(req: NextRequest) {
   const auth = await verifyAdminRequest(req);
@@ -15,6 +18,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ success: false, error: auth.error }, { status: auth.statusCode });
   }
 
+  await fetchShippingZonesFromDb();
   return NextResponse.json({
     success: true,
     zones: currentEgyptianShippingZones,
@@ -36,7 +40,7 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'zoneId is required' }, { status: 400 });
     }
 
-    const updated = updateShippingZone(zoneId, {
+    const updated = await updateShippingZone(zoneId, {
       ...(typeof baseFee === 'number' && { baseFee }),
       ...(typeof freeShippingThreshold === 'number' && { freeShippingThreshold }),
       ...(typeof estimatedDaysEn === 'string' && { estimatedDaysEn }),
