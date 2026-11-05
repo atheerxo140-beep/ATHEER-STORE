@@ -14,7 +14,9 @@ import {
   Database,
   CheckCircle2,
   Globe,
+  Clock,
 } from 'lucide-react';
+import { syncAdminToken } from '@/lib/adminAuthClient';
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -26,8 +28,16 @@ export default function AdminLoginPage() {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [supabaseConfigured, setSupabaseConfigured] = useState(false);
+  const [isSessionExpired, setIsSessionExpired] = useState(false);
 
   useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('reason') === 'expired') {
+        setIsSessionExpired(true);
+      }
+    }
+
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const publishableKey =
       process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
@@ -83,8 +93,7 @@ export default function AdminLoginPage() {
         }
 
         const token = data.session.access_token;
-        document.cookie = `atheer_admin_token=${token}; path=/; max-age=86400; SameSite=Lax`;
-        localStorage.setItem('atheer_admin_token', token);
+        syncAdminToken(token);
 
         router.push('/admin');
       } catch (err: any) {
@@ -94,8 +103,7 @@ export default function AdminLoginPage() {
     } else {
       // Controlled Development Session Token (allowed strictly in non-production)
       const devToken = 'dev-admin-session-atheer';
-      document.cookie = `atheer_admin_token=${devToken}; path=/; max-age=86400; SameSite=Lax`;
-      localStorage.setItem('atheer_admin_token', devToken);
+      syncAdminToken(devToken);
       setTimeout(() => {
         router.push('/admin');
       }, 400);
@@ -171,6 +179,17 @@ export default function AdminLoginPage() {
 
           {/* Form */}
           <form onSubmit={handleLogin} className="space-y-4 font-mono text-xs">
+            {isSessionExpired && !errorMsg && (
+              <div className="p-3 bg-amber-950/40 border border-amber-500/50 text-amber-300 rounded-xs flex items-center space-x-2 rtl:space-x-reverse leading-relaxed text-[11px]">
+                <Clock className="w-4 h-4 flex-shrink-0 text-amber-400" />
+                <span>
+                  {isAr
+                    ? 'انتهت صلاحية جلسة الأمان السابقة تلقائياً لحماية المتجر. يرجى تسجيل الدخول مجدداً للمتابعة.'
+                    : 'Your previous security session has expired. Please sign in again to continue.'}
+                </span>
+              </div>
+            )}
+
             {errorMsg && (
               <div className="p-3 bg-rose-950/40 border border-rose-500/40 text-rose-300 rounded-xs flex items-center space-x-2 rtl:space-x-reverse">
                 <AlertCircle className="w-4 h-4 flex-shrink-0" />

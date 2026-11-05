@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '@/context/LanguageContext';
 import { Coupon } from '@/types';
+import { adminFetch } from '@/lib/adminAuthClient';
 import {
   Tag,
   Plus,
@@ -43,7 +44,7 @@ export default function AdminCouponsPage() {
   const fetchCoupons = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/admin/coupons');
+      const res = await adminFetch('/api/admin/coupons');
       const data = await res.json();
       if (data.success) {
         setCoupons(data.coupons);
@@ -63,7 +64,7 @@ export default function AdminCouponsPage() {
     e.preventDefault();
     setSubmitting(true);
     try {
-      const res = await fetch('/api/admin/coupons', {
+      const res = await adminFetch('/api/admin/coupons', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
@@ -91,7 +92,7 @@ export default function AdminCouponsPage() {
 
   const handleToggleActive = async (id: string) => {
     try {
-      const res = await fetch('/api/admin/coupons', {
+      const res = await adminFetch('/api/admin/coupons', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id }),
@@ -108,7 +109,7 @@ export default function AdminCouponsPage() {
   const handleDeleteCoupon = async (id: string, code: string) => {
     if (!confirm(isAr ? `هل تريد حذف كود الخصم ${code}؟` : `Delete coupon ${code}?`)) return;
     try {
-      const res = await fetch(`/api/admin/coupons?id=${id}`, { method: 'DELETE' });
+      const res = await adminFetch(`/api/admin/coupons?id=${id}`, { method: 'DELETE' });
       const data = await res.json();
       if (data.success) {
         setFeedbackMsg({

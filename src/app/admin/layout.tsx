@@ -22,6 +22,7 @@ import {
   AlertTriangle,
   Image as ImageIcon,
 } from 'lucide-react';
+import { ensureValidAdminSession, clearAdminToken, initAdminAuthSync } from '@/lib/adminAuthClient';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -56,25 +57,35 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       return;
     }
 
-    // Verify Admin Session Cookie or localStorage token
-    const hasCookie = typeof document !== 'undefined' && document.cookie.includes('atheer_admin_token=');
-    const hasLocal = typeof window !== 'undefined' && localStorage.getItem('atheer_admin_token');
+    let isMounted = true;
+    const verifyAuth = async () => {
+      const validToken = await ensureValidAdminSession();
+      if (!isMounted) return;
 
-    if (!hasCookie && !hasLocal) {
-      // Unauthenticated: redirect to login
-      router.push('/admin/login');
-    } else {
-      setIsVerifyingAuth(false);
-    }
+      if (!validToken) {
+        // Unauthenticated or expired session: redirect to login
+        router.push('/admin/login?reason=expired');
+      } else {
+        setIsVerifyingAuth(false);
+      }
+    };
+
+    verifyAuth();
+
+    const unsubscribe = initAdminAuthSync(() => {
+      if (isMounted) {
+        router.push('/admin/login?reason=expired');
+      }
+    });
+
+    return () => {
+      isMounted = false;
+      unsubscribe();
+    };
   }, [pathname, isLoginPage, router]);
 
   const handleLogout = async () => {
-    if (typeof document !== 'undefined') {
-      document.cookie = 'atheer_admin_token=; path=/; max-age=0; SameSite=Lax';
-    }
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('atheer_admin_token');
-    }
+    clearAdminToken();
 
     // If Supabase is connected, sign out from Supabase client
     try {

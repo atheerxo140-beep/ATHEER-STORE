@@ -19,6 +19,7 @@ import {
   ArrowLeft,
   Package,
 } from 'lucide-react';
+import { adminFetch } from '@/lib/adminAuthClient';
 
 export default function AdminOverviewPage() {
   const { language, formatPrice, isRtl } = useLanguage();
@@ -31,14 +32,9 @@ export default function AdminOverviewPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const token = typeof window !== 'undefined' ? localStorage.getItem('atheer_admin_token') : '';
-        const headers: Record<string, string> = {};
-        if (token) {
-          headers.Authorization = `Bearer ${token}`;
-        }
         const [ordersRes, productsRes] = await Promise.all([
-          fetch('/api/admin/orders', { cache: 'no-store', headers }),
-          fetch('/api/admin/products', { cache: 'no-store', headers }),
+          adminFetch('/api/admin/orders', { cache: 'no-store' }),
+          adminFetch('/api/admin/products', { cache: 'no-store' }),
         ]);
 
         const ordersData = await ordersRes.json();

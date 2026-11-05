@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useLanguage } from '@/context/LanguageContext';
 import { StoredOrder, OrderStatus, PaymentStatus } from '@/data/localOrdersStore';
+import { adminFetch } from '@/lib/adminAuthClient';
 import {
   ShoppingBag,
   Search,
@@ -53,7 +54,7 @@ export default function AdminOrdersPage() {
       if (dateFilter !== 'all') params.set('date', dateFilter);
       if (searchTerm) params.set('search', searchTerm);
 
-      const res = await fetch(`/api/admin/orders?${params.toString()}`);
+      const res = await adminFetch(`/api/admin/orders?${params.toString()}`);
       const data = await res.json();
       if (data.success) {
         setOrders(data.orders);
@@ -77,7 +78,7 @@ export default function AdminOrdersPage() {
   const handleUpdateStatus = async (orderId: string, newStatus: OrderStatus) => {
     setIsUpdatingStatus(true);
     try {
-      const res = await fetch('/api/admin/orders', {
+      const res = await adminFetch('/api/admin/orders', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: orderId, orderStatus: newStatus }),
@@ -103,7 +104,7 @@ export default function AdminOrdersPage() {
   const handleUpdatePaymentStatus = async (orderId: string, newPaymentStatus: PaymentStatus) => {
     setIsUpdatingStatus(true);
     try {
-      const res = await fetch('/api/admin/orders', {
+      const res = await adminFetch('/api/admin/orders', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: orderId, paymentStatus: newPaymentStatus }),

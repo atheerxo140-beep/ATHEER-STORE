@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '@/context/LanguageContext';
+import { adminFetch } from '@/lib/adminAuthClient';
 import {
   Layers,
   Search,
@@ -64,7 +65,7 @@ export default function AdminInventoryPage() {
   const fetchInventory = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/admin/inventory');
+      const res = await adminFetch('/api/admin/inventory');
       const data = await res.json();
       if (data.success) {
         setItems(data.items);
@@ -107,7 +108,7 @@ export default function AdminInventoryPage() {
 
     setIsSubmitting(true);
     try {
-      const res = await fetch('/api/admin/inventory', {
+      const res = await adminFetch('/api/admin/inventory', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

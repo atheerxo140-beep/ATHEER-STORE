@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { useLanguage } from '@/context/LanguageContext';
 import { Product } from '@/types';
+import { adminFetch } from '@/lib/adminAuthClient';
 import {
   Package,
   Plus,
@@ -18,7 +19,57 @@ import {
   Sparkles,
   Layers,
   ArrowUpDown,
+  Upload,
+  Image as ImageIcon,
+  Camera,
+  Link as LinkIcon,
 } from 'lucide-react';
+
+const PRESET_GARMENT_IMAGES = [
+  {
+    name: 'Onyx Black Hoodie',
+    url: 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?q=80&w=1000&auto=format&fit=crop',
+  },
+  {
+    name: 'Bone Ivory Hoodie',
+    url: 'https://images.unsplash.com/photo-1578587018452-892bacefd3f2?q=80&w=1000&auto=format&fit=crop',
+  },
+  {
+    name: 'Washed Charcoal',
+    url: 'https://images.unsplash.com/photo-1618354691373-d851c5c3a990?q=80&w=1000&auto=format&fit=crop',
+  },
+  {
+    name: 'Dune Sand Minimal',
+    url: 'https://images.unsplash.com/photo-1556821840-3a63f95609a7?q=80&w=1000&auto=format&fit=crop',
+  },
+  {
+    name: 'Crewneck Sweatshirt',
+    url: 'https://images.unsplash.com/photo-1578768079052-aa76e520036c?q=80&w=1000&auto=format&fit=crop',
+  },
+  {
+    name: 'Heavyweight T-Shirt',
+    url: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?q=80&w=1000&auto=format&fit=crop',
+  },
+];
+
+const PRESET_MODEL_IMAGES = [
+  {
+    name: 'Model Studio Pose',
+    url: 'https://images.unsplash.com/photo-1509967419530-da38b4704bc6?q=80&w=1000&auto=format&fit=crop',
+  },
+  {
+    name: 'Editorial Streetwear',
+    url: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=1000&auto=format&fit=crop',
+  },
+  {
+    name: 'Urban Mood',
+    url: 'https://images.unsplash.com/photo-1543163521-1bf539c55dd2?q=80&w=1000&auto=format&fit=crop',
+  },
+  {
+    name: 'Studio Flat Lay',
+    url: 'https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?q=80&w=1000&auto=format&fit=crop',
+  },
+];
 
 export default function AdminProductsPage() {
   const { language, isRtl } = useLanguage();
@@ -35,6 +86,13 @@ export default function AdminProductsPage() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [activeProduct, setActiveProduct] = useState<Product | null>(null);
+
+  // File Upload State & Refs
+  const primaryFileInputRef = useRef<HTMLInputElement>(null);
+  const hoverFileInputRef = useRef<HTMLInputElement>(null);
+  const [uploadingPrimary, setUploadingPrimary] = useState(false);
+  const [uploadingHover, setUploadingHover] = useState(false);
+  const [showManualUrl, setShowManualUrl] = useState(false);
 
   // Form State
   const initialFormState: Partial<Product> = {
@@ -70,19 +128,18 @@ export default function AdminProductsPage() {
   const fetchProducts = async () => {
     setLoading(true);
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('atheer_admin_token') : '';
-      const res = await fetch('/api/admin/products', {
+      const res = await adminFetch('/api/admin/products', {
         cache: 'no-store',
-        headers: {
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
       });
       const data = await res.json();
       if (data.success) {
-        setProducts(data.products);
+        setProducts(data.products || []);
+      } else {
+        setFeedbackMsg({ type: 'error', text: data.error || (isAr ? 'تعذر جلب المنتجات' : 'Failed to fetch products') });
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to load products:', err);
+      setFeedbackMsg({ type: 'error', text: err.message || (isAr ? 'خطأ في الاتصال بالخادم' : 'Connection error') });
     } finally {
       setLoading(false);
     }
@@ -93,7 +150,10 @@ export default function AdminProductsPage() {
   }, []);
 
   const handleOpenCreate = () => {
-    setFormData(initialFormState);
+    setFormData({
+      ...initialFormState,
+      id: `ath-${Date.now().toString().slice(-6)}`,
+    });
     setIsCreateModalOpen(true);
   };
 
@@ -108,6 +168,50 @@ export default function AdminProductsPage() {
     setIsDeleteModalOpen(true);
   };
 
+  // Upload file from mobile studio / computer gallery directly to Supabase Storage
+  const handleFileUpload = async (file: File, field: 'image' | 'hoverImage') => {
+    if (!file) return;
+
+    if (field === 'image') setUploadingPrimary(true);
+    else setUploadingHover(true);
+
+    try {
+      const uploadData = new FormData();
+      uploadData.append('file', file);
+      uploadData.append('folder', 'products');
+
+      const res = await adminFetch('/api/admin/upload', {
+        method: 'POST',
+        body: uploadData,
+      });
+
+      const data = await res.json();
+      if (data.success && data.url) {
+        setFormData((prev) => ({ ...prev, [field]: data.url }));
+        setFeedbackMsg({
+          type: 'success',
+          text: isAr
+            ? `تم رفع ${field === 'image' ? 'صورة المنتج الأساسية' : 'صورة الموديل'} بنجاح من جهازك!`
+            : 'Image successfully uploaded from your device!',
+        });
+        setTimeout(() => setFeedbackMsg(null), 4000);
+      } else {
+        setFeedbackMsg({
+          type: 'error',
+          text: data.error || (isAr ? 'فشل رفع الصورة' : 'Failed to upload image'),
+        });
+      }
+    } catch (err: any) {
+      setFeedbackMsg({
+        type: 'error',
+        text: err.message || (isAr ? 'حدث خطأ أثناء رفع الصورة' : 'Upload error'),
+      });
+    } finally {
+      if (field === 'image') setUploadingPrimary(false);
+      else setUploadingHover(false);
+    }
+  };
+
   const handleSaveProduct = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -116,12 +220,10 @@ export default function AdminProductsPage() {
         ? { id: activeProduct?.id, ...formData }
         : formData;
 
-      const token = typeof window !== 'undefined' ? localStorage.getItem('atheer_admin_token') : '';
-      const res = await fetch('/api/admin/products', {
+      const res = await adminFetch('/api/admin/products', {
         method,
         headers: {
           'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify(payload),
       });
@@ -132,14 +234,14 @@ export default function AdminProductsPage() {
           type: 'success',
           text: isEditModalOpen
             ? isAr ? 'تم تحديث بيانات القطعة بنجاح' : 'Product updated successfully'
-            : isAr ? 'تمت إضافة القطعة الجديدة بنجاح' : 'Product created successfully',
+            : isAr ? 'تمت إضافة القطعة الجديدة وحفظها في المتجر بنجاح' : 'Product created successfully',
         });
         setIsCreateModalOpen(false);
         setIsEditModalOpen(false);
         fetchProducts();
         setTimeout(() => setFeedbackMsg(null), 4000);
       } else {
-        setFeedbackMsg({ type: 'error', text: data.error || 'Operation failed' });
+        setFeedbackMsg({ type: 'error', text: data.error || (isAr ? 'فشلت العملية' : 'Operation failed') });
       }
     } catch (err: any) {
       setFeedbackMsg({ type: 'error', text: err.message || 'Error occurred' });
@@ -149,12 +251,8 @@ export default function AdminProductsPage() {
   const handleDeleteProduct = async () => {
     if (!activeProduct) return;
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('atheer_admin_token') : '';
-      const res = await fetch(`/api/admin/products?id=${activeProduct.id}`, {
+      const res = await adminFetch(`/api/admin/products?id=${activeProduct.id}`, {
         method: 'DELETE',
-        headers: {
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
       });
       const data = await res.json();
       if (data.success) {
@@ -167,7 +265,7 @@ export default function AdminProductsPage() {
         fetchProducts();
         setTimeout(() => setFeedbackMsg(null), 4000);
       } else {
-        setFeedbackMsg({ type: 'error', text: data.error || 'Failed to delete' });
+        setFeedbackMsg({ type: 'error', text: data.error || (isAr ? 'فشل الحذف' : 'Failed to delete') });
       }
     } catch (err: any) {
       setFeedbackMsg({ type: 'error', text: err.message });
@@ -222,8 +320,8 @@ export default function AdminProductsPage() {
           </h1>
           <p className="text-xs text-brand-cream/60 mt-1">
             {isAr
-              ? 'إدارة الهوديز، السويت شيرتات، والمواصفات الفنية (GSM، المقاسات، والأسعار بالجنيه المصري)'
-              : 'Manage flagship hoodies, sweatshirts, GSM specs, sizes, and EGP pricing'}
+              ? 'إدارة الهوديز، السويت شيرتات، رفع الصور من الاستوديو، وتعديل الأسعار والمخزون'
+              : 'Manage flagship hoodies, sweatshirts, direct studio image uploads, specs, and pricing'}
           </p>
         </div>
 
@@ -231,7 +329,7 @@ export default function AdminProductsPage() {
           <button
             onClick={fetchProducts}
             className="p-2.5 bg-brand-charcoal border border-brand-border text-brand-cream/80 hover:text-brand-gold hover:border-brand-gold/40 transition-colors rounded-sm"
-            title={isAr ? 'تحديث' : 'Refresh'}
+            title={isAr ? 'تحديث الكتالوج' : 'Refresh Catalog'}
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
           </button>
@@ -248,13 +346,20 @@ export default function AdminProductsPage() {
       {/* Feedback Toast */}
       {feedbackMsg && (
         <div
-          className={`p-4 rounded-sm border flex items-center justify-between text-xs font-mono ${
+          className={`p-4 rounded-sm border flex items-center justify-between text-xs font-mono transition-all ${
             feedbackMsg.type === 'success'
-              ? 'bg-emerald-950/40 border-emerald-500/50 text-emerald-400'
-              : 'bg-rose-950/40 border-rose-500/50 text-rose-400'
+              ? 'bg-emerald-950/40 border-emerald-500/50 text-emerald-300'
+              : 'bg-rose-950/40 border-rose-500/50 text-rose-300'
           }`}
         >
-          <span>{feedbackMsg.text}</span>
+          <div className="flex items-center space-x-2 rtl:space-x-reverse">
+            {feedbackMsg.type === 'success' ? (
+              <Check className="w-4 h-4 text-emerald-400" />
+            ) : (
+              <AlertTriangle className="w-4 h-4 text-rose-400" />
+            )}
+            <span>{feedbackMsg.text}</span>
+          </div>
           <button onClick={() => setFeedbackMsg(null)} className="text-brand-cream/50 hover:text-brand-ivory">
             <X className="w-4 h-4" />
           </button>
@@ -332,7 +437,19 @@ export default function AdminProductsPage() {
               ) : filteredProducts.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="py-12 text-center text-brand-cream/50 font-mono">
-                    {isAr ? 'لا توجد منتجات مطابقة للبحث' : 'No garments found matching criteria.'}
+                    <div className="max-w-md mx-auto space-y-3">
+                      <Package className="w-10 h-10 text-brand-gold/40 mx-auto" />
+                      <p className="text-sm font-semibold text-brand-ivory">
+                        {isAr ? 'لا توجد قطع مطابقة للبحث' : 'No garments found matching criteria.'}
+                      </p>
+                      <button
+                        onClick={handleOpenCreate}
+                        className="inline-flex items-center space-x-2 rtl:space-x-reverse bg-brand-gold text-brand-black px-4 py-2 text-xs font-mono font-bold tracking-wider uppercase hover:bg-brand-gold-light rounded-sm"
+                      >
+                        <Plus className="w-4 h-4" />
+                        <span>{isAr ? 'إضافة أول قطعة الآن' : 'Add First Garment Now'}</span>
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ) : (
@@ -341,12 +458,12 @@ export default function AdminProductsPage() {
                     {/* Image & Title */}
                     <td className="py-3 px-4">
                       <div className="flex items-center space-x-3 rtl:space-x-reverse">
-                        <div className="w-12 h-14 bg-brand-stone relative flex-shrink-0 border border-brand-border/40 overflow-hidden rounded-xs">
+                        <div className="w-12 h-14 bg-brand-stone relative flex-shrink-0 border border-brand-border/40 overflow-hidden rounded-xs group cursor-pointer">
                           <Image
-                            src={product.image}
-                            alt={product.nameEn}
+                            src={product.image || 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?q=80&w=1000'}
+                            alt={product.nameEn || 'Garment'}
                             fill
-                            className="object-cover"
+                            className="object-cover group-hover:scale-105 transition-transform"
                             sizes="48px"
                           />
                         </div>
@@ -382,7 +499,7 @@ export default function AdminProductsPage() {
                     {/* GSM Spec */}
                     <td className="py-3 px-4 font-mono text-xs">
                       <span className="px-2 py-0.5 bg-brand-stone text-brand-ivory border border-brand-border/60 rounded-xs font-bold">
-                        {product.gsm} GSM
+                        {product.gsm || 500} GSM
                       </span>
                     </td>
 
@@ -431,14 +548,14 @@ export default function AdminProductsPage() {
                         <button
                           onClick={() => handleOpenEdit(product)}
                           className="p-1.5 text-brand-cream/60 hover:text-brand-gold hover:bg-brand-stone rounded-xs transition-colors"
-                          title={isAr ? 'تعديل' : 'Edit'}
+                          title={isAr ? 'تعديل القطعة والصور' : 'Edit Garment & Images'}
                         >
                           <Edit2 className="w-3.5 h-3.5" />
                         </button>
                         <button
                           onClick={() => handleOpenDelete(product)}
                           className="p-1.5 text-brand-cream/60 hover:text-rose-400 hover:bg-rose-950/30 rounded-xs transition-colors"
-                          title={isAr ? 'حذف' : 'Delete'}
+                          title={isAr ? 'حذف القطعة' : 'Delete Garment'}
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
@@ -455,16 +572,16 @@ export default function AdminProductsPage() {
       {/* CREATE / EDIT MODAL */}
       {(isCreateModalOpen || isEditModalOpen) && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-sm p-4 overflow-y-auto">
-          <div className="bg-brand-charcoal border border-brand-border w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-sm shadow-2xl p-6 my-8">
+          <div className="bg-brand-charcoal border border-brand-border w-full max-w-4xl max-h-[92vh] overflow-y-auto rounded-sm shadow-2xl p-6 my-8">
             <div className="flex items-center justify-between pb-4 border-b border-brand-border/80 mb-6">
               <div>
                 <span className="text-[10px] font-mono uppercase tracking-widest text-brand-gold">
-                  {isEditModalOpen ? (isAr ? 'تعديل القطعة' : 'Edit Garment') : (isAr ? 'إضافة قطعة' : 'New Garment')}
+                  {isEditModalOpen ? (isAr ? 'تعديل تفاصيل وصور القطعة' : 'Edit Garment & Media') : (isAr ? 'إضافة قطعة جديدة' : 'Add New Streetwear Piece')}
                 </span>
                 <h3 className="text-xl font-black text-brand-ivory font-serif">
                   {isEditModalOpen
-                    ? isAr ? `تعديل: ${activeProduct?.nameAr}` : `Edit: ${activeProduct?.nameEn}`
-                    : isAr ? 'إضافة هودي / سويت شيرت جديد' : 'Add New Streetwear Garment'}
+                    ? isAr ? `تعديل: ${activeProduct?.nameAr || activeProduct?.nameEn}` : `Edit: ${activeProduct?.nameEn}`
+                    : isAr ? 'إضافة هودي / سويت شيرت جديد للكتالوج' : 'Add New Garment to Catalog'}
                 </h3>
               </div>
               <button
@@ -479,6 +596,271 @@ export default function AdminProductsPage() {
             </div>
 
             <form onSubmit={handleSaveProduct} className="space-y-6 text-xs font-mono">
+              {/* SECTION: IMAGE UPLOADS FROM STUDIO / PHONE (PRIMARY USER FOCUS) */}
+              <div className="p-4 bg-brand-stone/20 border border-brand-gold/30 rounded-sm space-y-6">
+                <div className="flex items-center space-x-2 rtl:space-x-reverse text-brand-gold font-bold text-xs uppercase tracking-wider">
+                  <Camera className="w-4 h-4 text-brand-gold" />
+                  <span>{isAr ? 'صور المنتج (رفع مباشر من الاستوديو أو الهاتف)' : 'Garment Visuals (Direct Device & Studio Upload)'}</span>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* 1. Primary Product Image */}
+                  <div className="space-y-3 p-3 bg-brand-charcoal/80 border border-brand-border rounded-sm">
+                    <div className="flex items-center justify-between">
+                      <label className="text-brand-ivory font-bold flex items-center space-x-1.5 rtl:space-x-reverse">
+                        <span>{isAr ? 'الصورة الأساسية للمنتج *' : 'Primary Garment Photo *'}</span>
+                      </label>
+                      {formData.image && (
+                        <span className="text-[10px] text-emerald-400 font-mono flex items-center space-x-1 rtl:space-x-reverse">
+                          <Check className="w-3 h-3" />
+                          <span>{isAr ? 'محددة' : 'Selected'}</span>
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Thumbnail Preview Box */}
+                    <div className="relative w-full h-48 bg-brand-stone/40 border border-brand-border/60 rounded-sm overflow-hidden flex items-center justify-center">
+                      {formData.image ? (
+                        <>
+                          <Image
+                            src={formData.image}
+                            alt="Primary Garment Preview"
+                            fill
+                            className="object-cover"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 hover:opacity-100 transition-opacity flex items-end p-2">
+                            <span className="text-[10px] text-brand-ivory font-mono">
+                              {isAr ? 'معاينة العرض في المتجر' : 'Storefront Preview'}
+                            </span>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="text-center p-4 text-brand-cream/40 space-y-1">
+                          <ImageIcon className="w-8 h-8 mx-auto text-brand-cream/30" />
+                          <p className="text-[11px]">{isAr ? 'لم يتم اختيار صورة بعد' : 'No image uploaded'}</p>
+                        </div>
+                      )}
+
+                      {uploadingPrimary && (
+                        <div className="absolute inset-0 bg-brand-black/80 flex flex-col items-center justify-center space-y-2 z-10">
+                          <RefreshCw className="w-6 h-6 text-brand-gold animate-spin" />
+                          <span className="text-[11px] text-brand-gold font-bold">
+                            {isAr ? 'جاري رفع الصورة من جهازك...' : 'Uploading from device...'}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Direct Upload Trigger */}
+                    <input
+                      type="file"
+                      ref={primaryFileInputRef}
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleFileUpload(file, 'image');
+                      }}
+                    />
+
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        disabled={uploadingPrimary}
+                        onClick={() => primaryFileInputRef.current?.click()}
+                        className="flex-1 flex items-center justify-center space-x-2 rtl:space-x-reverse py-2.5 px-3 bg-brand-gold text-brand-black font-bold text-xs uppercase tracking-wider hover:bg-brand-gold-light transition-colors shadow-gold rounded-xs"
+                      >
+                        <Upload className="w-4 h-4" />
+                        <span>{isAr ? 'رفع من الاستوديو / جهازك' : 'Upload from Studio'}</span>
+                      </button>
+
+                      {formData.image && (
+                        <button
+                          type="button"
+                          onClick={() => setFormData((prev) => ({ ...prev, image: '' }))}
+                          className="px-2.5 py-2.5 border border-brand-border text-brand-cream/60 hover:text-rose-400 hover:border-rose-500/50 rounded-xs"
+                          title={isAr ? 'حذف الصورة' : 'Remove Image'}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Streetwear Presets Selection */}
+                    <div className="pt-2 border-t border-brand-border/40">
+                      <p className="text-[10px] text-brand-cream/60 mb-1.5">
+                        {isAr ? 'أو اختر صورة جاهزة من تصوير أثير:' : 'Or pick an ATHEER studio preset:'}
+                      </p>
+                      <div className="grid grid-cols-3 gap-1.5">
+                        {PRESET_GARMENT_IMAGES.slice(0, 3).map((preset) => (
+                          <button
+                            type="button"
+                            key={preset.url}
+                            onClick={() => setFormData((prev) => ({ ...prev, image: preset.url }))}
+                            className={`relative h-12 rounded-xs overflow-hidden border transition-all ${
+                              formData.image === preset.url
+                                ? 'border-brand-gold ring-1 ring-brand-gold'
+                                : 'border-brand-border/60 hover:border-brand-cream/40 opacity-70 hover:opacity-100'
+                            }`}
+                          >
+                            <Image src={preset.url} alt={preset.name} fill className="object-cover" sizes="60px" />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 2. Secondary / Hover Model Image */}
+                  <div className="space-y-3 p-3 bg-brand-charcoal/80 border border-brand-border rounded-sm">
+                    <div className="flex items-center justify-between">
+                      <label className="text-brand-ivory font-bold flex items-center space-x-1.5 rtl:space-x-reverse">
+                        <span>{isAr ? 'صورة الموديل أو الخلفية (Hover) (اختياري)' : 'Model / Hover Shot (Optional)'}</span>
+                      </label>
+                      {formData.hoverImage && (
+                        <span className="text-[10px] text-emerald-400 font-mono flex items-center space-x-1 rtl:space-x-reverse">
+                          <Check className="w-3 h-3" />
+                          <span>{isAr ? 'محددة' : 'Selected'}</span>
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Thumbnail Preview Box */}
+                    <div className="relative w-full h-48 bg-brand-stone/40 border border-brand-border/60 rounded-sm overflow-hidden flex items-center justify-center">
+                      {formData.hoverImage ? (
+                        <>
+                          <Image
+                            src={formData.hoverImage}
+                            alt="Hover Model Preview"
+                            fill
+                            className="object-cover"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 hover:opacity-100 transition-opacity flex items-end p-2">
+                            <span className="text-[10px] text-brand-ivory font-mono">
+                              {isAr ? 'تظهر عند تمرير الماوس فوق القطعة' : 'Displays on mouse hover'}
+                            </span>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="text-center p-4 text-brand-cream/40 space-y-1">
+                          <ImageIcon className="w-8 h-8 mx-auto text-brand-cream/30" />
+                          <p className="text-[11px]">{isAr ? 'يمكنك رفع صورة ارتداء الموديل للقطعة' : 'Upload on-model shot'}</p>
+                        </div>
+                      )}
+
+                      {uploadingHover && (
+                        <div className="absolute inset-0 bg-brand-black/80 flex flex-col items-center justify-center space-y-2 z-10">
+                          <RefreshCw className="w-6 h-6 text-brand-gold animate-spin" />
+                          <span className="text-[11px] text-brand-gold font-bold">
+                            {isAr ? 'جاري رفع صورة الموديل...' : 'Uploading model shot...'}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Direct Upload Trigger */}
+                    <input
+                      type="file"
+                      ref={hoverFileInputRef}
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleFileUpload(file, 'hoverImage');
+                      }}
+                    />
+
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        disabled={uploadingHover}
+                        onClick={() => hoverFileInputRef.current?.click()}
+                        className="flex-1 flex items-center justify-center space-x-2 rtl:space-x-reverse py-2.5 px-3 bg-brand-stone text-brand-ivory border border-brand-border/80 font-bold text-xs uppercase tracking-wider hover:border-brand-gold transition-colors rounded-xs"
+                      >
+                        <Upload className="w-4 h-4 text-brand-gold" />
+                        <span>{isAr ? 'رفع صورة الموديل من الاستوديو' : 'Upload Model Shot'}</span>
+                      </button>
+
+                      {formData.hoverImage && (
+                        <button
+                          type="button"
+                          onClick={() => setFormData((prev) => ({ ...prev, hoverImage: '' }))}
+                          className="px-2.5 py-2.5 border border-brand-border text-brand-cream/60 hover:text-rose-400 hover:border-rose-500/50 rounded-xs"
+                          title={isAr ? 'إزالة صورة الموديل' : 'Remove Hover Image'}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Model Presets Selection */}
+                    <div className="pt-2 border-t border-brand-border/40">
+                      <p className="text-[10px] text-brand-cream/60 mb-1.5">
+                        {isAr ? 'أو اختر لقطة موديل جاهزة:' : 'Or pick an on-model preset:'}
+                      </p>
+                      <div className="grid grid-cols-3 gap-1.5">
+                        {PRESET_MODEL_IMAGES.slice(0, 3).map((preset) => (
+                          <button
+                            type="button"
+                            key={preset.url}
+                            onClick={() => setFormData((prev) => ({ ...prev, hoverImage: preset.url }))}
+                            className={`relative h-12 rounded-xs overflow-hidden border transition-all ${
+                              formData.hoverImage === preset.url
+                                ? 'border-brand-gold ring-1 ring-brand-gold'
+                                : 'border-brand-border/60 hover:border-brand-cream/40 opacity-70 hover:opacity-100'
+                            }`}
+                          >
+                            <Image src={preset.url} alt={preset.name} fill className="object-cover" sizes="60px" />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Optional Manual URL Accordion */}
+                <div className="pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowManualUrl(!showManualUrl)}
+                    className="text-[11px] text-brand-cream/60 hover:text-brand-gold flex items-center space-x-1.5 rtl:space-x-reverse"
+                  >
+                    <LinkIcon className="w-3.5 h-3.5" />
+                    <span>
+                      {showManualUrl
+                        ? isAr ? 'إخفاء الروابط اليدوية' : 'Hide manual URL inputs'
+                        : isAr ? 'أو أدخل روابط الصور يدوياً (اختياري)' : 'Or enter image URLs manually'}
+                    </span>
+                  </button>
+
+                  {showManualUrl && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3 pt-3 border-t border-brand-border/30">
+                      <div>
+                        <label className="block text-brand-cream/70 mb-1 text-[10px]">
+                          {isAr ? 'رابط الصورة الأساسية المباشر' : 'Primary Direct Image URL'}
+                        </label>
+                        <input
+                          type="url"
+                          value={formData.image || ''}
+                          onChange={(e) => setFormData({ ...formData, image: e.target.value })}
+                          className="w-full bg-brand-stone/40 border border-brand-border px-3 py-1.5 text-brand-ivory rounded-xs text-[11px] focus:border-brand-gold focus:outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-brand-cream/70 mb-1 text-[10px]">
+                          {isAr ? 'رابط صورة الموديل (Hover)' : 'Hover Direct Image URL'}
+                        </label>
+                        <input
+                          type="url"
+                          value={formData.hoverImage || ''}
+                          onChange={(e) => setFormData({ ...formData, hoverImage: e.target.value })}
+                          className="w-full bg-brand-stone/40 border border-brand-border px-3 py-1.5 text-brand-ivory rounded-xs text-[11px] focus:border-brand-gold focus:outline-none"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
               {/* Names */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -517,7 +899,25 @@ export default function AdminProductsPage() {
                   </label>
                   <select
                     value={formData.category || 'hoodies'}
-                    onChange={(e) => setFormData({ ...formData, category: e.target.value as any })}
+                    onChange={(e) => {
+                      const cat = e.target.value as any;
+                      setFormData({
+                        ...formData,
+                        category: cat,
+                        categoryLabelEn:
+                          cat === 'hoodies'
+                            ? 'Core Heavyweight Hoodie'
+                            : cat === 'sweatshirts'
+                            ? 'Signature Crewneck Sweatshirt'
+                            : 'Heavyweight Drop T-Shirt',
+                        categoryLabelAr:
+                          cat === 'hoodies'
+                            ? 'هودي أساسي فائق الثقل'
+                            : cat === 'sweatshirts'
+                            ? 'سويت شيرت كرو نيك فاخر'
+                            : 'تي شيرت أثير الثقيل',
+                      });
+                    }}
                     className="w-full bg-brand-stone/40 border border-brand-border px-3 py-2 text-brand-ivory rounded-sm focus:border-brand-gold focus:outline-none"
                   >
                     <option value="hoodies">Hoodies (Flagship 500 GSM)</option>
@@ -605,37 +1005,10 @@ export default function AdminProductsPage() {
                 </div>
               </div>
 
-              {/* Images */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-brand-cream/80 mb-1">
-                    {isAr ? 'رابط الصورة الأساسية *' : 'Primary Image URL *'}
-                  </label>
-                  <input
-                    type="url"
-                    required
-                    value={formData.image || ''}
-                    onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                    className="w-full bg-brand-stone/40 border border-brand-border px-3 py-2 text-brand-ivory rounded-sm focus:border-brand-gold focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-brand-cream/80 mb-1">
-                    {isAr ? 'رابط صورة التحويم (Hover)' : 'Hover Image URL'}
-                  </label>
-                  <input
-                    type="url"
-                    value={formData.hoverImage || ''}
-                    onChange={(e) => setFormData({ ...formData, hoverImage: e.target.value })}
-                    className="w-full bg-brand-stone/40 border border-brand-border px-3 py-2 text-brand-ivory rounded-sm focus:border-brand-gold focus:outline-none"
-                  />
-                </div>
-              </div>
-
               {/* Available Sizes Selection */}
               <div>
                 <label className="block text-brand-cream/80 mb-2">
-                  {isAr ? 'المقاسات المتوفرة (اختر المقاسات النشطة) *' : 'Available Sizes *'}
+                  {isAr ? 'المقاسات المتوفرة (اختر المقاسات النشطة للقطعة) *' : 'Available Sizes *'}
                 </label>
                 <div className="flex flex-wrap gap-2">
                   {['S', 'M', 'L', 'XL', 'XXL'].map((size) => {
@@ -647,7 +1020,7 @@ export default function AdminProductsPage() {
                         onClick={() => toggleSize(size)}
                         className={`w-12 h-10 flex items-center justify-center font-bold text-xs border rounded-xs transition-colors ${
                           isSelected
-                            ? 'bg-brand-gold text-brand-black border-brand-gold'
+                            ? 'bg-brand-gold text-brand-black border-brand-gold font-black shadow-gold'
                             : 'bg-brand-stone/40 text-brand-cream/70 border-brand-border hover:border-brand-gold/40'
                         }`}
                       >
@@ -709,6 +1082,7 @@ export default function AdminProductsPage() {
                     value={formData.descriptionEn || ''}
                     onChange={(e) => setFormData({ ...formData, descriptionEn: e.target.value })}
                     className="w-full bg-brand-stone/40 border border-brand-border px-3 py-2 text-brand-ivory rounded-sm focus:border-brand-gold focus:outline-none"
+                    placeholder="Minimalist streetwear silhouette, GSM 500 French terry cotton..."
                   />
                 </div>
                 <div>
@@ -720,6 +1094,7 @@ export default function AdminProductsPage() {
                     value={formData.descriptionAr || ''}
                     onChange={(e) => setFormData({ ...formData, descriptionAr: e.target.value })}
                     className="w-full bg-brand-stone/40 border border-brand-border px-3 py-2 text-brand-ivory rounded-sm focus:border-brand-gold focus:outline-none text-right"
+                    placeholder="قطن فرنش تيري كثيف بمواصفات GSM 500، قصّة بوكسي عريضة وأكتاف ساقطة..."
                   />
                 </div>
               </div>
@@ -771,11 +1146,11 @@ export default function AdminProductsPage() {
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 bg-brand-gold text-brand-black font-bold tracking-wider uppercase hover:bg-brand-gold-light rounded-sm shadow-gold"
+                  className="px-6 py-2.5 bg-brand-gold text-brand-black font-bold tracking-wider uppercase hover:bg-brand-gold-light rounded-sm shadow-gold"
                 >
                   {isEditModalOpen
                     ? isAr ? 'حفظ التعديلات' : 'Save Changes'
-                    : isAr ? 'إنشاء القطعة' : 'Create Garment'}
+                    : isAr ? 'إنشاء القطعة ونشرها' : 'Create & Publish Garment'}
                 </button>
               </div>
             </form>

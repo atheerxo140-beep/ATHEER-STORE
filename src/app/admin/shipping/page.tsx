@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useLanguage } from '@/context/LanguageContext';
 import { ShippingZone } from '@/types';
 import { GovernorateInfo } from '@/data/shippingZones';
+import { adminFetch } from '@/lib/adminAuthClient';
 import {
   Truck,
   MapPin,
@@ -32,7 +33,7 @@ export default function AdminShippingPage() {
   const fetchShippingZones = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/admin/shipping');
+      const res = await adminFetch('/api/admin/shipping');
       const data = await res.json();
       if (data.success) {
         setZones(data.zones);
@@ -68,7 +69,7 @@ export default function AdminShippingPage() {
   const handleSaveZone = async (zoneId: string) => {
     setSaving(true);
     try {
-      const res = await fetch('/api/admin/shipping', {
+      const res = await adminFetch('/api/admin/shipping', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -98,7 +99,7 @@ export default function AdminShippingPage() {
 
   const handleToggleActive = async (zone: ShippingZone) => {
     try {
-      const res = await fetch('/api/admin/shipping', {
+      const res = await adminFetch('/api/admin/shipping', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

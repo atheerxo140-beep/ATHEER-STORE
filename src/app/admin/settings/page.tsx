@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '@/context/LanguageContext';
 import { StoreSettings, PaymentMethodConfig } from '@/types';
+import { adminFetch } from '@/lib/adminAuthClient';
 import {
   Settings,
   Save,
@@ -57,12 +58,8 @@ export default function AdminSettingsPage() {
   const fetchSettings = async () => {
     setLoading(true);
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('atheer_admin_token') : '';
-      const res = await fetch('/api/admin/settings', {
+      const res = await adminFetch('/api/admin/settings', {
         cache: 'no-store',
-        headers: {
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
       });
       const data = await res.json();
       if (data.success) {
@@ -78,12 +75,8 @@ export default function AdminSettingsPage() {
   const fetchPaymentMethods = async () => {
     setLoadingMethods(true);
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('atheer_admin_token') : '';
-      const res = await fetch('/api/admin/payment-methods', {
+      const res = await adminFetch('/api/admin/payment-methods', {
         cache: 'no-store',
-        headers: {
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
       });
       const data = await res.json();
       if (data.success && Array.isArray(data.methods)) {
@@ -107,12 +100,10 @@ export default function AdminSettingsPage() {
 
     setSaving(true);
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('atheer_admin_token') : '';
-      const res = await fetch('/api/admin/settings', {
+      const res = await adminFetch('/api/admin/settings', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify(settings),
       });
@@ -137,7 +128,7 @@ export default function AdminSettingsPage() {
 
   const handleTogglePaymentMethod = async (id: string) => {
     try {
-      const res = await fetch('/api/admin/payment-methods', {
+      const res = await adminFetch('/api/admin/payment-methods', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, action: 'toggle' }),
@@ -208,7 +199,7 @@ export default function AdminSettingsPage() {
         descriptionEn: formDescriptionEn.trim(),
       };
 
-      const res = await fetch(url, {
+      const res = await adminFetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
@@ -239,7 +230,7 @@ export default function AdminSettingsPage() {
     }
 
     try {
-      const res = await fetch(`/api/admin/payment-methods?id=${encodeURIComponent(id)}`, {
+      const res = await adminFetch(`/api/admin/payment-methods?id=${encodeURIComponent(id)}`, {
         method: 'DELETE',
       });
       const data = await res.json();

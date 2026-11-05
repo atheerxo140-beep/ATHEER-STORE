@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useLanguage } from '@/context/LanguageContext';
 import { HomepageContent, ShowcaseCategoryItem } from '@/types';
 import { defaultHomepageContent } from '@/data/defaultHomepageContent';
+import { adminFetch } from '@/lib/adminAuthClient';
 import {
   Image as ImageIcon,
   Save,
@@ -83,12 +84,8 @@ export default function AdminContentPage() {
   const fetchContent = async () => {
     setLoading(true);
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('atheer_admin_token') : '';
-      const res = await fetch('/api/admin/homepage-content', {
+      const res = await adminFetch('/api/admin/homepage-content', {
         cache: 'no-store',
-        headers: {
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
       });
       const data = await res.json();
       if (data.success && data.content) {
@@ -107,16 +104,13 @@ export default function AdminContentPage() {
 
   // Upload handler to upload file from local device/studio directly to Supabase Storage
   const uploadMediaFile = async (file: File, folder: string): Promise<string | null> => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('atheer_admin_token') : '';
-
     const formData = new FormData();
     formData.append('file', file);
     formData.append('folder', folder);
 
     try {
-      const res = await fetch('/api/admin/upload', {
+      const res = await adminFetch('/api/admin/upload', {
         method: 'POST',
-        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
         body: formData,
       });
 
@@ -261,12 +255,10 @@ export default function AdminContentPage() {
     setFeedback(null);
 
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('atheer_admin_token') : '';
-      const res = await fetch('/api/admin/homepage-content', {
+      const res = await adminFetch('/api/admin/homepage-content', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify(content),
       });
