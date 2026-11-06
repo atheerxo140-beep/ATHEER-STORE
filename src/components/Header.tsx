@@ -1,10 +1,14 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useLanguage } from '@/context/LanguageContext';
 import { useCart } from '@/context/CartContext';
 import { useHomepageContent } from '@/hooks/useHomepageContent';
+import { Product } from '@/types';
+import { mockProducts } from '@/data/mockProducts';
+import { matchesProduct } from '@/lib/searchUtils';
 import {
   ShoppingBag,
   Search,
@@ -13,13 +17,19 @@ import {
   Globe,
   Heart,
   Flame,
+  Sparkles,
+  ArrowRight,
+  ArrowLeft,
+  ArrowUpRight,
 } from 'lucide-react';
 
 export const Header: React.FC = () => {
-  const { language, setLanguage, isRtl, t } = useLanguage();
+  const router = useRouter();
+  const { language, setLanguage, isRtl, t, formatPrice } = useLanguage();
   const { content } = useHomepageContent();
   const { totalCount, setIsCartOpen } = useCart();
   const isAr = language === 'ar';
+  const ArrowIcon = isRtl ? ArrowLeft : ArrowRight;
   const announcementText = isAr
     ? content.announcementTextAr || t('announcementText')
     : content.announcementTextEn || t('announcementText');
@@ -27,6 +37,64 @@ export const Header: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [products, setProducts] = useState<Product[]>(mockProducts);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    fetch('/api/products', { cache: 'no-store' })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && Array.isArray(data.products) && data.products.length > 0) {
+          setProducts(data.products);
+        }
+      })
+      .catch((err) => console.warn('Header failed to fetch live products:', err));
+  }, []);
+
+  useEffect(() => {
+    if (searchOpen) {
+      setTimeout(() => {
+        searchInputRef.current?.focus();
+      }, 50);
+    }
+  }, [searchOpen]);
+
+  const matchingProducts = searchQuery.trim()
+    ? products.filter((p) => matchesProduct(p, searchQuery))
+    : [];
+
+  const popularSearches = isAr
+    ? ['هوديز 500 GSM', 'سويت شيرت', 'تي شيرت بوكسي', 'أوفرسايز', 'أونيكس أسود']
+    : ['500 GSM Hoodies', 'Crewnecks', 'Boxy Tees', 'Oversized', 'Onyx Black'];
+
+  const handleSelectProduct = (id: string) => {
+    setSearchOpen(false);
+    setSearchQuery('');
+    router.push(`/products/${id}`);
+  };
+
+  const handleSearchSubmit = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    const query = searchQuery.trim();
+    if (!query) return;
+
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(
+        new CustomEvent('atheer:search', {
+          detail: query,
+        })
+      );
+
+      const productsEl = document.getElementById('products');
+      if (productsEl) {
+        productsEl.scrollIntoView({ behavior: 'smooth' });
+      } else {
+        router.push(`/#products?search=${encodeURIComponent(query)}`);
+      }
+    }
+
+    setSearchOpen(false);
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -191,25 +259,174 @@ export const Header: React.FC = () => {
           </div>
         </div>
 
-        {/* Search Drawer */}
+        {/* Luxury Live Search Drawer */}
         {searchOpen && (
-          <div className="border-t border-brand-border/60 bg-brand-charcoal/95 backdrop-blur-md px-4 py-4 animate-slide-down">
-            <div className="max-w-3xl mx-auto flex items-center">
-              <Search className="w-5 h-5 text-brand-gold mr-3 rtl:ml-3 rtl:mr-0 opacity-80" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder={t('searchPlaceholder')}
-                className="w-full bg-transparent text-brand-ivory placeholder-brand-muted text-sm sm:text-base focus:outline-none font-sans"
-                autoFocus
-              />
-              <button
-                onClick={() => setSearchOpen(false)}
-                className="text-brand-muted hover:text-brand-ivory p-1"
+          <div className="border-t border-brand-gold/40 bg-brand-charcoal/98 backdrop-blur-xl px-4 py-5 animate-slide-down shadow-2xl relative z-50">
+            <div className="max-w-4xl mx-auto space-y-4">
+              {/* Search Input Bar */}
+              <form
+                onSubmit={handleSearchSubmit}
+                className="relative flex items-center bg-brand-black border border-brand-border/80 focus-within:border-brand-gold transition-colors px-4 py-3 rounded-xs shadow-inner"
               >
-                <X className="w-5 h-5" />
-              </button>
+                <Search className="w-5 h-5 text-brand-gold mr-3 rtl:ml-3 rtl:mr-0 shrink-0" />
+                <input
+                  ref={searchInputRef}
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder={
+                    isAr
+                      ? 'ابحث عن هوديز، سويت شيرتات، تي شيرت، 500 GSM، أوفرسايز...'
+                      : t('searchPlaceholder')
+                  }
+                  className="w-full bg-transparent text-brand-ivory placeholder-brand-muted text-sm sm:text-base focus:outline-none font-sans"
+                  autoFocus
+                />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery('')}
+                    className="p-1 text-brand-muted hover:text-brand-ivory transition-colors mr-2 rtl:ml-2 rtl:mr-0"
+                    title={isAr ? 'مسح البحث' : 'Clear search'}
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearchOpen(false);
+                    setSearchQuery('');
+                  }}
+                  className="text-brand-muted hover:text-brand-gold p-1 transition-colors border-r rtl:border-r-0 rtl:border-l border-brand-border/60 pr-2 rtl:pl-2 rtl:pr-0"
+                  title={isAr ? 'إغلاق البحث' : 'Close search'}
+                >
+                  <span className="text-xs font-mono uppercase tracking-wider">
+                    {isAr ? 'إغلاق' : 'ESC'}
+                  </span>
+                </button>
+              </form>
+
+              {/* Suggestions Chips when Query is Empty */}
+              {!searchQuery.trim() && (
+                <div className="pt-1 pb-1">
+                  <div className="flex items-center space-x-2 rtl:space-x-reverse text-xs text-brand-gold/80 mb-2 font-mono">
+                    <Sparkles className="w-3.5 h-3.5 text-brand-gold" />
+                    <span>{isAr ? 'عمليات البحث الأكثر شيوعاً:' : 'Popular Searches:'}</span>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {popularSearches.map((term) => (
+                      <button
+                        key={term}
+                        type="button"
+                        onClick={() => setSearchQuery(term)}
+                        className="px-3 py-1 bg-brand-black/70 hover:bg-brand-gold hover:text-brand-black border border-brand-border/70 hover:border-brand-gold text-brand-ivory/80 text-xs font-mono transition-colors rounded-xs"
+                      >
+                        {term}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Search Results Display */}
+              {searchQuery.trim() && (
+                <div className="space-y-3 animate-fade-in">
+                  {/* Results Count Bar */}
+                  <div className="flex items-center justify-between text-xs font-mono border-b border-brand-border/40 pb-2">
+                    <span className="text-brand-cream/90">
+                      {isAr
+                        ? `نتائج البحث لـ "${searchQuery}": (${matchingProducts.length} ${
+                            matchingProducts.length === 1 ? 'قطعة' : 'قطع'
+                          })`
+                        : `Results for "${searchQuery}": (${matchingProducts.length} items)`}
+                    </span>
+                    {matchingProducts.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={handleSearchSubmit}
+                        className="text-brand-gold hover:underline flex items-center space-x-1 rtl:space-x-reverse font-semibold"
+                      >
+                        <span>{isAr ? 'عرض وتصفية بالمعرض' : 'Filter in store gallery'}</span>
+                        <ArrowIcon className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Matching Products Grid */}
+                  {matchingProducts.length > 0 ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 max-h-[60vh] overflow-y-auto pr-1">
+                      {matchingProducts.map((prod) => (
+                        <div
+                          key={prod.id}
+                          onClick={() => handleSelectProduct(prod.id)}
+                          className="flex items-center space-x-3 rtl:space-x-reverse p-2.5 bg-brand-black/80 hover:bg-brand-black border border-brand-border/60 hover:border-brand-gold/80 transition-all cursor-pointer group rounded-xs"
+                        >
+                          {/* Image */}
+                          <div className="relative w-16 h-20 bg-brand-charcoal shrink-0 overflow-hidden border border-brand-border/40">
+                            <div
+                              className="w-full h-full bg-cover bg-center group-hover:scale-105 transition-transform duration-300"
+                              style={{ backgroundImage: `url('${prod.image}')` }}
+                            />
+                            <span className="absolute bottom-1 right-1 rtl:left-1 rtl:right-auto bg-brand-black/90 text-brand-gold font-mono text-[8px] px-1 font-bold">
+                              {prod.gsm}G
+                            </span>
+                          </div>
+
+                          {/* Info */}
+                          <div className="flex-1 min-w-0">
+                            <span className="text-[10px] uppercase font-mono text-brand-gold block truncate">
+                              {isAr ? prod.categoryLabelAr : prod.categoryLabelEn}
+                            </span>
+                            <h4 className="text-xs font-bold text-brand-ivory group-hover:text-brand-gold transition-colors truncate font-sans">
+                              {isAr ? prod.nameAr : prod.nameEn}
+                            </h4>
+                            <div className="mt-1 flex items-baseline space-x-2 rtl:space-x-reverse font-mono text-xs">
+                              <span className="text-brand-gold font-bold">
+                                {formatPrice(prod.price)}
+                              </span>
+                              {prod.isComingSoon && (
+                                <span className="text-[9px] text-amber-400 bg-amber-400/10 px-1 py-0.5 border border-amber-400/30">
+                                  {isAr ? 'قريباً' : 'Coming Soon'}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Arrow indicator */}
+                          <ArrowUpRight className="w-4 h-4 text-brand-cream/30 group-hover:text-brand-gold transition-colors shrink-0" />
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    /* No Results Card */
+                    <div className="p-8 text-center bg-brand-black/60 border border-brand-border/40 rounded-xs space-y-3">
+                      <p className="text-sm text-brand-cream/90 font-sans">
+                        {isAr
+                          ? `لم نتمكن من العثور على أي قطعة تطابق "${searchQuery}"`
+                          : `No pieces found matching "${searchQuery}"`}
+                      </p>
+                      <p className="text-xs text-brand-muted font-sans">
+                        {isAr
+                          ? 'جرب البحث بكلمات عامة مثل: هوديز، سويت شيرت، بوكسي، أو 500 GSM'
+                          : 'Try searching with generic terms like: hoodies, crewnecks, boxy, or 500 GSM'}
+                      </p>
+                      <div className="pt-2 flex flex-wrap justify-center gap-2">
+                        {popularSearches.map((term) => (
+                          <button
+                            key={term}
+                            type="button"
+                            onClick={() => setSearchQuery(term)}
+                            className="px-3 py-1 bg-brand-charcoal text-brand-gold border border-brand-gold/40 text-xs font-mono hover:bg-brand-gold hover:text-brand-black transition-colors"
+                          >
+                            {term}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         )}
