@@ -1,17 +1,38 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLanguage } from '@/context/LanguageContext';
 import { useStoreSettings } from '@/hooks/useStoreSettings';
-import { Flame, ArrowRight, ArrowLeft, Check, MapPin, Phone } from 'lucide-react';
+import { useHomepageContent } from '@/hooks/useHomepageContent';
+import QRCode from 'qrcode';
+import { Flame, ArrowRight, ArrowLeft, Check, MapPin, Phone, QrCode } from 'lucide-react';
 import Link from 'next/link';
 
 export const Footer: React.FC = () => {
   const { t, language, isRtl } = useLanguage();
   const { settings } = useStoreSettings();
+  const { content } = useHomepageContent();
   const ArrowIcon = isRtl ? ArrowLeft : ArrowRight;
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
+  const [footerQrUrl, setFooterQrUrl] = useState('');
+
+  const targetQr =
+    content.qrTargetUrl?.trim() ||
+    (typeof window !== 'undefined' ? window.location.origin : 'https://atheer.store');
+
+  useEffect(() => {
+    if (content.showQrCode !== false) {
+      QRCode.toDataURL(targetQr, {
+        errorCorrectionLevel: 'H',
+        margin: 2,
+        width: 320,
+        color: { dark: '#C5A880', light: '#0A0A0A' },
+      })
+        .then(setFooterQrUrl)
+        .catch(console.error);
+    }
+  }, [targetQr, content.showQrCode]);
 
   const handleSubscribe = (e: React.FormEvent) => {
     e.preventDefault();
@@ -192,6 +213,68 @@ export const Footer: React.FC = () => {
             </ul>
           </div>
         </div>
+
+        {/* Permanent Store QR Code Showcase in Footer */}
+        {content.showQrCode !== false && (
+          <div className="mt-12 p-6 sm:p-8 bg-brand-charcoal/50 border border-brand-gold/40 rounded-xs flex flex-col md:flex-row items-center justify-between gap-6 shadow-2xl">
+            <div className="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-5 rtl:space-x-reverse text-center sm:text-right rtl:sm:text-right">
+              {/* QR Image */}
+              <div className="p-2.5 bg-brand-black border border-brand-gold/60 rounded-xs shrink-0 shadow-gold relative">
+                {footerQrUrl ? (
+                  <div className="relative">
+                    <img
+                      src={footerQrUrl}
+                      alt="ATHEER Permanent Store QR"
+                      className="w-28 h-28 object-contain"
+                    />
+                    <div className="absolute inset-0 m-auto w-7 h-7 rounded-xs bg-brand-black border border-brand-gold text-brand-gold flex items-center justify-center font-bold text-xs shadow-md">
+                      أ
+                    </div>
+                  </div>
+                ) : (
+                  <div className="w-28 h-28 bg-brand-charcoal animate-pulse flex items-center justify-center">
+                    <QrCode className="w-8 h-8 text-brand-gold" />
+                  </div>
+                )}
+              </div>
+
+              {/* Text Info */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-center sm:justify-start space-x-2 rtl:space-x-reverse">
+                  <span className="text-[10px] font-mono uppercase tracking-widest text-brand-gold font-bold">
+                    {language === 'ar' ? 'رمز المتجر الدائم' : 'Permanent Store QR Code'}
+                  </span>
+                  <span className="bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 text-[9px] font-mono px-2 py-0.5 rounded-full">
+                    {language === 'ar' ? 'مدى الحياة' : 'Lifetime'}
+                  </span>
+                </div>
+                <h4 className="text-base sm:text-lg font-bold text-brand-ivory font-serif">
+                  {language === 'ar'
+                    ? 'امسح الرمز بكاميرا هاتفك لزيارة متجر أثير ومشاركة الكتالوج'
+                    : 'Scan to Visit & Share ATHEER Streetwear'}
+                </h4>
+                <p className="text-xs text-brand-cream/70 font-sans max-w-lg leading-relaxed">
+                  {language === 'ar'
+                    ? 'وجّه كاميرا هاتفك المحمول نحو الرمز لفتح المتجر مباشرة والاطلاع على تشكيلة الهوديز وطلب القطع من الموبايل في أي وقت.'
+                    : 'Point your mobile camera to instantly explore our heavyweight hoodie drop and place COD orders directly.'}
+                </p>
+              </div>
+            </div>
+
+            {/* Direct Link Action */}
+            <div className="flex items-center space-x-2 rtl:space-x-reverse shrink-0">
+              <a
+                href={targetQr}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-6 py-3 bg-brand-gold text-brand-black text-xs font-mono font-bold uppercase tracking-wider rounded-xs hover:bg-brand-gold-hover transition-colors shadow-gold flex items-center space-x-2 rtl:space-x-reverse"
+              >
+                <QrCode className="w-4 h-4" />
+                <span>{language === 'ar' ? 'فتح الرابط المباشر' : 'Open Direct URL'}</span>
+              </a>
+            </div>
+          </div>
+        )}
 
         {/* Egypt Delivery Coverage Banner */}
         <div className="mt-12 pt-8 border-t border-brand-border/40 text-center font-mono">

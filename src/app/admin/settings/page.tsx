@@ -27,7 +27,9 @@ import {
   Check,
   Sparkles,
   AlertCircle,
+  QrCode,
 } from 'lucide-react';
+import { PermanentQrCard } from '@/components/PermanentQrCard';
 
 export default function AdminSettingsPage() {
   const { language, isRtl } = useLanguage();
@@ -69,6 +71,48 @@ export default function AdminSettingsPage() {
       console.error('Failed to load store settings:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleToggleQr = async (visible: boolean) => {
+    try {
+      await adminFetch('/api/admin/homepage-content', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ showQrCode: visible }),
+      });
+      if (settings) {
+        setSettings({ ...settings, showQrCode: visible });
+      }
+      setFeedbackMsg({
+        type: 'success',
+        text: isAr
+          ? (visible ? 'تم تفعيل ظهور رمز الـ QR للعملاء في الموقع العام!' : 'تم إخفاء رمز الـ QR من الموقع العام بنجاح.')
+          : 'QR visibility preference saved.',
+      });
+      setTimeout(() => setFeedbackMsg(null), 4000);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleSaveQrUrl = async (newUrl: string) => {
+    try {
+      await adminFetch('/api/admin/homepage-content', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ qrTargetUrl: newUrl }),
+      });
+      if (settings) {
+        setSettings({ ...settings, qrTargetUrl: newUrl });
+      }
+      setFeedbackMsg({
+        type: 'success',
+        text: isAr ? 'تم تحديث وحفظ رابط الـ QR الدائم بنجاح!' : 'QR code target URL saved successfully!',
+      });
+      setTimeout(() => setFeedbackMsg(null), 4000);
+    } catch (e) {
+      console.error(e);
     }
   };
 
@@ -499,6 +543,17 @@ export default function AdminSettingsPage() {
           </div>
         </div>
       </div>
+
+      {/* ------------------------------------------------------------- */}
+      {/* PERMANENT STORE QR CODE MANAGER (LIFETIME · NO EXPIRY)        */}
+      {/* ------------------------------------------------------------- */}
+      <PermanentQrCard
+        initialUrl={settings?.qrTargetUrl || 'https://atheer.store'}
+        isVisible={settings?.showQrCode ?? true}
+        onToggleVisibility={handleToggleQr}
+        onSaveUrl={handleSaveQrUrl}
+        isAdminMode={true}
+      />
 
       {/* ------------------------------------------------------------- */}
       {/* STORE IDENTITY & GENERAL SETTINGS FORM                        */}

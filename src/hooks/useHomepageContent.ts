@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { HomepageContent } from '@/types';
 import { defaultHomepageContent } from '@/data/defaultHomepageContent';
+import { adminFetch } from '@/lib/adminAuthClient';
 
 let cachedContent: HomepageContent = { ...defaultHomepageContent };
 const listeners = new Set<(c: HomepageContent) => void>();
@@ -35,5 +36,24 @@ export function useHomepageContent() {
     };
   }, []);
 
-  return { content, loading };
+  const updateContent = async (updates: Partial<HomepageContent>) => {
+    try {
+      const res = await adminFetch('/api/admin/homepage-content', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates),
+      });
+      const data = await res.json();
+      if (data.success && data.content) {
+        cachedContent = data.content;
+        listeners.forEach((l) => l(data.content));
+        return data.content;
+      }
+    } catch (err) {
+      console.error('Failed to update homepage content:', err);
+    }
+    return null;
+  };
+
+  return { content, loading, updateContent };
 }

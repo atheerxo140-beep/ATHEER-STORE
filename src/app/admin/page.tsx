@@ -20,9 +20,12 @@ import {
   Package,
 } from 'lucide-react';
 import { adminFetch } from '@/lib/adminAuthClient';
+import { PermanentQrCard } from '@/components/PermanentQrCard';
+import { useHomepageContent } from '@/hooks/useHomepageContent';
 
 export default function AdminOverviewPage() {
   const { language, formatPrice, isRtl } = useLanguage();
+  const { content, updateContent } = useHomepageContent();
   const ArrowIcon = isRtl ? ArrowLeft : ArrowRight;
 
   const [orders, setOrders] = useState<StoredOrder[]>([]);
@@ -309,6 +312,17 @@ export default function AdminOverviewPage() {
             </div>
           )}
         </div>
+      </div>
+
+      {/* Permanent Store QR Code Section (Lifetime · Instant Live Sync) */}
+      <div className="mt-8">
+        <PermanentQrCard
+          initialUrl={content.qrTargetUrl || 'https://atheer.store'}
+          isVisible={content.showQrCode !== false}
+          onToggleVisibility={(visible) => updateContent({ showQrCode: visible })}
+          onSaveUrl={(newUrl) => updateContent({ qrTargetUrl: newUrl })}
+          isAdminMode={true}
+        />
       </div>
     </div>
   );

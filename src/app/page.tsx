@@ -7,6 +7,7 @@ import { FutureTeaser } from '@/components/FutureTeaser';
 import { LuxuryFeatures } from '@/components/LuxuryFeatures';
 import { CartDrawer } from '@/components/CartDrawer';
 import { WhatsAppButton } from '@/components/WhatsAppButton';
+import { StorefrontQrModal } from '@/components/StorefrontQrModal';
 import { Footer } from '@/components/Footer';
 
 export const dynamic = 'force-dynamic';
@@ -44,6 +45,9 @@ export default function HomePage() {
 
       {/* WhatsApp Drop & Sizing Concierge */}
       <WhatsAppButton />
+
+      {/* Permanent Store QR Code Quick Scanner Widget */}
+      <StorefrontQrModal />
     </main>
   );
 }

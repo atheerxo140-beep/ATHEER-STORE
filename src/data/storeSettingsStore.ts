@@ -86,6 +86,8 @@ export const getStoreSettings = async (): Promise<StoreSettings> => {
             cairoShowroomsAr: cleanMojibake(data.cairo_showrooms_ar) || currentStoreSettings.cairoShowroomsAr,
             socialInstagram: currentStoreSettings.socialInstagram,
             socialTiktok: currentStoreSettings.socialTiktok,
+            showQrCode: currentStoreSettings.showQrCode ?? true,
+            qrTargetUrl: currentStoreSettings.qrTargetUrl || 'https://atheer.store',
           };
 
           Object.assign(currentStoreSettings, cloudSettings);

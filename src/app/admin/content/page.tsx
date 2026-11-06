@@ -714,6 +714,43 @@ export default function AdminContentPage() {
                 )}
               </button>
             </div>
+
+            {/* 8. Permanent Store QR Code */}
+            <div className="p-5 bg-brand-charcoal border border-brand-border/80 rounded-sm flex items-center justify-between md:col-span-2">
+              <div className="space-y-1">
+                <span className="text-xs font-mono font-bold text-brand-ivory block">
+                  {isAr ? '8. رمز الاستجابة السريع الدائم (Permanent Store QR Code)' : '8. Permanent Store QR Code'}
+                </span>
+                <p className="text-[11px] text-brand-cream/60">
+                  {isAr
+                    ? 'إظهار أو إخفاء رمز الـ QR الدائم في أسفل الموقع ونافذة المسح السريع بالهاتف'
+                    : 'Show or hide the permanent QR code in storefront footer and floating mobile scanner'}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() =>
+                  setContent({
+                    ...content,
+                    showQrCode: content.showQrCode === false ? true : false,
+                  })
+                }
+                className={`px-4 py-2 text-xs font-mono font-bold rounded-xs transition-colors flex items-center space-x-1.5 rtl:space-x-reverse ${
+                  content.showQrCode !== false
+                    ? 'bg-emerald-600 text-white'
+                    : 'bg-brand-stone/60 text-brand-cream/40 border border-brand-border'
+                }`}
+              >
+                {content.showQrCode !== false ? (
+                  <>
+                    <Check className="w-3.5 h-3.5" />
+                    <span>{isAr ? 'ظاهر للعميل' : 'Visible'}</span>
+                  </>
+                ) : (
+                  <span>{isAr ? 'مخفي' : 'Hidden'}</span>
+                )}
+              </button>
+            </div>
           </div>
         </div>
       )}

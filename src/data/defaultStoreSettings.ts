@@ -13,4 +13,6 @@ export const defaultStoreSettings: StoreSettings = {
   cairoShowroomsAr: 'الأتيليه الرقمي (القاهرة، مصر) · مواقع المعارض المؤقتة تُعلن مع كل إصدار',
   socialInstagram: 'https://instagram.com/atheer.store',
   socialTiktok: 'https://tiktok.com/@atheer.store',
+  showQrCode: true,
+  qrTargetUrl: 'https://atheer.store',
 };

@@ -121,6 +121,8 @@ export interface StoreSettings {
   cairoShowroomsAr: string;
   socialInstagram: string;
   socialTiktok: string;
+  showQrCode?: boolean;
+  qrTargetUrl?: string;
 }
 
 export interface ShowcaseCategoryItem {
@@ -145,6 +147,10 @@ export interface HomepageContent {
   showStory?: boolean;
   showFutureTeaser?: boolean;
   showFeatures?: boolean;
+  showQrCode?: boolean;
+  qrTargetUrl?: string;
+  qrTitleEn?: string;
+  qrTitleAr?: string;
 
   // Announcement Bar
   announcementTextEn: string;
