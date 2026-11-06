@@ -3,6 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import { getSupabaseServer, isSupabaseConfigured } from '@/lib/supabaseServer';
 import { defaultHomepageContent } from './defaultHomepageContent';
+import { cleanMojibake } from '@/lib/encodingUtils';
 
 export { defaultHomepageContent };
 
@@ -54,8 +55,24 @@ export const getHomepageContent = async (): Promise<HomepageContent> => {
 
         if (!error && data && data.cairo_showrooms_ar) {
           try {
-            const cloudContent = JSON.parse(data.cairo_showrooms_ar) as HomepageContent;
+            const rawJson = cleanMojibake(data.cairo_showrooms_ar);
+            const cloudContent = JSON.parse(rawJson) as HomepageContent;
             if (cloudContent && cloudContent.heroTitleAr) {
+              // Sanitize Arabic fields
+              cloudContent.announcementTextAr = cleanMojibake(cloudContent.announcementTextAr);
+              cloudContent.heroBadgeAr = cleanMojibake(cloudContent.heroBadgeAr);
+              cloudContent.heroTitleAr = cleanMojibake(cloudContent.heroTitleAr);
+              cloudContent.heroSubtitleAr = cleanMojibake(cloudContent.heroSubtitleAr);
+              cloudContent.categoriesTitleAr = cleanMojibake(cloudContent.categoriesTitleAr);
+              cloudContent.categoriesDescriptionAr = cleanMojibake(cloudContent.categoriesDescriptionAr);
+              if (Array.isArray(cloudContent.categories)) {
+                cloudContent.categories = cloudContent.categories.map((c) => ({
+                  ...c,
+                  titleAr: cleanMojibake(c.titleAr),
+                  descAr: cleanMojibake(c.descAr),
+                  tagAr: cleanMojibake(c.tagAr),
+                }));
+              }
               const merged: HomepageContent = { ...defaultHomepageContent, ...cloudContent };
               Object.assign(currentHomepageContent, merged);
               return merged;

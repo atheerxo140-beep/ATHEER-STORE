@@ -3,6 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import { getSupabaseServer, isSupabaseConfigured } from '@/lib/supabaseServer';
 import { defaultStoreSettings } from './defaultStoreSettings';
+import { cleanMojibake } from '@/lib/encodingUtils';
 
 export { defaultStoreSettings };
 
@@ -74,15 +75,15 @@ export const getStoreSettings = async (): Promise<StoreSettings> => {
         if (!error && data) {
           const cloudSettings: StoreSettings = {
             storeNameEn: data.store_name_en || currentStoreSettings.storeNameEn,
-            storeNameAr: data.store_name_ar || currentStoreSettings.storeNameAr,
+            storeNameAr: cleanMojibake(data.store_name_ar) || currentStoreSettings.storeNameAr,
             taglineEn: data.tagline_en || currentStoreSettings.taglineEn,
-            taglineAr: data.tagline_ar || currentStoreSettings.taglineAr,
+            taglineAr: cleanMojibake(data.tagline_ar) || currentStoreSettings.taglineAr,
             whatsappNumber: data.whatsapp_number || currentStoreSettings.whatsappNumber,
             supportEmail: data.support_email || currentStoreSettings.supportEmail,
             supportPhone: data.whatsapp_number ? `+${data.whatsapp_number}` : currentStoreSettings.supportPhone,
             defaultCurrency: (data.default_currency as any) || currentStoreSettings.defaultCurrency,
             cairoShowroomsEn: data.cairo_showrooms_en || currentStoreSettings.cairoShowroomsEn,
-            cairoShowroomsAr: data.cairo_showrooms_ar || currentStoreSettings.cairoShowroomsAr,
+            cairoShowroomsAr: cleanMojibake(data.cairo_showrooms_ar) || currentStoreSettings.cairoShowroomsAr,
             socialInstagram: currentStoreSettings.socialInstagram,
             socialTiktok: currentStoreSettings.socialTiktok,
           };
