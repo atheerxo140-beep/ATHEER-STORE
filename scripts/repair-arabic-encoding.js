@@ -125,7 +125,7 @@ async function repair() {
       description_en: 'Features the iconic ATHEER monogram intricately embroidered with metallic matte gold threads across the chest. Seamless kangaroo pocket and premium brass eyelets.',
       description_ar: 'يتميز بشعار أثير الأيقوني المطرز بدقة عالية بخيوط ذهبية مطفأة غير لامعة على الصدر، مع جيب كنغر وتشطيبات متقنة.',
       image: existingMap.get('ath-hd-04')?.image || 'https://images.unsplash.com/photo-1556821840-3a63f95609a7?q=80&w=1000&auto=format&fit=crop',
-      hover_image: existingMap.get('ath-hd-04')?.hover_image || 'https://images.unsplash.com/photo-1543163521-1bf539c55dd2?q=80&w=1000&auto=format&fit=crop',
+      hover_image: existingMap.get('ath-hd-04')?.hover_image || 'https://images.unsplash.com/photo-1509967419530-da38b4704bc6?q=80&w=1000&auto=format&fit=crop',
       badge_en: 'Iconic',
       badge_ar: 'أيقوني',
       is_active: true,

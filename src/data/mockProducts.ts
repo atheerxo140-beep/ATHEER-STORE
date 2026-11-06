@@ -86,7 +86,7 @@ export const mockProducts: Product[] = [
     categoryLabelAr: 'هودي أساسي فائق الثقل',
     price: 1350,
     image: 'https://images.unsplash.com/photo-1556821840-3a63f95609a7?q=80&w=1000&auto=format&fit=crop',
-    hoverImage: 'https://images.unsplash.com/photo-1543163521-1bf539c55dd2?q=80&w=1000&auto=format&fit=crop',
+    hoverImage: 'https://images.unsplash.com/photo-1509967419530-da38b4704bc6?q=80&w=1000&auto=format&fit=crop',
     badgeEn: 'Earth Tone Drop',
     badgeAr: 'ألوان الأرض',
     descriptionEn: 'A warm earth-tone staple influenced by desert landscapes. Cut in custom 460 GSM specification French terry with double-needle flatlock stitching for durability.',
