@@ -28,6 +28,7 @@ import {
   Lock,
   ShoppingBag,
   MapPin,
+  MessageCircle,
 } from 'lucide-react';
 
 export default function CheckoutPage() {
@@ -226,7 +227,7 @@ export default function CheckoutPage() {
       // Backend Confirmed!
       clearCart();
       const ref = data.order?.orderReference;
-      router.push(`/order-success?ref=${encodeURIComponent(ref)}`);
+      router.push(`/order-success?ref=${encodeURIComponent(ref)}&whatsapp=1`);
     } catch (err: any) {
       console.error('Order submission failed:', err);
       setErrorMessage(
@@ -729,6 +730,23 @@ export default function CheckoutPage() {
                     </span>
                     <span className="font-mono text-2xl text-brand-gold">
                       {formatPrice(finalTotal)}
+                    </span>
+                  </div>
+                </div>
+
+                {/* WhatsApp Notification Notice */}
+                <div className="p-3.5 bg-emerald-950/40 border border-emerald-500/50 rounded-xs flex items-center space-x-3 rtl:space-x-reverse text-xs animate-pulse-subtle">
+                  <div className="w-8 h-8 rounded-full bg-emerald-500/20 border border-emerald-500 flex items-center justify-center flex-shrink-0 text-emerald-400">
+                    <MessageCircle className="w-4 h-4 fill-emerald-400/20" />
+                  </div>
+                  <div className="leading-tight">
+                    <span className="font-bold text-emerald-400 block font-mono text-[11px] mb-0.5">
+                      {language === 'ar' ? '📲 تأكيد وتتبع الطلب عبر الواتساب' : '📲 WhatsApp Order Tracking & Receipt'}
+                    </span>
+                    <span className="text-[11px] text-brand-cream/80 font-sans">
+                      {language === 'ar'
+                        ? 'فور تأكيد طلبك، ستصلك نسخة الفاتورة الكاملة عبر الواتساب لمتابعة خط سير الشحنة مع المندوب.'
+                        : 'Instant WhatsApp invoice and tracking details will be generated upon confirmation.'}
                     </span>
                   </div>
                 </div>

@@ -697,8 +697,8 @@ export default function AdminSettingsPage() {
               />
               <p className="text-[10px] text-brand-gold/70 mt-1">
                 {isAr
-                  ? 'اكتب رقمك العادي (مثال: 01012345678 أو 201012345678) وسيتم ربطه تلقائياً برابط الواتساب المباشر للعميل.'
-                  : 'Enter regular Egyptian mobile (010..., 011...) or international (201...) format.'}
+                  ? 'اكتب رقمك العادي (مثال: 01012345678 أو 201012345678) — يُستخدم هذا الرقم لاستقبال فواتير الطلبات الجديدة مباشرة من العملاء وتأكيدها، ولزر المحادثة العائم.'
+                  : 'Enter Egyptian mobile (010..., 011...) or international (201...) format — receives incoming order receipts and powers the concierge chat.'}
               </p>
             </div>
 

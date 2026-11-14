@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { useLanguage } from '@/context/LanguageContext';
 import { StoredOrder, OrderStatus, PaymentStatus } from '@/data/localOrdersStore';
 import { adminFetch } from '@/lib/adminAuthClient';
+import { getAdminToCustomerWhatsAppUrl } from '@/lib/whatsappUtils';
 import {
   ShoppingBag,
   Search,
@@ -26,6 +27,7 @@ import {
   CreditCard,
   FileText,
   User,
+  MessageCircle,
 } from 'lucide-react';
 
 export default function AdminOrdersPage() {
@@ -416,6 +418,15 @@ export default function AdminOrdersPage() {
                       {/* Actions */}
                       <td className="py-3.5 px-4 text-center">
                         <div className="flex items-center justify-center space-x-2 rtl:space-x-reverse">
+                          <a
+                            href={getAdminToCustomerWhatsAppUrl(order, isAr ? 'ar' : 'en')}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="p-1.5 text-emerald-400 hover:text-emerald-300 hover:bg-emerald-950/40 border border-emerald-500/30 rounded-xs transition-colors"
+                            title={isAr ? 'مراسلة العميل وتأكيد الطلب على الواتساب' : 'Message Customer on WhatsApp'}
+                          >
+                            <MessageCircle className="w-4 h-4" />
+                          </a>
                           <button
                             onClick={() => setSelectedOrder(order)}
                             className="p-1.5 text-brand-cream/70 hover:text-brand-gold hover:bg-brand-stone rounded-xs transition-colors"
@@ -586,6 +597,34 @@ export default function AdminOrdersPage() {
               </div>
             </div>
 
+            {/* WHATSAPP CUSTOMER DISPATCH ACTION */}
+            <div className="p-3.5 bg-gradient-to-r from-emerald-950/40 to-brand-charcoal border border-emerald-500/50 rounded-sm flex flex-col sm:flex-row items-center justify-between gap-3">
+              <div className="flex items-center space-x-3 rtl:space-x-reverse text-emerald-400">
+                <div className="w-9 h-9 rounded-full bg-emerald-500/20 border border-emerald-500 flex items-center justify-center flex-shrink-0">
+                  <MessageCircle className="w-5 h-5 fill-emerald-400/20" />
+                </div>
+                <div>
+                  <div className="font-bold text-xs text-white">
+                    {isAr ? 'مراسلة العميل وتأكيد الطلب على الواتساب' : 'Dispatch WhatsApp Notice to Customer'}
+                  </div>
+                  <div className="text-[11px] text-brand-cream/70 font-sans mt-0.5">
+                    {isAr
+                      ? 'فتح محادثة واتساب جاهزة ببيانات الفاتورة الكاملة وتفاصيل الشحن لرقم العميل'
+                      : 'Opens WhatsApp chat with pre-written invoice details to customer phone'}
+                  </div>
+                </div>
+              </div>
+              <a
+                href={getAdminToCustomerWhatsAppUrl(selectedOrder, isAr ? 'ar' : 'en')}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full sm:w-auto px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-black font-bold font-mono text-xs uppercase tracking-wider rounded-xs flex items-center justify-center space-x-1.5 rtl:space-x-reverse transition-all flex-shrink-0 shadow-md"
+              >
+                <MessageCircle className="w-4 h-4 fill-black" />
+                <span>{isAr ? 'مراسلة العميل عبر واتساب' : 'Open WhatsApp Chat'}</span>
+              </a>
+            </div>
+
             {/* Items Purchased */}
             <div>
               <div className="text-[11px] font-bold text-brand-gold uppercase tracking-wider mb-2">
@@ -685,6 +724,15 @@ export default function AdminOrdersPage() {
             <div className="flex items-center justify-between pb-4 border-b border-gray-200 print:hidden font-mono text-xs">
               <span className="font-bold text-gray-700">ATHEER Commercial COD Invoice Slip</span>
               <div className="flex items-center space-x-2 rtl:space-x-reverse">
+                <a
+                  href={getAdminToCustomerWhatsAppUrl(selectedOrder, isAr ? 'ar' : 'en')}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold uppercase rounded-sm flex items-center space-x-1.5 rtl:space-x-reverse"
+                >
+                  <MessageCircle className="w-4 h-4" />
+                  <span>{isAr ? 'إرسال الفاتورة عبر واتساب' : 'Send via WhatsApp'}</span>
+                </a>
                 <button
                   onClick={printInvoice}
                   className="px-4 py-2 bg-black text-white hover:bg-gray-800 font-bold uppercase rounded-sm flex items-center space-x-1.5 rtl:space-x-reverse"
