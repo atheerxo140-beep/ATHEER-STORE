@@ -1,6 +1,42 @@
 import { Product } from '@/types';
 import { getSupabaseServer, isSupabaseConfigured } from '@/lib/supabaseServer';
 import { cleanMojibake } from '@/lib/encodingUtils';
+import fs from 'fs';
+import path from 'path';
+
+const PRODUCTS_JSON_PATH =
+  typeof process !== 'undefined' && typeof process.cwd === 'function' && path?.join
+    ? path.join(process.cwd(), 'src', 'data', 'products_store.json')
+    : '';
+
+function loadProductsFromDisk(): Product[] {
+  if (typeof window !== 'undefined' || !fs || !fs.existsSync || !PRODUCTS_JSON_PATH) {
+    return [...mockProducts];
+  }
+  try {
+    if (fs.existsSync(PRODUCTS_JSON_PATH)) {
+      const data = fs.readFileSync(PRODUCTS_JSON_PATH, 'utf8');
+      const parsed = JSON.parse(data);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed;
+      }
+    }
+  } catch (err) {
+    console.error('[ProductsStore] Error reading products_store.json:', err);
+  }
+  return [...mockProducts];
+}
+
+function persistProductsToDisk(products: Product[]): void {
+  if (typeof window !== 'undefined' || !fs || !fs.writeFileSync || !PRODUCTS_JSON_PATH) {
+    return;
+  }
+  try {
+    fs.writeFileSync(PRODUCTS_JSON_PATH, JSON.stringify(products, null, 2), 'utf8');
+  } catch (err) {
+    console.warn('[ProductsStore] Notice: Could not write products to disk');
+  }
+}
 
 export const mockProducts: Product[] = [
   {
@@ -198,10 +234,17 @@ export const mockProducts: Product[] = [
   },
 ];
 
-// Editable product repository in memory & Supabase for admin dashboard & public store
+// Editable product repository in memory & disk for admin dashboard & public store
 const globalForProducts = global as unknown as { currentProducts?: Product[] };
-export const currentProducts: Product[] = globalForProducts.currentProducts || [...mockProducts];
+export const currentProducts: Product[] = globalForProducts.currentProducts || loadProductsFromDisk();
 globalForProducts.currentProducts = currentProducts;
+
+// Ensure local JSON exists initially
+try {
+  if (typeof window === 'undefined' && fs?.existsSync && PRODUCTS_JSON_PATH && !fs.existsSync(PRODUCTS_JSON_PATH)) {
+    persistProductsToDisk(currentProducts);
+  }
+} catch (e) {}
 
 let lastProductSyncTime = 0;
 const PRODUCT_CACHE_TTL_MS = 60 * 1000;
@@ -336,6 +379,7 @@ export const getProductById = async (id: string): Promise<Product | undefined> =
 
 export const addProduct = async (product: Product): Promise<Product> => {
   currentProducts.unshift(product);
+  persistProductsToDisk(currentProducts);
 
   if (isSupabaseConfigured()) {
     const supabase = getSupabaseServer();
@@ -396,6 +440,7 @@ export const updateProduct = async (id: string, updates: Partial<Product>): Prom
   const index = currentProducts.findIndex((p) => p.id === id);
   if (index !== -1) {
     currentProducts[index] = { ...currentProducts[index], ...updates };
+    persistProductsToDisk(currentProducts);
   }
   const product = index !== -1 ? currentProducts[index] : (updates as Product);
 
@@ -440,6 +485,7 @@ export const deleteProduct = async (id: string): Promise<boolean> => {
   const index = currentProducts.findIndex((p) => p.id === id);
   if (index !== -1) {
     currentProducts.splice(index, 1);
+    persistProductsToDisk(currentProducts);
   }
 
   if (isSupabaseConfigured()) {

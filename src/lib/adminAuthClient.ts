@@ -20,48 +20,29 @@ export function clearAdminToken() {
 }
 
 /**
- * Ensures the admin user has an active, valid JWT token.
- * If expired or expiring within 2 minutes, automatically refreshes with Supabase Auth.
+ * Ensures the admin user has an active, valid session token.
+ * Instant 0ms verification from localStorage or cookies with zero network blocking.
  */
 export async function ensureValidAdminSession(): Promise<string | null> {
   if (typeof window === 'undefined') return null;
 
-  // 1. FAST PATH (Instant 0ms): Check for cryptographic HMAC admin session token
-  const savedToken = localStorage.getItem('atheer_admin_token');
-  if (savedToken && (savedToken.startsWith('ath_') || savedToken.startsWith('dev-admin-'))) {
-    return savedToken;
-  }
+  // 1. FAST PATH (Instant 0ms): Check localStorage
+  let savedToken = localStorage.getItem('atheer_admin_token');
 
-  // 2. Fallback: Supabase Auth Session (only if no HMAC token exists)
-  const client = getSupabaseClient();
-  if (client) {
-    try {
-      const { data, error } = await client.auth.getSession();
-      let session = data?.session;
-
-      if (session) {
-        const expiresAt = session.expires_at || 0;
-        const nowInSeconds = Math.floor(Date.now() / 1000);
-
-        // If token expires in less than 2 minutes, proactively refresh it
-        if (expiresAt - nowInSeconds < 120) {
-          const { data: refreshed, error: refreshErr } = await client.auth.refreshSession();
-          if (!refreshErr && refreshed?.session) {
-            session = refreshed.session;
-          }
-        }
-
-        if (session?.access_token) {
-          syncAdminToken(session.access_token);
-          return session.access_token;
-        }
-      }
-    } catch (e) {
-      console.warn('[AdminAuthClient] Error checking session:', e);
+  // 2. Cookie fallback (Instant 0ms)
+  if (!savedToken && typeof document !== 'undefined') {
+    const match = document.cookie.match(/(?:^|;\s*)atheer_admin_token=([^;]+)/);
+    if (match && match[1]) {
+      savedToken = decodeURIComponent(match[1]);
+      localStorage.setItem('atheer_admin_token', savedToken);
     }
   }
 
-  return savedToken;
+  if (savedToken && savedToken.trim().length > 0) {
+    return savedToken.trim();
+  }
+
+  return null;
 }
 
 /**
@@ -86,41 +67,13 @@ export async function adminFetch(
     headers,
   });
 
-  // If 401 Unauthorized, token might have just expired: attempt one immediate refresh and retry
+  // If 401 Unauthorized, redirect smoothly to login
   if (res.status === 401) {
-    if (token && (token.startsWith('ath_') || token.startsWith('dev-admin-'))) {
-      if (options.redirectOnUnauthorized && typeof window !== 'undefined') {
-        clearAdminToken();
-        window.location.href = '/admin/login?reason=expired';
-      }
-      return res;
-    }
-
-    const client = getSupabaseClient();
-    if (client) {
-      try {
-        const { data: refreshed, error: refreshErr } = await client.auth.refreshSession();
-        if (!refreshErr && refreshed?.session?.access_token) {
-          token = refreshed.session.access_token;
-          syncAdminToken(token);
-          headers.set('Authorization', `Bearer ${token}`);
-          // Retry the request with the refreshed token
-          res = await fetch(input, {
-            ...init,
-            headers,
-          });
-        }
-      } catch (e) {
-        // Refresh failed
-      }
-    }
-
-    // If still 401 after refresh attempt, the session is dead
-    if (res.status === 401 && options.redirectOnUnauthorized && typeof window !== 'undefined') {
+    if (options.redirectOnUnauthorized && typeof window !== 'undefined') {
       clearAdminToken();
-      // Redirect to login with expired notice
       window.location.href = '/admin/login?reason=expired';
     }
+    return res;
   }
 
   return res;

@@ -36,10 +36,7 @@ function persistLocalSettings(settings: StoreSettings) {
 const globalForSettings = global as unknown as { currentStoreSettings?: StoreSettings };
 export const currentStoreSettings: StoreSettings =
   globalForSettings.currentStoreSettings || loadLocalSettings();
-
-if (process.env.NODE_ENV !== 'production') {
-  globalForSettings.currentStoreSettings = currentStoreSettings;
-}
+globalForSettings.currentStoreSettings = currentStoreSettings;
 
 // Helper to normalize Egyptian WhatsApp numbers
 export function normalizeWhatsAppNumber(raw: string): string {

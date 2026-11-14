@@ -99,10 +99,7 @@ function persistMethods(methods: PaymentMethodConfig[]) {
 const globalForPayment = global as unknown as { currentPaymentMethods?: PaymentMethodConfig[] };
 export const currentPaymentMethods: PaymentMethodConfig[] =
   globalForPayment.currentPaymentMethods || loadPersistedMethods();
-
-if (process.env.NODE_ENV !== 'production') {
-  globalForPayment.currentPaymentMethods = currentPaymentMethods;
-}
+globalForPayment.currentPaymentMethods = currentPaymentMethods;
 
 export const getPaymentMethods = (): PaymentMethodConfig[] => {
   return currentPaymentMethods;

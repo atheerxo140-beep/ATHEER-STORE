@@ -63,7 +63,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [showDbInfo, setShowDbInfo] = useState(false);
   const [supabaseStatus, setSupabaseStatus] = useState<{ configured: boolean }>({ configured: false });
-  const [isVerifyingAuth, setIsVerifyingAuth] = useState(true);
+  const [isVerifyingAuth, setIsVerifyingAuth] = useState(false);
   const [adminEmail, setAdminEmail] = useState<string>('yassinanwar140@gmail.com');
 
   // Real-time Notification State

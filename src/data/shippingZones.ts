@@ -1,5 +1,41 @@
 import { ShippingZone, EgyptianGovernorate } from '@/types';
 import { getSupabaseServer, isSupabaseConfigured } from '@/lib/supabaseServer';
+import fs from 'fs';
+import path from 'path';
+
+const SHIPPING_JSON_PATH =
+  typeof process !== 'undefined' && typeof process.cwd === 'function' && path?.join
+    ? path.join(process.cwd(), 'src', 'data', 'shipping_zones_store.json')
+    : '';
+
+function loadShippingZonesFromDisk(): ShippingZone[] {
+  if (typeof window !== 'undefined' || !fs || !fs.existsSync || !SHIPPING_JSON_PATH) {
+    return [...defaultEgyptianShippingZones];
+  }
+  try {
+    if (fs.existsSync(SHIPPING_JSON_PATH)) {
+      const data = fs.readFileSync(SHIPPING_JSON_PATH, 'utf8');
+      const parsed = JSON.parse(data);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed;
+      }
+    }
+  } catch (err) {
+    console.error('[ShippingZonesStore] Error reading shipping_zones_store.json:', err);
+  }
+  return [...defaultEgyptianShippingZones];
+}
+
+function persistShippingZonesToDisk(zones: ShippingZone[]): void {
+  if (typeof window !== 'undefined' || !fs || !fs.writeFileSync || !SHIPPING_JSON_PATH) {
+    return;
+  }
+  try {
+    fs.writeFileSync(SHIPPING_JSON_PATH, JSON.stringify(zones, null, 2), 'utf8');
+  } catch (err) {
+    console.warn('[ShippingZonesStore] Notice: Could not write shipping zones to disk');
+  }
+}
 
 export interface GovernorateInfo {
   id: EgyptianGovernorate;
@@ -125,13 +161,17 @@ export const defaultEgyptianShippingZones: ShippingZone[] = [
   },
 ];
 
-// In-memory editable repository for Egyptian shipping zones
+// In-memory & disk editable repository for Egyptian shipping zones
 const globalForShipping = global as unknown as { currentEgyptianShippingZones?: ShippingZone[] };
 export const currentEgyptianShippingZones: ShippingZone[] =
-  globalForShipping.currentEgyptianShippingZones || [...defaultEgyptianShippingZones];
-if (process.env.NODE_ENV !== 'production') {
-  globalForShipping.currentEgyptianShippingZones = currentEgyptianShippingZones;
-}
+  globalForShipping.currentEgyptianShippingZones || loadShippingZonesFromDisk();
+globalForShipping.currentEgyptianShippingZones = currentEgyptianShippingZones;
+
+try {
+  if (typeof window === 'undefined' && fs?.existsSync && SHIPPING_JSON_PATH && !fs.existsSync(SHIPPING_JSON_PATH)) {
+    persistShippingZonesToDisk(currentEgyptianShippingZones);
+  }
+} catch (e) {}
 
 export const getShippingZones = (): ShippingZone[] => {
   return currentEgyptianShippingZones.filter((z) => z.isActive);
@@ -189,6 +229,7 @@ export const updateShippingZone = async (
   const index = currentEgyptianShippingZones.findIndex((z) => z.id === zoneId);
   if (index === -1) return null;
   currentEgyptianShippingZones[index] = { ...currentEgyptianShippingZones[index], ...updates };
+  persistShippingZonesToDisk(currentEgyptianShippingZones);
 
   if (isSupabaseConfigured()) {
     const supabase = getSupabaseServer();

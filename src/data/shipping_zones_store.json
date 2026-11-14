@@ -1,0 +1,99 @@
+[
+  {
+    "id": "cairo-giza",
+    "nameEn": "Greater Cairo & Giza (Cairo, Giza, New Cairo, 6th October)",
+    "nameAr": "القاهرة الكبرى والجيزة (القاهرة، الجيزة، التجمع، الشيخ زايد، أكتوبر)",
+    "governorates": [
+      "Cairo",
+      "Giza"
+    ],
+    "baseFee": 60,
+    "freeShippingThreshold": 1800,
+    "estimatedDaysEn": "Provisional 1-2 Business Days (Subject to courier conditions)",
+    "estimatedDaysAr": "تقديري ١-٢ أيام عمل (غير مضمون بنسبة ١٠٠٪ حسب شركة الشحن)",
+    "codAvailable": true,
+    "isActive": true,
+    "isProvisional": true
+  },
+  {
+    "id": "alex-delta",
+    "nameEn": "Alexandria & Delta Governorates",
+    "nameAr": "الإسكندرية ومحافظات الدلتا (الإسكندرية، البحيرة، طنطا، المنصورة، الزقازيق)",
+    "governorates": [
+      "Alexandria",
+      "Qalyubia",
+      "Sharqia",
+      "Dakahlia",
+      "Beheira",
+      "Gharbia",
+      "Monufia",
+      "Kafr El Sheikh",
+      "Damietta"
+    ],
+    "baseFee": 75,
+    "freeShippingThreshold": 2000,
+    "estimatedDaysEn": "Provisional 2-3 Business Days (Subject to courier conditions)",
+    "estimatedDaysAr": "تقديري ٢-٣ أيام عمل (غير مضمون بنسبة ١٠٠٪)",
+    "codAvailable": true,
+    "isActive": true,
+    "isProvisional": true
+  },
+  {
+    "id": "canal-cities",
+    "nameEn": "Canal Zone (Port Said, Ismailia, Suez)",
+    "nameAr": "مدن القناة (بورسعيد، الإسماعيلية، السويس)",
+    "governorates": [
+      "Port Said",
+      "Ismailia",
+      "Suez"
+    ],
+    "baseFee": 85,
+    "freeShippingThreshold": 2200,
+    "estimatedDaysEn": "Provisional 2-3 Business Days (Subject to courier conditions)",
+    "estimatedDaysAr": "تقديري ٢-٣ أيام عمل (غير مضمون بنسبة ١٠٠٪)",
+    "codAvailable": true,
+    "isActive": true,
+    "isProvisional": true
+  },
+  {
+    "id": "upper-egypt",
+    "nameEn": "Upper Egypt (Beni Suef, Minya, Asyut, Sohag, Luxor, Aswan)",
+    "nameAr": "محافظات الصعيد (بني سويف، الفيوم، المنيا، أسيوط، سوهاج، قنا، الأقصر، أسوان)",
+    "governorates": [
+      "Faiyum",
+      "Beni Suef",
+      "Minya",
+      "Asyut",
+      "Sohag",
+      "Qena",
+      "Luxor",
+      "Aswan"
+    ],
+    "baseFee": 95,
+    "freeShippingThreshold": 2500,
+    "estimatedDaysEn": "Provisional 3-4 Business Days (Subject to courier conditions)",
+    "estimatedDaysAr": "تقديري ٣-٤ أيام عمل (غير مضمون بنسبة ١٠٠٪)",
+    "codAvailable": true,
+    "isActive": true,
+    "isProvisional": true
+  },
+  {
+    "id": "coastal-remote",
+    "nameEn": "Coastal & Frontier (Red Sea, Hurghada, Sharm El Sheikh, North Coast)",
+    "nameAr": "المحافظات الساحلية والحدودية (الغردقة، شرم الشيخ، دهب، الساحل الشمالي)",
+    "governorates": [
+      "Red Sea",
+      "South Sinai",
+      "North Sinai",
+      "Matrouh",
+      "New Valley"
+    ],
+    "baseFee": 120,
+    "freeShippingThreshold": 2800,
+    "estimatedDaysEn": "Provisional 3-5 Business Days (Subject to courier conditions)",
+    "estimatedDaysAr": "تقديري ٣-٥ أيام عمل (غير مضمون بنسبة ١٠٠٪)",
+    "codAvailable": true,
+    "isActive": true,
+    "isProvisional": true
+  }
+]
