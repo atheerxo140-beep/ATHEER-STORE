@@ -23,7 +23,7 @@ let cachedAdminEmail: string | null = null;
 export function hashPassword(password: string): string {
   const salt = crypto.randomBytes(16).toString('hex');
   const hash = crypto.pbkdf2Sync(password, salt, 100000, 64, 'sha512').toString('hex');
-  return `pbkdf2$${salt}$${hash}`;
+  return `pbkdf2:${salt}:${hash}`;
 }
 
 /**
@@ -35,9 +35,10 @@ export function verifyPassword(password: string, storedHashOrPlain: string): boo
   const cleanPass = password.trim();
   const cleanStored = storedHashOrPlain.trim();
 
-  // Stored as PBKDF2 hash
-  if (cleanStored.startsWith('pbkdf2$')) {
-    const parts = cleanStored.split('$');
+  // Stored as PBKDF2 hash (supports colon or dollar delimiter)
+  if (cleanStored.startsWith('pbkdf2')) {
+    const delimiter = cleanStored.includes(':') ? ':' : cleanStored.includes('$') ? '$' : '_';
+    const parts = cleanStored.split(delimiter);
     if (parts.length < 3) return false;
     const salt = parts[1].trim();
     const originalHash = parts[2].trim();
@@ -87,11 +88,9 @@ export function getAdminEmail(): string {
  * Get current configured admin password hash / value
  */
 export function getAdminPasswordHash(): string | null {
-  if (process.env.ADMIN_PASSWORD_HASH) {
+  // Prefer process.env only if it contains the full hash with delimiter
+  if (process.env.ADMIN_PASSWORD_HASH && (process.env.ADMIN_PASSWORD_HASH.includes(':') || process.env.ADMIN_PASSWORD_HASH.includes('$'))) {
     return process.env.ADMIN_PASSWORD_HASH.trim();
-  }
-  if (process.env.ADMIN_PASSWORD) {
-    return process.env.ADMIN_PASSWORD.trim();
   }
 
   const envPath = getEnvPath();
@@ -109,6 +108,13 @@ export function getAdminPasswordHash(): string | null {
     } catch (e) {
       // Ignore
     }
+  }
+
+  if (process.env.ADMIN_PASSWORD_HASH) {
+    return process.env.ADMIN_PASSWORD_HASH.trim();
+  }
+  if (process.env.ADMIN_PASSWORD) {
+    return process.env.ADMIN_PASSWORD.trim();
   }
 
   return null;
