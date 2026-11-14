@@ -23,7 +23,7 @@ export default function AdminLoginPage() {
   const { language, setLanguage, isRtl } = useLanguage();
   const isAr = language === 'ar';
 
-  const [email, setEmail] = useState('atheerxo140@gmail.com');
+  const [email, setEmail] = useState('yassinanwar140@gmail.com');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);

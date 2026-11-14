@@ -58,7 +58,7 @@ export function getAdminEmail(): string {
     }
   }
 
-  return 'atheerxo140@gmail.com';
+  return 'yassinanwar140@gmail.com';
 }
 
 /**

@@ -32,7 +32,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [showDbInfo, setShowDbInfo] = useState(false);
   const [supabaseStatus, setSupabaseStatus] = useState<{ configured: boolean }>({ configured: false });
   const [isVerifyingAuth, setIsVerifyingAuth] = useState(true);
-  const [adminEmail, setAdminEmail] = useState<string>('atheerxo140@gmail.com');
+  const [adminEmail, setAdminEmail] = useState<string>('yassinanwar140@gmail.com');
 
   // If on /admin/login, don't show the dashboard shell
   const isLoginPage = pathname === '/admin/login';
