@@ -35,7 +35,7 @@ export default function AdminOrdersPage() {
   const isAr = language === 'ar';
 
   const [orders, setOrders] = useState<StoredOrder[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [paymentFilter, setPaymentFilter] = useState<string>('all');

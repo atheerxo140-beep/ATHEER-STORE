@@ -65,6 +65,13 @@ export default function CheckoutPage() {
         }
       })
       .catch((err) => console.error('Failed to load payment methods:', err));
+
+    if (typeof window !== 'undefined') {
+      const savedCode = localStorage.getItem('atheer_active_coupon');
+      if (savedCode) {
+        setCouponInput(savedCode);
+      }
+    }
   }, []);
 
   // Coupon State

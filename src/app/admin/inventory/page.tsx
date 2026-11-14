@@ -48,7 +48,7 @@ export default function AdminInventoryPage() {
 
   const [items, setItems] = useState<InventoryItem[]>([]);
   const [logs, setLogs] = useState<InventoryLog[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterLowStockOnly, setFilterLowStockOnly] = useState(false);
 

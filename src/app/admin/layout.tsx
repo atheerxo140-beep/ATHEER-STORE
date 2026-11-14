@@ -63,7 +63,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [showDbInfo, setShowDbInfo] = useState(false);
   const [supabaseStatus, setSupabaseStatus] = useState<{ configured: boolean }>({ configured: false });
-  const [isVerifyingAuth, setIsVerifyingAuth] = useState(false);
   const [adminEmail, setAdminEmail] = useState<string>('yassinanwar140@gmail.com');
 
   // Real-time Notification State
@@ -93,7 +92,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     setSupabaseStatus({ configured: isConfigured });
 
     if (isLoginPage) {
-      setIsVerifyingAuth(false);
       return;
     }
 
@@ -106,7 +104,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         // Unauthenticated or expired session: redirect to login
         router.push('/admin/login?reason=expired');
       } else {
-        setIsVerifyingAuth(false);
         // Fetch current active admin email
         import('@/lib/adminAuthClient').then(({ adminFetch }) => {
           adminFetch('/api/admin/credentials')
@@ -212,15 +209,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   if (isLoginPage) {
     return <div className="min-h-screen bg-brand-black text-brand-ivory">{children}</div>;
-  }
-
-  if (isVerifyingAuth) {
-    return (
-      <div className="min-h-screen bg-brand-black flex items-center justify-center font-mono text-xs text-brand-gold">
-        <ShieldCheck className="w-5 h-5 animate-pulse mr-2 rtl:ml-2" />
-        <span>Verifying Administrator Access...</span>
-      </div>
-    );
   }
 
   const menuItems = [

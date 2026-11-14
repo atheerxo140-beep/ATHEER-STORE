@@ -1,5 +1,6 @@
 import { Header } from '@/components/Header';
 import { Hero } from '@/components/Hero';
+import { PromoOffersSection } from '@/components/PromoOffersSection';
 import { CategoryShowcase } from '@/components/CategoryShowcase';
 import { ProductGrid } from '@/components/ProductGrid';
 import { AtelierStory } from '@/components/AtelierStory';
@@ -23,6 +24,9 @@ export default function HomePage() {
 
       {/* Hero Showcase (Heavyweight Hoodies Focus) */}
       <Hero />
+
+      {/* Caesar EG Style Promotional Offers ("اختار عرضك") */}
+      <PromoOffersSection />
 
       {/* Launch Categories (Hoodies, Sweatshirts, Fabric Lab, Future Tees) */}
       <CategoryShowcase />

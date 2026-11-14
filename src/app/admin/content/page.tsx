@@ -37,6 +37,7 @@ import {
   Scissors,
   Banknote,
   MessageCircle,
+  Tag,
 } from 'lucide-react';
 
 const PRESET_HERO_IMAGES = [
@@ -66,7 +67,7 @@ export default function AdminContentPage() {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
-  const [activeTab, setActiveTab] = useState<'sections' | 'hero' | 'categories' | 'story' | 'future' | 'features' | 'animations'>('sections');
+  const [activeTab, setActiveTab] = useState<'sections' | 'offers' | 'hero' | 'categories' | 'story' | 'future' | 'features' | 'animations'>('sections');
 
   // File Upload States
   const [uploadingHero, setUploadingHero] = useState(false);
@@ -416,6 +417,19 @@ export default function AdminContentPage() {
 
         <button
           type="button"
+          onClick={() => setActiveTab('offers')}
+          className={`flex items-center space-x-2 rtl:space-x-reverse px-4 py-3 border-b-2 font-bold transition-colors ${
+            activeTab === 'offers'
+              ? 'border-brand-gold text-brand-gold bg-brand-charcoal/40'
+              : 'border-transparent text-brand-cream/60 hover:text-brand-ivory'
+          }`}
+        >
+          <Tag className="w-3.5 h-3.5" />
+          <span>{isAr ? '2. عروض وباندلات الشتاء (اختار عرضك)' : '2. Winter Offers & Bundles'}</span>
+        </button>
+
+        <button
+          type="button"
           onClick={() => setActiveTab('hero')}
           className={`flex items-center space-x-2 rtl:space-x-reverse px-4 py-3 border-b-2 font-bold transition-colors ${
             activeTab === 'hero'
@@ -424,7 +438,7 @@ export default function AdminContentPage() {
           }`}
         >
           <Sparkles className="w-3.5 h-3.5" />
-          <span>{isAr ? '2. البانر الرئيسي والشريط الإعلاني' : '2. Hero Banner & Announcement'}</span>
+          <span>{isAr ? '3. البانر الرئيسي والشريط الإعلاني' : '3. Hero Banner & Announcement'}</span>
         </button>
 
         <button
@@ -437,7 +451,7 @@ export default function AdminContentPage() {
           }`}
         >
           <Layers className="w-3.5 h-3.5" />
-          <span>{isAr ? '3. بطاقات الفئات (4 فئات)' : '3. Category Cards'}</span>
+          <span>{isAr ? '4. بطاقات الفئات (4 فئات)' : '4. Category Cards'}</span>
         </button>
 
         <button
@@ -450,7 +464,7 @@ export default function AdminContentPage() {
           }`}
         >
           <BookOpen className="w-3.5 h-3.5" />
-          <span>{isAr ? '4. قصة البراند وعن أثير' : '4. Brand Story & Quality'}</span>
+          <span>{isAr ? '5. قصة البراند وعن أثير' : '5. Brand Story & Quality'}</span>
         </button>
 
         <button
@@ -463,7 +477,7 @@ export default function AdminContentPage() {
           }`}
         >
           <Clock className="w-3.5 h-3.5" />
-          <span>{isAr ? '5. الإصدار القادم / التي شيرتات' : '5. Future Drop'}</span>
+          <span>{isAr ? '6. الإصدار القادم / التي شيرتات' : '6. Future Drop'}</span>
         </button>
 
         <button
@@ -476,7 +490,7 @@ export default function AdminContentPage() {
           }`}
         >
           <ShieldCheck className="w-3.5 h-3.5" />
-          <span>{isAr ? '6. مميزات وثقة المتجر' : '6. Store Guarantees'}</span>
+          <span>{isAr ? '7. مميزات وثقة المتجر' : '7. Store Guarantees'}</span>
         </button>
 
         <button
@@ -489,7 +503,7 @@ export default function AdminContentPage() {
           }`}
         >
           <Sparkles className="w-3.5 h-3.5 text-brand-gold" />
-          <span>{isAr ? '7. أنميشن وتطبيق الموبايل (جديد)' : '7. Mobile App & Animations'}</span>
+          <span>{isAr ? '8. أنميشن وتطبيق الموبايل (جديد)' : '8. Mobile App & Animations'}</span>
         </button>
       </div>
 
@@ -569,11 +583,41 @@ export default function AdminContentPage() {
               </button>
             </div>
 
-            {/* 3. Categories Showcase */}
+            {/* 3. Promotional Offers & Bundles */}
             <div className="p-5 bg-brand-charcoal border border-brand-border/80 rounded-sm flex items-center justify-between">
               <div className="space-y-1">
                 <span className="text-xs font-mono font-bold text-brand-ivory block">
-                  {isAr ? '3. بطاقات تشكيلات المتجر (4 فئات)' : '3. Category Showcase Cards'}
+                  {isAr ? '3. قسم عروض وباندلات الشتاء (اختار عرضك)' : '3. Promotional Offers & Bundles'}
+                </span>
+                <p className="text-[11px] text-brand-cream/60">
+                  {isAr ? 'بطاقات الكوبونات الفورية وباندلات الشتاء والتوصيل المجاني' : 'Instant voucher cards and seasonal streetwear bundles'}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setContent({ ...content, showPromoOffers: content.showPromoOffers === false ? true : false })}
+                className={`px-4 py-2 text-xs font-mono font-bold rounded-xs transition-colors flex items-center space-x-1.5 rtl:space-x-reverse ${
+                  content.showPromoOffers !== false
+                    ? 'bg-emerald-600 text-white'
+                    : 'bg-brand-stone/60 text-brand-cream/40 border border-brand-border'
+                }`}
+              >
+                {content.showPromoOffers !== false ? (
+                  <>
+                    <Check className="w-3.5 h-3.5" />
+                    <span>{isAr ? 'ظاهر للعميل' : 'Visible'}</span>
+                  </>
+                ) : (
+                  <span>{isAr ? 'مخفي' : 'Hidden'}</span>
+                )}
+              </button>
+            </div>
+
+            {/* 4. Categories Showcase */}
+            <div className="p-5 bg-brand-charcoal border border-brand-border/80 rounded-sm flex items-center justify-between">
+              <div className="space-y-1">
+                <span className="text-xs font-mono font-bold text-brand-ivory block">
+                  {isAr ? '4. بطاقات تشكيلات المتجر (4 فئات)' : '4. Category Showcase Cards'}
                 </span>
                 <p className="text-[11px] text-brand-cream/60">
                   {isAr ? 'بطاقات الهوديز، السويت شيرتات، هندسة القماش، والتي شيرتات' : 'The 4 editorial streetwear category cards'}
@@ -755,6 +799,320 @@ export default function AdminContentPage() {
                 )}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* TAB: PROMOTIONAL OFFERS & BUNDLES ("اختار عرضك") */}
+      {activeTab === 'offers' && (
+        <div className="space-y-8 animate-fade-in">
+          {/* Header & Status Card */}
+          <div className="bg-brand-charcoal border border-brand-border/80 rounded-sm p-6 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-brand-border/60 pb-4">
+              <div className="flex items-center space-x-2.5 rtl:space-x-reverse">
+                <Tag className="w-5 h-5 text-brand-gold" />
+                <div>
+                  <h2 className="text-base font-serif font-black text-brand-ivory">
+                    {isAr ? 'عروض وباندلات أثير الشتوية (اختار عرضك)' : 'Winter Promotional Offers & Bundles'}
+                  </h2>
+                  <p className="text-[11px] text-brand-cream/60">
+                    {isAr
+                      ? 'التحكم الكامل في قسم العروض والكوبونات والباندلات على الصفحة الرئيسية (نفس فكرة سيزر مع نسخ الكوبونات بضغطة واحدة).'
+                      : 'Full control over promotional vouchers, bundles, and instant copy coupons on the homepage.'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Visibility Toggle */}
+              <button
+                type="button"
+                onClick={() =>
+                  setContent({
+                    ...content,
+                    showPromoOffers: content.showPromoOffers === false ? true : false,
+                  })
+                }
+                className={`px-4 py-2 text-xs font-mono font-bold rounded-xs transition-colors flex items-center space-x-1.5 rtl:space-x-reverse ${
+                  content.showPromoOffers !== false
+                    ? 'bg-emerald-600 text-white'
+                    : 'bg-brand-stone/60 text-brand-cream/40 border border-brand-border'
+                }`}
+              >
+                {content.showPromoOffers !== false ? (
+                  <>
+                    <Check className="w-3.5 h-3.5" />
+                    <span>{isAr ? 'القسم مفعل وظاهر' : 'Section Active'}</span>
+                  </>
+                ) : (
+                  <span>{isAr ? 'القسم مخفي' : 'Section Hidden'}</span>
+                )}
+              </button>
+            </div>
+
+            {/* Section Headline Inputs */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+              <div>
+                <label className="block text-xs font-mono text-brand-cream/70 mb-1">
+                  {isAr ? 'عنوان القسم الرئيسي (عربي)' : 'Main Section Title (Arabic)'}
+                </label>
+                <input
+                  type="text"
+                  value={content.promoOffersTitleAr || ''}
+                  onChange={(e) => setContent({ ...content, promoOffersTitleAr: e.target.value })}
+                  placeholder="اختار عرضك"
+                  className="w-full bg-brand-stone/40 border border-brand-border/70 text-brand-ivory text-xs px-3 py-2 rounded-xs focus:outline-none focus:border-brand-gold font-sans"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-mono text-brand-cream/70 mb-1">
+                  {isAr ? 'عنوان القسم الرئيسي (إنجليزي)' : 'Main Section Title (English)'}
+                </label>
+                <input
+                  type="text"
+                  value={content.promoOffersTitleEn || ''}
+                  onChange={(e) => setContent({ ...content, promoOffersTitleEn: e.target.value })}
+                  placeholder="Choose Your Drop Offer"
+                  className="w-full bg-brand-stone/40 border border-brand-border/70 text-brand-ivory text-xs px-3 py-2 rounded-xs focus:outline-none focus:border-brand-gold font-sans"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-mono text-brand-cream/70 mb-1">
+                  {isAr ? 'العنوان الفرعي الصغير (عربي)' : 'Subtitle Badge (Arabic)'}
+                </label>
+                <input
+                  type="text"
+                  value={content.promoOffersSubtitleAr || ''}
+                  onChange={(e) => setContent({ ...content, promoOffersSubtitleAr: e.target.value })}
+                  placeholder="عروض أيام أثير الحصرية"
+                  className="w-full bg-brand-stone/40 border border-brand-border/70 text-brand-ivory text-xs px-3 py-2 rounded-xs focus:outline-none focus:border-brand-gold font-sans"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-mono text-brand-cream/70 mb-1">
+                  {isAr ? 'العنوان الفرعي الصغير (إنجليزي)' : 'Subtitle Badge (English)'}
+                </label>
+                <input
+                  type="text"
+                  value={content.promoOffersSubtitleEn || ''}
+                  onChange={(e) => setContent({ ...content, promoOffersSubtitleEn: e.target.value })}
+                  placeholder="SEASONAL WINTER OFFERS"
+                  className="w-full bg-brand-stone/40 border border-brand-border/70 text-brand-ivory text-xs px-3 py-2 rounded-xs focus:outline-none focus:border-brand-gold font-sans"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-mono text-brand-cream/70 mb-1">
+                  {isAr ? 'شارة الكولكشن المحدود (عربي)' : 'Collection Tag (Arabic)'}
+                </label>
+                <input
+                  type="text"
+                  value={content.promoOffersBannerTagAr || ''}
+                  onChange={(e) => setContent({ ...content, promoOffersBannerTagAr: e.target.value })}
+                  placeholder="إصدارات شتاء 27 المحدودة"
+                  className="w-full bg-brand-stone/40 border border-brand-border/70 text-brand-ivory text-xs px-3 py-2 rounded-xs focus:outline-none focus:border-brand-gold font-sans"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-mono text-brand-cream/70 mb-1">
+                  {isAr ? 'شارة الكولكشن المحدود (إنجليزي)' : 'Collection Tag (English)'}
+                </label>
+                <input
+                  type="text"
+                  value={content.promoOffersBannerTagEn || ''}
+                  onChange={(e) => setContent({ ...content, promoOffersBannerTagEn: e.target.value })}
+                  placeholder="Winter 27 Limited Drops"
+                  className="w-full bg-brand-stone/40 border border-brand-border/70 text-brand-ivory text-xs px-3 py-2 rounded-xs focus:outline-none focus:border-brand-gold font-sans"
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="block text-xs font-mono text-brand-cream/70 mb-1">
+                  {isAr ? 'الوصف الإيضاحي للعروض (عربي)' : 'Section Description (Arabic)'}
+                </label>
+                <textarea
+                  rows={2}
+                  value={content.promoOffersDescriptionAr || ''}
+                  onChange={(e) => setContent({ ...content, promoOffersDescriptionAr: e.target.value })}
+                  className="w-full bg-brand-stone/40 border border-brand-border/70 text-brand-ivory text-xs px-3 py-2 rounded-xs focus:outline-none focus:border-brand-gold font-sans"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Cards Editor */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-bold text-brand-ivory font-serif">
+                {isAr ? 'بطاقات العروض والكوبونات التفاعلية (4 بطاقات)' : 'Offer Cards Configuration'}
+              </h3>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {(content.promoOffers || defaultHomepageContent.promoOffers || []).map((offer, idx) => (
+                <div
+                  key={offer.id || idx}
+                  className="bg-brand-charcoal border border-brand-border/80 rounded-sm p-5 space-y-3"
+                >
+                  <div className="flex items-center justify-between border-b border-brand-border/50 pb-2">
+                    <span className="text-xs font-mono font-bold text-brand-gold">
+                      {isAr ? `البطاقة رقم ${idx + 1}` : `Card #${idx + 1}`} ({offer.couponCode})
+                    </span>
+                    <label className="flex items-center space-x-1.5 rtl:space-x-reverse text-[11px] font-mono text-brand-cream/70 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={offer.isPrimary || false}
+                        onChange={(e) => {
+                          const updated = [...(content.promoOffers || defaultHomepageContent.promoOffers || [])];
+                          updated[idx] = { ...updated[idx], isPrimary: e.target.checked };
+                          setContent({ ...content, promoOffers: updated });
+                        }}
+                        className="rounded-xs text-brand-gold focus:ring-0"
+                      />
+                      <span>{isAr ? 'تمييز ذهبي (بارز)' : 'Gold Highlight'}</span>
+                    </label>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-[10px] font-mono text-brand-cream/60 mb-1">
+                        {isAr ? 'كود الكوبون' : 'Coupon Code'}
+                      </label>
+                      <input
+                        type="text"
+                        value={offer.couponCode || ''}
+                        onChange={(e) => {
+                          const updated = [...(content.promoOffers || defaultHomepageContent.promoOffers || [])];
+                          updated[idx] = { ...updated[idx], couponCode: e.target.value.toUpperCase() };
+                          setContent({ ...content, promoOffers: updated });
+                        }}
+                        className="w-full bg-brand-stone/40 border border-brand-border/70 text-brand-gold text-xs px-2.5 py-1.5 rounded-xs font-mono font-bold"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-mono text-brand-cream/60 mb-1">
+                        {isAr ? 'شارة الخصم (عربي)' : 'Discount Pill (Ar)'}
+                      </label>
+                      <input
+                        type="text"
+                        value={offer.discountBadgeAr || ''}
+                        onChange={(e) => {
+                          const updated = [...(content.promoOffers || defaultHomepageContent.promoOffers || [])];
+                          updated[idx] = { ...updated[idx], discountBadgeAr: e.target.value };
+                          setContent({ ...content, promoOffers: updated });
+                        }}
+                        placeholder="خصم 10%"
+                        className="w-full bg-brand-stone/40 border border-brand-border/70 text-brand-ivory text-xs px-2.5 py-1.5 rounded-xs font-mono"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-mono text-brand-cream/60 mb-1">
+                        {isAr ? 'عنوان البطاقة (عربي)' : 'Card Title (Ar)'}
+                      </label>
+                      <input
+                        type="text"
+                        value={offer.titleAr || ''}
+                        onChange={(e) => {
+                          const updated = [...(content.promoOffers || defaultHomepageContent.promoOffers || [])];
+                          updated[idx] = { ...updated[idx], titleAr: e.target.value };
+                          setContent({ ...content, promoOffers: updated });
+                        }}
+                        className="w-full bg-brand-stone/40 border border-brand-border/70 text-brand-ivory text-xs px-2.5 py-1.5 rounded-xs font-sans"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-mono text-brand-cream/60 mb-1">
+                        {isAr ? 'عنوان البطاقة (إنجليزي)' : 'Card Title (En)'}
+                      </label>
+                      <input
+                        type="text"
+                        value={offer.titleEn || ''}
+                        onChange={(e) => {
+                          const updated = [...(content.promoOffers || defaultHomepageContent.promoOffers || [])];
+                          updated[idx] = { ...updated[idx], titleEn: e.target.value };
+                          setContent({ ...content, promoOffers: updated });
+                        }}
+                        className="w-full bg-brand-stone/40 border border-brand-border/70 text-brand-ivory text-xs px-2.5 py-1.5 rounded-xs font-sans"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-mono text-brand-cream/60 mb-1">
+                        {isAr ? 'الشارة العلوية (عربي)' : 'Top Badge (Ar)'}
+                      </label>
+                      <input
+                        type="text"
+                        value={offer.badgeAr || ''}
+                        onChange={(e) => {
+                          const updated = [...(content.promoOffers || defaultHomepageContent.promoOffers || [])];
+                          updated[idx] = { ...updated[idx], badgeAr: e.target.value };
+                          setContent({ ...content, promoOffers: updated });
+                        }}
+                        placeholder="كوبون فوري"
+                        className="w-full bg-brand-stone/40 border border-brand-border/70 text-brand-ivory text-xs px-2.5 py-1.5 rounded-xs font-sans"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-mono text-brand-cream/60 mb-1">
+                        {isAr ? 'الشارة العلوية (إنجليزي)' : 'Top Badge (En)'}
+                      </label>
+                      <input
+                        type="text"
+                        value={offer.badgeEn || ''}
+                        onChange={(e) => {
+                          const updated = [...(content.promoOffers || defaultHomepageContent.promoOffers || [])];
+                          updated[idx] = { ...updated[idx], badgeEn: e.target.value };
+                          setContent({ ...content, promoOffers: updated });
+                        }}
+                        placeholder="INSTANT VOUCHER"
+                        className="w-full bg-brand-stone/40 border border-brand-border/70 text-brand-ivory text-xs px-2.5 py-1.5 rounded-xs font-mono"
+                      />
+                    </div>
+
+                    <div className="col-span-2">
+                      <label className="block text-[10px] font-mono text-brand-cream/60 mb-1">
+                        {isAr ? 'تفاصيل وشروط العرض (عربي)' : 'Offer Description (Ar)'}
+                      </label>
+                      <input
+                        type="text"
+                        value={offer.descriptionAr || ''}
+                        onChange={(e) => {
+                          const updated = [...(content.promoOffers || defaultHomepageContent.promoOffers || [])];
+                          updated[idx] = { ...updated[idx], descriptionAr: e.target.value };
+                          setContent({ ...content, promoOffers: updated });
+                        }}
+                        className="w-full bg-brand-stone/40 border border-brand-border/70 text-brand-ivory text-xs px-2.5 py-1.5 rounded-xs font-sans"
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Quick Save Bar */}
+          <div className="p-4 bg-brand-charcoal border border-brand-gold/40 rounded-sm flex items-center justify-between">
+            <span className="text-xs font-mono text-brand-cream/80">
+              {isAr
+                ? 'أي تعديل تحفظه يظهر فوراً في واجهة المتجر للعملاء بدون إعادة تشغيل.'
+                : 'All changes persist immediately to the live customer storefront.'}
+            </span>
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={saving}
+              className="px-6 py-2.5 bg-brand-gold hover:bg-brand-gold-hover text-brand-black text-xs font-bold uppercase tracking-wider rounded-xs transition-colors flex items-center space-x-2 rtl:space-x-reverse font-mono shadow-gold disabled:opacity-50"
+            >
+              {saving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+              <span>{saving ? (isAr ? 'جاري الحفظ...' : 'Saving...') : isAr ? 'حفظ العروض الآن' : 'Save Offers'}</span>
+            </button>
           </div>
         </div>
       )}

@@ -138,10 +138,29 @@ export interface ShowcaseCategoryItem {
   isPrimary?: boolean;
 }
 
+export interface PromoOfferItem {
+  id: string;
+  badgeEn: string;
+  badgeAr: string;
+  titleEn: string;
+  titleAr: string;
+  descriptionEn: string;
+  descriptionAr: string;
+  couponCode: string;
+  discountBadgeEn: string;
+  discountBadgeAr: string;
+  actionTextEn: string;
+  actionTextAr: string;
+  actionType: 'copy' | 'link';
+  actionHref?: string;
+  isPrimary?: boolean;
+}
+
 export interface HomepageContent {
   // Visibility toggles for complete control over customer storefront
   showAnnouncement?: boolean;
   showHero?: boolean;
+  showPromoOffers?: boolean;
   showCategories?: boolean;
   showProducts?: boolean;
   showStory?: boolean;
@@ -151,6 +170,17 @@ export interface HomepageContent {
   qrTargetUrl?: string;
   qrTitleEn?: string;
   qrTitleAr?: string;
+
+  // Caesar EG Style Promotional Offers ("اختار عرضك")
+  promoOffersSubtitleEn?: string;
+  promoOffersSubtitleAr?: string;
+  promoOffersTitleEn?: string;
+  promoOffersTitleAr?: string;
+  promoOffersDescriptionEn?: string;
+  promoOffersDescriptionAr?: string;
+  promoOffersBannerTagEn?: string;
+  promoOffersBannerTagAr?: string;
+  promoOffers?: PromoOfferItem[];
 
   // Mobile App Experience & Animation Toggles
   enableEntranceAnimations?: boolean;

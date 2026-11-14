@@ -30,7 +30,7 @@ export default function AdminOverviewPage() {
 
   const [orders, setOrders] = useState<StoredOrder[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {

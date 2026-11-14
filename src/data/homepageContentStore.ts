@@ -15,7 +15,7 @@ function loadLocalContent(): HomepageContent {
       const data = fs.readFileSync(JSON_PATH, 'utf8');
       const parsed = JSON.parse(data);
       if (parsed && parsed.heroTitleEn) {
-        return parsed;
+        return { ...defaultHomepageContent, ...parsed };
       }
     }
   } catch (err) {
