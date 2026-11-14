@@ -16,6 +16,9 @@ import {
   CheckCircle2,
   X,
   ShieldCheck,
+  Lock,
+  Eye,
+  EyeOff,
   CreditCard,
   MessageCircle,
   Plus,
@@ -39,6 +42,14 @@ export default function AdminSettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [feedbackMsg, setFeedbackMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  // Admin Account & Password Credentials State
+  const [adminEmail, setAdminEmail] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [credSaving, setCredSaving] = useState(false);
+  const [credMsg, setCredMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   // Payment Methods State
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethodConfig[]>([]);
@@ -67,6 +78,13 @@ export default function AdminSettingsPage() {
       if (data.success) {
         setSettings(data.settings);
       }
+
+      adminFetch('/api/admin/credentials')
+        .then((r) => r.json())
+        .then((d) => {
+          if (d.success && d.email) setAdminEmail(d.email);
+        })
+        .catch(() => {});
     } catch (err) {
       console.error('Failed to load store settings:', err);
     } finally {
@@ -190,6 +208,48 @@ export default function AdminSettingsPage() {
       }
     } catch (err: any) {
       setFeedbackMsg({ type: 'error', text: err.message });
+    }
+  };
+
+  const handleUpdateCredentials = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!adminEmail.trim()) {
+      setCredMsg({ type: 'error', text: isAr ? 'يرجى إدخال البريد الإلكتروني' : 'Email is required' });
+      return;
+    }
+    if (newPassword && newPassword.length < 6) {
+      setCredMsg({ type: 'error', text: isAr ? 'كلمة المرور يجب ألا تقل عن 6 أحرف' : 'Password must be at least 6 characters' });
+      return;
+    }
+    if (newPassword && newPassword !== confirmPassword) {
+      setCredMsg({ type: 'error', text: isAr ? 'كلمة المرور وتأكيدها غير متطابقين' : 'Passwords do not match' });
+      return;
+    }
+
+    setCredSaving(true);
+    setCredMsg(null);
+    try {
+      const res = await adminFetch('/api/admin/credentials', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: adminEmail.trim(), newPassword: newPassword || undefined }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setCredMsg({
+          type: 'success',
+          text: isAr ? 'تم تحديث البريد الإلكتروني وكلمة المرور بنجاح وبسرية تامة!' : 'Credentials updated securely!',
+        });
+        setNewPassword('');
+        setConfirmPassword('');
+        setTimeout(() => setCredMsg(null), 4000);
+      } else {
+        setCredMsg({ type: 'error', text: data.error || (isAr ? 'فشل في تحديث بيانات الدخول' : 'Update failed') });
+      }
+    } catch (err: any) {
+      setCredMsg({ type: 'error', text: err.message || (isAr ? 'خطأ في الاتصال' : 'Connection error') });
+    } finally {
+      setCredSaving(false);
     }
   };
 
@@ -710,6 +770,129 @@ export default function AdminSettingsPage() {
           </div>
         </div>
       </form>
+
+      {/* ------------------------------------------------------------- */}
+      {/* ADMIN ACCOUNT & CREDENTIALS SECURITY SECTION                  */}
+      {/* ------------------------------------------------------------- */}
+      <div className="bg-brand-charcoal border border-brand-gold/50 rounded-sm p-6 sm:p-7 space-y-6 shadow-xl">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-brand-border/60 pb-4">
+          <div className="flex items-center space-x-2.5 rtl:space-x-reverse">
+            <div className="w-9 h-9 rounded-xs bg-brand-gold/15 border border-brand-gold/40 flex items-center justify-center text-brand-gold">
+              <ShieldCheck className="w-5 h-5 text-brand-gold" />
+            </div>
+            <div>
+              <h2 className="text-base font-serif font-black text-brand-ivory">
+                {isAr ? 'حساب الإدارة وكلمة المرور (سري ومحمي)' : 'Admin Credentials & Security'}
+              </h2>
+              <p className="text-[11px] font-mono text-brand-cream/60 mt-0.5">
+                {isAr
+                  ? 'يمكنك تغيير بريد الإدارة وكلمة السر مباشرة من هنا بأمان وتشفير تام دون أن يراها أحد.'
+                  : 'Update admin login email and secret password directly with end-to-end encryption.'}
+              </p>
+            </div>
+          </div>
+
+          <span className="text-[10px] font-mono px-2.5 py-1 rounded-xs bg-emerald-950/40 border border-emerald-500/50 text-emerald-400 self-start sm:self-center">
+            {isAr ? 'تشفير PBKDF2 نشط' : 'PBKDF2 Encrypted'}
+          </span>
+        </div>
+
+        {credMsg && (
+          <div
+            className={`p-3.5 rounded-xs border text-xs font-mono animate-fade-in flex items-center space-x-2 rtl:space-x-reverse ${
+              credMsg.type === 'success'
+                ? 'bg-emerald-950/50 border-emerald-500 text-emerald-300'
+                : 'bg-rose-950/50 border-rose-500 text-rose-300'
+            }`}
+          >
+            {credMsg.type === 'success' ? (
+              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+            ) : (
+              <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+            )}
+            <span>{credMsg.text}</span>
+          </div>
+        )}
+
+        <form onSubmit={handleUpdateCredentials} className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Admin Email */}
+            <div>
+              <label className="block text-xs font-mono text-brand-cream/80 uppercase mb-1.5">
+                {isAr ? 'البريد الإلكتروني للإدارة' : 'Admin Login Email'}
+              </label>
+              <div className="relative">
+                <Mail className="w-4 h-4 text-brand-gold/60 absolute left-3 rtl:left-auto rtl:right-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="email"
+                  required
+                  value={adminEmail}
+                  onChange={(e) => setAdminEmail(e.target.value)}
+                  placeholder="admin@atheer.store"
+                  className="w-full bg-brand-stone/40 border border-brand-border focus:border-brand-gold pl-9 pr-3 rtl:pl-3 rtl:pr-9 py-2.5 text-xs text-brand-ivory rounded-xs font-mono focus:outline-none"
+                />
+              </div>
+            </div>
+
+            {/* New Password */}
+            <div>
+              <label className="block text-xs font-mono text-brand-cream/80 uppercase mb-1.5">
+                {isAr ? 'كلمة السر الجديدة' : 'New Password'}
+              </label>
+              <div className="relative">
+                <Lock className="w-4 h-4 text-brand-gold/60 absolute left-3 rtl:left-auto rtl:right-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder={isAr ? 'اتركه فارغاً إن لم ترغب بتغييره' : 'Leave empty to keep unchanged'}
+                  className="w-full bg-brand-stone/40 border border-brand-border focus:border-brand-gold pl-9 pr-9 rtl:pl-9 rtl:pr-9 py-2.5 text-xs text-brand-ivory rounded-xs font-mono focus:outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-2.5 rtl:right-auto rtl:left-2.5 top-1/2 -translate-y-1/2 text-brand-cream/50 hover:text-brand-ivory"
+                  tabIndex={-1}
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+
+            {/* Confirm New Password */}
+            <div>
+              <label className="block text-xs font-mono text-brand-cream/80 uppercase mb-1.5">
+                {isAr ? 'تأكيد كلمة السر' : 'Confirm Password'}
+              </label>
+              <div className="relative">
+                <Lock className="w-4 h-4 text-brand-gold/60 absolute left-3 rtl:left-auto rtl:right-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder={isAr ? 'أعد كتابة كلمة السر' : 'Re-enter password'}
+                  className="w-full bg-brand-stone/40 border border-brand-border focus:border-brand-gold pl-9 pr-3 rtl:pl-3 rtl:pr-9 py-2.5 text-xs text-brand-ivory rounded-xs font-mono focus:outline-none"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="flex justify-end pt-2">
+            <button
+              type="submit"
+              disabled={credSaving}
+              className="px-6 py-2.5 bg-brand-gold text-brand-black text-xs font-mono font-bold uppercase tracking-wider rounded-xs hover:bg-brand-gold-hover transition-all shadow-gold flex items-center space-x-2 rtl:space-x-reverse disabled:opacity-50"
+            >
+              {credSaving ? (
+                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <Save className="w-3.5 h-3.5" />
+              )}
+              <span>{credSaving ? (isAr ? 'جاري التحديث...' : 'Saving...') : isAr ? 'تحديث بيانات الدخول بأمان' : 'Save Credentials'}</span>
+            </button>
+          </div>
+        </form>
+      </div>
 
       {/* ------------------------------------------------------------- */}
       {/* MODAL: ADD / EDIT PAYMENT METHOD                              */}

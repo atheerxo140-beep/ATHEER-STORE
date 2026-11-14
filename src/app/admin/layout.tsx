@@ -32,6 +32,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [showDbInfo, setShowDbInfo] = useState(false);
   const [supabaseStatus, setSupabaseStatus] = useState<{ configured: boolean }>({ configured: false });
   const [isVerifyingAuth, setIsVerifyingAuth] = useState(true);
+  const [adminEmail, setAdminEmail] = useState<string>('atheerxo140@gmail.com');
 
   // If on /admin/login, don't show the dashboard shell
   const isLoginPage = pathname === '/admin/login';
@@ -67,6 +68,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         router.push('/admin/login?reason=expired');
       } else {
         setIsVerifyingAuth(false);
+        // Fetch current active admin email
+        import('@/lib/adminAuthClient').then(({ adminFetch }) => {
+          adminFetch('/api/admin/credentials')
+            .then((res) => res.json())
+            .then((data) => {
+              if (isMounted && data.success && data.email) {
+                setAdminEmail(data.email);
+              }
+            })
+            .catch(() => {});
+        });
       }
     };
 
@@ -242,7 +254,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
             {/* Admin Badge */}
             <span className="hidden sm:inline-block text-[11px] font-mono text-brand-gold bg-brand-black px-2.5 py-1 border border-brand-gold/40">
-              admin@atheer.store
+              {adminEmail}
             </span>
 
             {/* Logout Button */}

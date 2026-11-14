@@ -23,7 +23,7 @@ export default function AdminLoginPage() {
   const { language, setLanguage, isRtl } = useLanguage();
   const isAr = language === 'ar';
 
-  const [email, setEmail] = useState('admin@atheer.store');
+  const [email, setEmail] = useState('atheerxo140@gmail.com');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -58,55 +58,25 @@ export default function AdminLoginPage() {
     setLoading(true);
     setErrorMsg(null);
 
-    const isProd = process.env.NODE_ENV === 'production';
-
-    // In production, NEVER allow simulated login without Supabase credentials!
-    if (isProd && !supabaseConfigured) {
-      setErrorMsg(
-        isAr
-          ? 'تنبيه أمني: لا يمكن تفعيل لوحة الإدارة في بيئة الإنتاج دون ربط مفاتيح Supabase Auth وقاعدة البيانات السحابية. تم حظر التجاوز التجريبي تماماً.'
-          : 'CRITICAL SECURITY: Production mode requires real Supabase Auth credentials. Development bypass is strictly disabled.'
-      );
-      setLoading(false);
-      return;
-    }
-
-    // If Supabase keys exist, attempt Supabase authentication
-    if (supabaseConfigured) {
-      try {
-        const { getSupabaseClient } = await import('@/lib/supabaseClient');
-        const supabase = getSupabaseClient();
-        if (!supabase) {
-          setErrorMsg(isAr ? 'تعذر تهيئة اتصال Supabase' : 'Unable to initialize Supabase client.');
-          setLoading(false);
-          return;
-        }
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-
-        if (error || !data.session) {
-          setErrorMsg(error?.message || 'Authentication failed');
-          setLoading(false);
-          return;
-        }
-
-        const token = data.session.access_token;
-        syncAdminToken(token);
-
+    try {
+      const res = await fetch('/api/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await res.json();
+      if (data.success && data.token) {
+        syncAdminToken(data.token);
         router.push('/admin');
-      } catch (err: any) {
-        setErrorMsg(err.message || 'Authentication failed');
+        return;
+      } else {
+        setErrorMsg(data.error || (isAr ? 'بيانات الدخول غير صحيحة' : 'Invalid credentials'));
         setLoading(false);
+        return;
       }
-    } else {
-      // Controlled Development Session Token (allowed strictly in non-production)
-      const devToken = 'dev-admin-session-atheer';
-      syncAdminToken(devToken);
-      setTimeout(() => {
-        router.push('/admin');
-      }, 400);
+    } catch (err: any) {
+      setErrorMsg(isAr ? 'تعذر الاتصال بخدمة التحقق' : 'Unable to connect to login service');
+      setLoading(false);
     }
   };
 
