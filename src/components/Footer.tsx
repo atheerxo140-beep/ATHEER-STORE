@@ -34,14 +34,37 @@ export const Footer: React.FC = () => {
     }
   }, [targetQr, content.showQrCode]);
 
-  const handleSubscribe = (e: React.FormEvent) => {
+  const [subscribing, setSubscribing] = useState(false);
+  const [subMsg, setSubMsg] = useState<string | null>(null);
+
+  const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email) return;
-    setSubscribed(true);
-    setTimeout(() => {
-      setEmail('');
-      setSubscribed(false);
-    }, 4000);
+    if (!email || subscribing) return;
+    setSubscribing(true);
+    setSubMsg(null);
+    try {
+      const res = await fetch('/api/newsletter/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, source: 'footer' }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setSubscribed(true);
+        setSubMsg(language === 'ar' ? 'تم اشتراكك بنجاح في نادي النخبة!' : 'Welcome to the ATHEER Drop Club!');
+        setTimeout(() => {
+          setEmail('');
+          setSubscribed(false);
+          setSubMsg(null);
+        }, 5000);
+      } else {
+        setSubMsg(data.error || (language === 'ar' ? 'حدث خطأ، حاول ثانية' : 'Error subscribing'));
+      }
+    } catch {
+      setSubMsg(language === 'ar' ? 'تعذر الاتصال بالخادم' : 'Connection failed');
+    } finally {
+      setSubscribing(false);
+    }
   };
 
   return (
@@ -166,6 +189,26 @@ export const Footer: React.FC = () => {
             </h4>
             <ul className="space-y-3 text-xs text-brand-cream/70 font-light">
               <li>
+                <Link href="/track-order" className="hover:text-brand-gold transition-colors font-medium text-brand-gold">
+                  {language === 'ar' ? 'تتبع شحنتك المباشر' : 'Track Your Shipment'}
+                </Link>
+              </li>
+              <li>
+                <Link href="/account" className="hover:text-brand-gold transition-colors">
+                  {language === 'ar' ? 'حساب العميل والطلبات' : 'Customer Account & Orders'}
+                </Link>
+              </li>
+              <li>
+                <Link href="/account/loyalty" className="hover:text-brand-gold transition-colors">
+                  {language === 'ar' ? 'بطاقة ولاء أثير الرقمية' : 'ATHEER Rewards Digital Pass'}
+                </Link>
+              </li>
+              <li>
+                <Link href="/account/wishlist" className="hover:text-brand-gold transition-colors">
+                  {language === 'ar' ? 'قائمة الأمنيات المحفوظة' : 'Saved Wishlist'}
+                </Link>
+              </li>
+              <li>
                 <a href="/#fabric-fit" className="hover:text-brand-gold transition-colors">
                   {language === 'ar' ? 'دليل مقاسات البوكسي أوفرسايز' : 'Boxy Oversized Size Guide'}
                 </a>
@@ -174,16 +217,6 @@ export const Footer: React.FC = () => {
                 <span className="text-brand-gold block font-mono">
                   {t('footerCodBadge')}
                 </span>
-              </li>
-              <li>
-                <a href="/#fabric-fit" className="hover:text-brand-gold transition-colors">
-                  {language === 'ar' ? 'إرشادات غسيل القطن الثقيل' : 'Heavy Cotton Care Guide'}
-                </a>
-              </li>
-              <li>
-                <a href="/#products" className="hover:text-brand-gold transition-colors">
-                  {language === 'ar' ? 'سياسة الاستبدال والمعاينة' : 'Inspection & Exchange Policy'}
-                </a>
               </li>
             </ul>
           </div>

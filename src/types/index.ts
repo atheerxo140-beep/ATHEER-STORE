@@ -40,8 +40,10 @@ export interface Product {
   categoryLabelAr: string;
   price: number; // in EGP
   originalPrice?: number;
+  sku?: string;
   image: string;
   hoverImage: string;
+  gallery?: string[];
   badgeEn?: string;
   badgeAr?: string;
   descriptionEn: string;

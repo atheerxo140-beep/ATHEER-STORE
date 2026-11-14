@@ -13,7 +13,44 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const coupon = getCouponByCode(code);
+    const cleanCode = code.trim().toUpperCase();
+
+    // 1. Check if Loyalty Reward Voucher (e.g. ATH-VIP-xxxx)
+    try {
+      const { validateLoyaltyVoucher } = await import('@/lib/loyaltyService');
+      const loyaltyRes = validateLoyaltyVoucher(cleanCode);
+      if (loyaltyRes.valid && loyaltyRes.discountAmount) {
+        const discountAmount = Math.min(loyaltyRes.discountAmount, subtotal);
+        return NextResponse.json({
+          success: true,
+          code: cleanCode,
+          discountType: 'loyalty_reward',
+          discountValue: loyaltyRes.discountAmount,
+          discountAmount,
+          newSubtotal: subtotal - discountAmount,
+          messageAr: `تم تفعيل مكافأة بطاقة الأختام بقيمة ${loyaltyRes.discountAmount} ج.م`,
+        });
+      }
+    } catch (e) {}
+
+    // 2. Check Promotion Rules (e.g. FAMILY15 bundle or promo rules)
+    try {
+      const { evaluateCartPromotions } = await import('@/lib/promotionService');
+      const promoRes = evaluateCartPromotions(body.itemCount || 1, subtotal, cleanCode);
+      if (promoRes.appliedDiscount > 0) {
+        return NextResponse.json({
+          success: true,
+          code: promoRes.promoCode,
+          discountType: promoRes.promoType || 'bundle_items',
+          discountValue: promoRes.appliedDiscount,
+          discountAmount: promoRes.appliedDiscount,
+          newSubtotal: subtotal - promoRes.appliedDiscount,
+          messageAr: promoRes.promoTitleAr || 'تم تطبيق خصم العرض بنجاح',
+        });
+      }
+    } catch (e) {}
+
+    const coupon = getCouponByCode(cleanCode);
     if (!coupon) {
       return NextResponse.json(
         {

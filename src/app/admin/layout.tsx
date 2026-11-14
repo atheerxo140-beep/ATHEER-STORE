@@ -24,6 +24,10 @@ import {
   Bell,
   MessageCircle,
   Check,
+  Award,
+  Users,
+  Percent,
+  Mail,
 } from 'lucide-react';
 import { ensureValidAdminSession, clearAdminToken, initAdminAuthSync } from '@/lib/adminAuthClient';
 
@@ -218,6 +222,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { labelEn: 'Inventory', labelAr: 'المخزون', href: '/admin/inventory', icon: Layers },
     { labelEn: 'Egypt Shipping', labelAr: 'شحن المحافظات', href: '/admin/shipping', icon: Truck },
     { labelEn: 'Coupons', labelAr: 'كوبونات الخصم', href: '/admin/coupons', icon: Tag },
+    { labelEn: 'Loyalty Rewards', labelAr: 'برنامج الأختام والمكافآت', href: '/admin/loyalty', icon: Award },
+    { labelEn: 'Bundle Promotions', labelAr: 'عروض الباندل والخصومات', href: '/admin/promotions', icon: Percent },
+    { labelEn: 'Staff & Roles', labelAr: 'فريق العمل والصلاحيات', href: '/admin/staff', icon: Users },
+    { labelEn: 'Subscribers', labelAr: 'المشتركين بالنشرة', href: '/admin/subscribers', icon: Mail },
     { labelEn: 'Storefront CMS', labelAr: 'التحكم باللوحة الرئيسية (الواجهة)', href: '/admin/content', icon: ImageIcon },
     { labelEn: 'Store Settings', labelAr: 'إعدادات المتجر', href: '/admin/settings', icon: Settings },
   ];

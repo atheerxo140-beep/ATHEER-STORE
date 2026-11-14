@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useLanguage } from '@/context/LanguageContext';
 import { useCart } from '@/context/CartContext';
+import { useWishlist } from '@/context/WishlistContext';
+import { useCustomerAuth } from '@/context/CustomerAuthContext';
 import { useHomepageContent } from '@/hooks/useHomepageContent';
 import { Product } from '@/types';
 import { mockProducts } from '@/data/mockProducts';
@@ -21,6 +23,8 @@ import {
   ArrowRight,
   ArrowLeft,
   ArrowUpRight,
+  User,
+  Truck,
 } from 'lucide-react';
 
 export const Header: React.FC = () => {
@@ -28,6 +32,8 @@ export const Header: React.FC = () => {
   const { language, setLanguage, isRtl, t, formatPrice } = useLanguage();
   const { content } = useHomepageContent();
   const { totalCount, setIsCartOpen } = useCart();
+  const { wishlistCount } = useWishlist();
+  const { customer, isAuthenticated } = useCustomerAuth();
   const isAr = language === 'ar';
   const ArrowIcon = isRtl ? ArrowLeft : ArrowRight;
   const announcementText = isAr
@@ -107,8 +113,9 @@ export const Header: React.FC = () => {
   const navLinks = [
     { label: t('navHoodies'), href: '/#products', highlight: true },
     { label: t('navSweatshirts'), href: '/#products' },
+    { label: isAr ? 'عروض أيام أثير' : 'Special Offers', href: '/#offers' },
     { label: t('navTeesFuture'), href: '/#future-drop' },
-    { label: t('navFitLab'), href: '/#fabric-fit' },
+    { label: isAr ? 'تتبع الشحنة' : 'Track Order', href: '/track-order' },
     { label: t('navBrand'), href: '/#about' },
   ];
 
@@ -233,13 +240,34 @@ export const Header: React.FC = () => {
                 {language === 'en' ? 'عربي' : 'EN'}
               </button>
 
-              {/* Wishlist */}
+              {/* Wishlist Link with Live Badge */}
               <Link
-                href="/#products"
-                className="hidden sm:inline-flex p-2 text-brand-ivory/80 hover:text-brand-gold transition-colors"
+                href="/account/wishlist"
+                className="hidden sm:inline-flex p-2 text-brand-ivory/80 hover:text-brand-gold transition-colors relative"
                 aria-label="Wishlist"
+                title={isAr ? 'قائمة المفضلة' : 'Wishlist'}
               >
                 <Heart className="w-5 h-5 stroke-[1.5]" />
+                {wishlistCount > 0 && (
+                  <span className="absolute -top-1 -right-1 rtl:-left-1 rtl:right-auto bg-brand-gold text-brand-black text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center font-mono">
+                    {wishlistCount}
+                  </span>
+                )}
+              </Link>
+
+              {/* Customer Account Button */}
+              <Link
+                href={customer ? '/account' : '/account/login'}
+                className="p-2 text-brand-ivory/80 hover:text-brand-gold transition-colors flex items-center space-x-1 rtl:space-x-reverse"
+                aria-label="Customer Account"
+                title={customer ? (isAr ? `حسابي (${customer.fullName})` : `My Account (${customer.fullName})`) : (isAr ? 'دخول الحساب' : 'Sign In')}
+              >
+                <User className="w-5 h-5 stroke-[1.5]" />
+                {customer && (
+                  <span className="hidden xl:inline-block text-[11px] font-mono text-brand-gold max-w-[80px] truncate">
+                    {customer.fullName.split(' ')[0]}
+                  </span>
+                )}
               </Link>
 
               {/* Shopping Bag Button with Badge */}

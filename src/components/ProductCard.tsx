@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Product } from '@/types';
 import { useLanguage } from '@/context/LanguageContext';
 import { useCart } from '@/context/CartContext';
+import { useWishlist } from '@/context/WishlistContext';
 import { Heart, ShoppingBag, Eye, Check, Flame, Clock } from 'lucide-react';
 
 interface ProductCardProps {
@@ -16,8 +17,9 @@ interface ProductCardProps {
 export const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView, index = 0 }) => {
   const { language, t, formatPrice } = useLanguage();
   const { addItem } = useCart();
+  const { isInWishlist, toggleWishlist } = useWishlist();
   const [isHovered, setIsHovered] = useState(false);
-  const [isWishlisted, setIsWishlisted] = useState(false);
+  const isWishlisted = isInWishlist(product.id);
   const [addedAnimation, setAddedAnimation] = useState(false);
   const [selectedSize, setSelectedSize] = useState(product.sizes[0] || 'L');
 
@@ -113,7 +115,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView, 
           type="button"
           onClick={(e) => {
             e.stopPropagation();
-            setIsWishlisted(!isWishlisted);
+            toggleWishlist(product.id);
           }}
           className="absolute top-3 right-3 rtl:right-auto rtl:left-3 z-10 w-8 h-8 rounded-full bg-brand-black/75 backdrop-blur-md border border-brand-border/80 flex items-center justify-center text-brand-ivory hover:text-brand-gold hover:border-brand-gold transition-colors"
           aria-label="Add to wishlist"

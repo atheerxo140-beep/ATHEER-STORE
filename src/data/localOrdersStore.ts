@@ -20,6 +20,7 @@ export type PaymentStatus = 'pending_cod' | 'paid_on_delivery' | 'pending_verifi
 export interface StoredOrder {
   id: string;
   orderReference: string;
+  customerId?: string;
   customerName: string;
   customerPhone: string;
   customerEmail?: string;

@@ -7,6 +7,7 @@ import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { useCart } from '@/context/CartContext';
 import { useLanguage } from '@/context/LanguageContext';
+import { useCustomerAuth } from '@/context/CustomerAuthContext';
 import { PaymentMethodConfig } from '@/types';
 import {
   EGYPTIAN_GOVERNORATES,
@@ -52,6 +53,43 @@ export default function CheckoutPage() {
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>('cod');
   const [paymentReference, setPaymentReference] = useState('');
   const [copiedAccount, setCopiedAccount] = useState(false);
+
+  const { customer } = useCustomerAuth();
+  const [loyaltyVouchers, setLoyaltyVouchers] = useState<any[]>([]);
+
+  // Auto-fill logged-in customer info and saved default address
+  useEffect(() => {
+    if (customer) {
+      if (!customerName && customer.fullName) setCustomerName(customer.fullName);
+      if (!customerPhone && customer.phone) setCustomerPhone(customer.phone);
+      if (!customerEmail && customer.email) setCustomerEmail(customer.email);
+
+      const defaultAddr = customer.addresses?.find((a) => a.isDefault) || customer.addresses?.[0];
+      if (defaultAddr) {
+        if (defaultAddr.governorate) setSelectedGovernorate(defaultAddr.governorate);
+        if (defaultAddr.city && !shippingCity) setShippingCity(defaultAddr.city);
+        if (defaultAddr.streetAddress && !shippingAddress) {
+          const bldg = defaultAddr.buildingNumber ? `عمارة ${defaultAddr.buildingNumber}` : '';
+          const apt = defaultAddr.apartmentNumber ? `شقة ${defaultAddr.apartmentNumber}` : '';
+          const full = [defaultAddr.streetAddress, bldg, apt].filter(Boolean).join(' - ');
+          setShippingAddress(full);
+        }
+      }
+
+      // Check loyalty vouchers
+      fetch('/api/loyalty/me', {
+        headers: { 'x-customer-id': customer.id },
+      })
+        .then((r) => r.json())
+        .then((data) => {
+          if (data.success && data.account?.vouchers) {
+            const active = data.account.vouchers.filter((v: any) => !v.redeemed);
+            setLoyaltyVouchers(active);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [customer]);
 
   useEffect(() => {
     fetch('/api/payment-methods')
@@ -196,6 +234,7 @@ export default function CheckoutPage() {
         : shippingAddress.trim();
 
       const payload = {
+        customerId: customer?.id,
         customerName: customerName.trim(),
         customerPhone: cleanPhone,
         customerEmail: customerEmail.trim() || undefined,
@@ -707,6 +746,24 @@ export default function CheckoutPage() {
                       </div>
                       {couponError && (
                         <p className="text-[10px] text-rose-400 font-mono mt-1">{couponError}</p>
+                      )}
+                      {loyaltyVouchers.length > 0 && !appliedCoupon && (
+                        <div className="mt-2 p-2 bg-brand-gold/10 border border-brand-gold/40 rounded-xs flex items-center justify-between text-[11px] font-mono">
+                          <span className="text-brand-ivory">
+                            {language === 'ar'
+                              ? `لديك قسيمة ولاء بقيمة ${loyaltyVouchers[0].amount} ج.م`
+                              : `Loyalty voucher available: ${loyaltyVouchers[0].amount} EGP`}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setCouponInput(loyaltyVouchers[0].code);
+                            }}
+                            className="text-brand-gold font-bold underline hover:text-brand-gold-hover"
+                          >
+                            {loyaltyVouchers[0].code}
+                          </button>
+                        </div>
                       )}
                     </div>
                   )}

@@ -28,6 +28,7 @@ export interface CreateOrderInput {
   paymentMethod?: string;
   paymentReference?: string;
   notes?: string;
+  customerId?: string;
   items: CreateOrderItemInput[];
 }
 
@@ -211,25 +212,52 @@ export const createOrder = async (input: CreateOrderInput): Promise<OrderCreatio
 
   const { fee: calculatedShippingFee } = calculateShippingFee(zone.id, calculatedSubtotal);
 
-  // 8. Server-Side Coupon Discount Calculation
+  // 8. Server-Side Discount Calculation (Coupons, Loyalty Vouchers & Promotions)
   let discountAmount = 0;
   let validatedCouponCode: string | undefined = undefined;
 
   if (input.couponCode && input.couponCode.trim()) {
-    const coupon = getCouponByCode(input.couponCode.trim());
-    if (coupon) {
-      if (!coupon.minOrderAmount || calculatedSubtotal >= coupon.minOrderAmount) {
-        if (coupon.discountType === 'percentage') {
-          discountAmount = Math.round((calculatedSubtotal * coupon.discountValue) / 100);
-          if (coupon.maxDiscountAmount && discountAmount > coupon.maxDiscountAmount) {
-            discountAmount = coupon.maxDiscountAmount;
-          }
-        } else {
-          discountAmount = Math.min(coupon.discountValue, calculatedSubtotal);
-        }
-        validatedCouponCode = coupon.code;
-        coupon.timesUsed += 1;
+    const rawCode = input.couponCode.trim().toUpperCase();
+
+    // A. Check if it is a Loyalty Reward Voucher
+    try {
+      const { validateLoyaltyVoucher } = await import('@/lib/loyaltyService');
+      const loyaltyRes = validateLoyaltyVoucher(rawCode);
+      if (loyaltyRes.valid && loyaltyRes.discountAmount) {
+        discountAmount = Math.min(loyaltyRes.discountAmount, calculatedSubtotal);
+        validatedCouponCode = rawCode;
       }
+    } catch (e) {}
+
+    // B. Check standard coupons if not already discounted
+    if (discountAmount === 0) {
+      const coupon = getCouponByCode(rawCode);
+      if (coupon) {
+        if (!coupon.minOrderAmount || calculatedSubtotal >= coupon.minOrderAmount) {
+          if (coupon.discountType === 'percentage') {
+            discountAmount = Math.round((calculatedSubtotal * coupon.discountValue) / 100);
+            if (coupon.maxDiscountAmount && discountAmount > coupon.maxDiscountAmount) {
+              discountAmount = coupon.maxDiscountAmount;
+            }
+          } else {
+            discountAmount = Math.min(coupon.discountValue, calculatedSubtotal);
+          }
+          validatedCouponCode = coupon.code;
+          coupon.timesUsed += 1;
+        }
+      }
+    }
+
+    // C. Check promotion rules (e.g. bundle discounts)
+    if (discountAmount === 0) {
+      try {
+        const { evaluateCartPromotions } = await import('@/lib/promotionService');
+        const promoRes = evaluateCartPromotions(validatedItems.reduce((acc, it) => acc + it.quantity, 0), calculatedSubtotal, rawCode);
+        if (promoRes.appliedDiscount > 0) {
+          discountAmount = promoRes.appliedDiscount;
+          validatedCouponCode = promoRes.promoCode;
+        }
+      } catch (e) {}
     }
   }
 
@@ -244,6 +272,7 @@ export const createOrder = async (input: CreateOrderInput): Promise<OrderCreatio
   const newOrder: StoredOrder = {
     id: orderId,
     orderReference,
+    customerId: input.customerId,
     customerName: input.customerName.trim(),
     customerPhone: phoneCheck.normalized,
     customerEmail: input.customerEmail?.trim(),
@@ -276,6 +305,24 @@ export const createOrder = async (input: CreateOrderInput): Promise<OrderCreatio
 
   // 9. IMMEDIATELY persist order to local disk storage (0ms - zero data loss)
   saveLocalOrder(newOrder);
+
+  // 9b. Auto-Award Digital Loyalty Stamps to Customer (ATHEER REWARDS)
+  if (newOrder.customerEmail) {
+    try {
+      const { awardStampsForOrder, consumeLoyaltyVoucher } = await import('@/lib/loyaltyService');
+      awardStampsForOrder(
+        newOrder.customerEmail,
+        newOrder.customerName,
+        newOrder.orderReference,
+        newOrder.totalAmount
+      );
+      if (validatedCouponCode && validatedCouponCode.startsWith('ATH-VIP-')) {
+        consumeLoyaltyVoucher(validatedCouponCode, newOrder.orderReference);
+      }
+    } catch (loyaltyErr) {
+      console.warn('[Loyalty Award/Consume Notice]', loyaltyErr);
+    }
+  }
 
   // 10. Deduct Inventory Consistently and record movement logs immediately
   for (const item of matchedProducts) {

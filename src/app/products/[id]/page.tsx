@@ -404,6 +404,33 @@ export default function ProductDetailPage() {
       <Footer />
       <CartDrawer />
       <WhatsAppButton />
+
+      {product && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'Product',
+              name: language === 'ar' ? product.nameAr : product.nameEn,
+              description: language === 'ar' ? product.descriptionAr : product.descriptionEn,
+              image: [product.image, product.hoverImage].filter(Boolean),
+              sku: product.sku || product.id,
+              brand: {
+                '@type': 'Brand',
+                name: 'ATHEER | أثير',
+              },
+              offers: {
+                '@type': 'Offer',
+                priceCurrency: 'EGP',
+                price: product.price,
+                availability: 'https://schema.org/InStock',
+                itemCondition: 'https://schema.org/NewCondition',
+              },
+            }),
+          }}
+        />
+      )}
     </div>
   );
 }

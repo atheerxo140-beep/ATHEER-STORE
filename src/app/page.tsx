@@ -60,6 +60,29 @@ export default function HomePage() {
 
       {/* Native App-Style Mobile Bottom Navigation Bar (Video Replica) */}
       <MobileBottomNav />
+
+      {/* JSON-LD Structured Data for Search Engines */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'ClothingStore',
+            name: 'ATHEER | أثير',
+            alternateName: 'ATHEER Luxury Streetwear',
+            url: 'https://atheer.store',
+            description: 'Egyptian luxury streetwear brand specializing in heavyweight 500 GSM hoodies and premium apparel.',
+            currenciesAccepted: 'EGP',
+            paymentAccepted: 'Cash on Delivery, InstaPay, Mobile Wallets',
+            address: {
+              '@type': 'PostalAddress',
+              addressCountry: 'EG',
+              addressLocality: 'Cairo',
+            },
+            telephone: '+201015993802',
+          }),
+        }}
+      />
     </main>
   );
 }
