@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { useLanguage } from '@/context/LanguageContext';
 import { Product } from '@/types';
+import { mockProducts } from '@/data/mockProducts';
 import { adminFetch } from '@/lib/adminAuthClient';
 import {
   Package,
@@ -75,8 +76,8 @@ export default function AdminProductsPage() {
   const { language, isRtl } = useLanguage();
   const isAr = language === 'ar';
 
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [products, setProducts] = useState<Product[]>(mockProducts);
+  const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<'all' | 'hoodies' | 'sweatshirts' | 'tshirts'>('all');
   const [feedbackMsg, setFeedbackMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);

@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '@/context/LanguageContext';
 import { StoreSettings, PaymentMethodConfig } from '@/types';
+import { defaultStoreSettings } from '@/data/defaultStoreSettings';
 import { adminFetch } from '@/lib/adminAuthClient';
 import {
   Settings,
@@ -39,8 +40,8 @@ export default function AdminSettingsPage() {
   const { language, isRtl } = useLanguage();
   const isAr = language === 'ar';
 
-  const [settings, setSettings] = useState<StoreSettings | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [settings, setSettings] = useState<StoreSettings>(defaultStoreSettings);
+  const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [feedbackMsg, setFeedbackMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
@@ -419,15 +420,6 @@ export default function AdminSettingsPage() {
       alert(err.message || 'Error occurred');
     }
   };
-
-  if (loading || !settings) {
-    return (
-      <div className="py-24 text-center font-mono text-xs text-brand-cream/60">
-        <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-brand-gold" />
-        {isAr ? 'جاري تحميل إعدادات المتجر...' : 'Loading store configuration...'}
-      </div>
-    );
-  }
 
   const getMethodIcon = (type: PaymentMethodConfig['type']) => {
     switch (type) {

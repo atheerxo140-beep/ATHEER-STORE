@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '@/context/LanguageContext';
 import { Coupon } from '@/types';
+import { defaultCoupons } from '@/data/couponsStore';
 import { adminFetch } from '@/lib/adminAuthClient';
 import {
   Tag,
@@ -24,8 +25,8 @@ export default function AdminCouponsPage() {
   const { language, isRtl } = useLanguage();
   const isAr = language === 'ar';
 
-  const [coupons, setCoupons] = useState<Coupon[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [coupons, setCoupons] = useState<Coupon[]>(defaultCoupons);
+  const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [feedbackMsg, setFeedbackMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);

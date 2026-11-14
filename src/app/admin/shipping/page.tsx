@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '@/context/LanguageContext';
 import { ShippingZone } from '@/types';
-import { GovernorateInfo } from '@/data/shippingZones';
+import { GovernorateInfo, defaultEgyptianShippingZones, EGYPTIAN_GOVERNORATES } from '@/data/shippingZones';
 import { adminFetch } from '@/lib/adminAuthClient';
 import {
   Truck,
@@ -22,9 +22,9 @@ export default function AdminShippingPage() {
   const { language, isRtl } = useLanguage();
   const isAr = language === 'ar';
 
-  const [zones, setZones] = useState<ShippingZone[]>([]);
-  const [governorates, setGovernorates] = useState<GovernorateInfo[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [zones, setZones] = useState<ShippingZone[]>(defaultEgyptianShippingZones);
+  const [governorates, setGovernorates] = useState<GovernorateInfo[]>(EGYPTIAN_GOVERNORATES);
+  const [loading, setLoading] = useState(false);
   const [editingZoneId, setEditingZoneId] = useState<string | null>(null);
   const [editFormData, setEditFormData] = useState<Partial<ShippingZone>>({});
   const [feedbackMsg, setFeedbackMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);

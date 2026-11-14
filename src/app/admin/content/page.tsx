@@ -62,8 +62,8 @@ export default function AdminContentPage() {
   const { language, isRtl } = useLanguage();
   const isAr = language === 'ar';
 
-  const [content, setContent] = useState<HomepageContent | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [content, setContent] = useState<HomepageContent>(defaultHomepageContent);
+  const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [activeTab, setActiveTab] = useState<'sections' | 'hero' | 'categories' | 'story' | 'future' | 'features' | 'animations'>('sections');
@@ -311,15 +311,6 @@ export default function AdminContentPage() {
     const defaultImg = defaultHomepageContent.categories[idx]?.image || '';
     updateCategory(idx, { image: defaultImg });
   };
-
-  if (loading || !content) {
-    return (
-      <div className="py-24 text-center font-mono text-xs text-brand-cream/60">
-        <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-brand-gold" />
-        {isAr ? 'جاري تحميل محتوى الواجهة...' : 'Loading homepage CMS...'}
-      </div>
-    );
-  }
 
   return (
     <div className="max-w-6xl mx-auto space-y-8 font-sans">
