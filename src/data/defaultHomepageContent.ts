@@ -14,6 +14,11 @@ export const defaultHomepageContent: HomepageContent = {
   qrTitleEn: 'Scan To Visit ATHEER On Mobile',
   qrTitleAr: 'امسح الرمز لزيارة متجر أثير ومشاركة الكتالوج',
 
+  // Mobile App Experience & Animation Toggles
+  enableEntranceAnimations: true,
+  enableCardFocusAnimations: true,
+  enableMobileBottomNav: true,
+
   announcementTextEn: 'THE LAUNCH DROP: 500 GSM Heavyweight Hoodies & Sweatshirts | Fast Delivery Across Egypt',
   announcementTextAr: 'الإصدار الأول: هوديز وسويت شيرتات 500 GSM الفاخرة للشباب | شحن سريع لجميع محافظات مصر',
   heroBadgeEn: 'THE LAUNCH COLLECTION · 500 GSM HOODIES',

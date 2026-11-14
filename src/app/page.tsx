@@ -9,13 +9,15 @@ import { CartDrawer } from '@/components/CartDrawer';
 import { WhatsAppButton } from '@/components/WhatsAppButton';
 import { StorefrontQrModal } from '@/components/StorefrontQrModal';
 import { Footer } from '@/components/Footer';
+import { FloatingCartToast } from '@/components/FloatingCartToast';
+import { MobileBottomNav } from '@/components/MobileBottomNav';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export default function HomePage() {
   return (
-    <main className="min-h-screen bg-brand-black text-brand-ivory flex flex-col selection:bg-brand-gold selection:text-brand-black">
+    <main className="min-h-screen bg-brand-black text-brand-ivory flex flex-col selection:bg-brand-gold selection:text-brand-black pb-20 sm:pb-0">
       {/* Global Navigation & Header */}
       <Header />
 
@@ -48,6 +50,12 @@ export default function HomePage() {
 
       {/* Permanent Store QR Code Quick Scanner Widget */}
       <StorefrontQrModal />
+
+      {/* Sleek Floating Cart Notification Toast (Video Replica) */}
+      <FloatingCartToast />
+
+      {/* Native App-Style Mobile Bottom Navigation Bar (Video Replica) */}
+      <MobileBottomNav />
     </main>
   );
 }

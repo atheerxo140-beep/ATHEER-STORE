@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Product } from '@/types';
 import { mockProducts } from '@/data/mockProducts';
 import { ProductCard } from '@/components/ProductCard';
+import { ProductBottomSheet } from '@/components/ProductBottomSheet';
 import { useLanguage } from '@/context/LanguageContext';
 import { useHomepageContent } from '@/hooks/useHomepageContent';
 import { useCart } from '@/context/CartContext';
@@ -202,11 +203,12 @@ export const ProductGrid: React.FC = () => {
         {/* Products Grid or Empty State */}
         {filteredProducts.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 animate-fade-in">
-            {filteredProducts.map((product) => (
+            {filteredProducts.map((product, idx) => (
               <ProductCard
                 key={product.id}
                 product={product}
                 onQuickView={handleOpenQuickView}
+                index={idx}
               />
             ))}
           </div>
@@ -238,162 +240,12 @@ export const ProductGrid: React.FC = () => {
         )}
       </div>
 
-      {/* Streetwear Quick Specs Modal */}
-      {selectedProduct && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto animate-fade-in">
-          <div
-            className="fixed inset-0 bg-black/85 backdrop-blur-md transition-opacity"
-            onClick={() => setSelectedProduct(null)}
-          />
-
-          <div className="relative w-full max-w-4xl bg-brand-charcoal border border-brand-gold/40 shadow-2xl z-10 overflow-hidden my-8">
-            <button
-              onClick={() => setSelectedProduct(null)}
-              className="absolute top-4 right-4 rtl:right-auto rtl:left-4 z-20 p-2 text-brand-ivory/80 hover:text-brand-gold transition-colors bg-brand-black/70 backdrop-blur-sm"
-              aria-label="Close modal"
-            >
-              <X className="w-5 h-5" />
-            </button>
-
-            <div className="grid grid-cols-1 md:grid-cols-2">
-              {/* Product Gallery in Modal */}
-              <div className="relative aspect-[3/4] md:aspect-auto h-72 md:h-full bg-brand-black">
-                <div
-                  className="w-full h-full bg-cover bg-center"
-                  style={{ backgroundImage: `url('${selectedProduct.image}')` }}
-                />
-              </div>
-
-              {/* Product Specs */}
-              <div className="p-6 sm:p-8 flex flex-col justify-between">
-                <div>
-                  <div className="flex items-center space-x-2 rtl:space-x-reverse mb-2">
-                    <span className="text-[10px] uppercase tracking-wider text-brand-gold border border-brand-gold/40 px-2 py-0.5 font-mono">
-                      {selectedProduct.gsm} GSM
-                    </span>
-                    <span className="text-xs text-brand-cream/60 uppercase tracking-wider font-mono">
-                      {language === 'ar' ? selectedProduct.fitAr : selectedProduct.fitEn}
-                    </span>
-                  </div>
-
-                  <h3 className="font-sans font-bold text-2xl sm:text-3xl text-brand-ivory mb-3">
-                    {language === 'ar' ? selectedProduct.nameAr : selectedProduct.nameEn}
-                  </h3>
-
-                  <div className="font-mono text-2xl font-bold text-brand-gold mb-4">
-                    {formatPrice(selectedProduct.price)}
-                  </div>
-
-                  <p className="text-sm text-brand-cream/85 font-sans leading-relaxed mb-6 font-light">
-                    {language === 'ar' ? selectedProduct.descriptionAr : selectedProduct.descriptionEn}
-                  </p>
-
-                  {/* Fabric & Architecture Box */}
-                  <div className="p-4 bg-brand-black border border-brand-border mb-6 text-xs text-brand-ivory/85 space-y-2">
-                    <div className="flex justify-between border-b border-brand-border/40 pb-1.5">
-                      <span className="text-brand-cream/60">{language === 'ar' ? 'القماش:' : 'Fabrication:'}</span>
-                      <span className="text-brand-gold font-medium">
-                        {language === 'ar' ? selectedProduct.fabricAr : selectedProduct.fabricEn}
-                      </span>
-                    </div>
-                    <div className="flex justify-between border-b border-brand-border/40 pb-1.5">
-                      <span className="text-brand-cream/60">{language === 'ar' ? 'القصّة:' : 'Silhouette:'}</span>
-                      <span className="text-brand-ivory font-medium">
-                        {language === 'ar' ? selectedProduct.fitAr : selectedProduct.fitEn}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-brand-cream/60">{language === 'ar' ? 'نصيحة المقاس:' : 'Fit Guide:'}</span>
-                      <span className="text-brand-ivory font-light">
-                        {language === 'ar' ? 'اختر مقاسك المعتاد للحصول على مظهر بوكسي مثالي' : 'True to size for a boxy oversized drape'}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Size Selection */}
-                  <div className="mb-6">
-                    <div className="flex items-center justify-between text-xs text-brand-ivory/80 uppercase tracking-wider mb-2 font-mono">
-                      <span>{language === 'ar' ? 'اختر المقاس' : 'Select Size'}</span>
-                      <span className="text-brand-gold text-[11px] flex items-center">
-                        <Ruler className="w-3 h-3 mr-1 rtl:ml-1 rtl:mr-0 inline" />
-                        {language === 'ar' ? 'دليل مقاسات الستريتوير' : 'Streetwear Size Chart'}
-                      </span>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {selectedProduct.sizes.map((sz) => (
-                        <button
-                          key={sz}
-                          onClick={() => setModalSize(sz)}
-                          className={`px-3.5 py-1.5 text-xs font-mono border uppercase tracking-wider transition-colors ${
-                            modalSize === sz
-                              ? 'border-brand-gold text-brand-gold bg-brand-gold/15 font-bold'
-                              : 'border-brand-border text-brand-ivory/70 hover:border-brand-gold/60'
-                          }`}
-                        >
-                          {sz}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Color Display */}
-                  {selectedProduct.colors.length > 0 && (
-                    <div className="mb-6">
-                      <div className="text-xs text-brand-ivory/80 uppercase tracking-wider mb-2 font-mono">
-                        <span>{language === 'ar' ? 'الألوان' : 'Colorway'}</span>
-                      </div>
-                      <div className="flex gap-2">
-                        {selectedProduct.colors.map((c) => (
-                          <button
-                            key={c}
-                            onClick={() => setModalColor(c)}
-                            className={`px-3 py-1 text-xs border font-mono transition-colors ${
-                              modalColor === c
-                                ? 'border-brand-gold text-brand-gold bg-brand-gold/15 font-semibold'
-                                : 'border-brand-border text-brand-ivory/60'
-                            }`}
-                          >
-                            {c}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Add to Bag or Drop Alert */}
-                <button
-                  onClick={handleModalAddToCart}
-                  className={`w-full py-4 flex items-center justify-center space-x-2 rtl:space-x-reverse text-xs uppercase tracking-[0.2em] font-bold transition-all duration-300 ${
-                    selectedProduct.isComingSoon
-                      ? 'bg-brand-gold text-brand-black hover:bg-brand-gold-hover shadow-gold'
-                      : modalAdded
-                      ? 'bg-emerald-800 text-white'
-                      : 'bg-brand-gold text-brand-black hover:bg-brand-gold-hover shadow-gold'
-                  }`}
-                >
-                  {selectedProduct.isComingSoon ? (
-                    <>
-                      <Clock className="w-4 h-4" />
-                      <span>{language === 'ar' ? 'تفعيل إشعار الإطلاق' : 'Notify Me on Release'}</span>
-                    </>
-                  ) : modalAdded ? (
-                    <>
-                      <Check className="w-4 h-4 stroke-[2.5]" />
-                      <span>{language === 'ar' ? 'تمت الإضافة للحقيبة بنجاح' : 'Added to Bag'}</span>
-                    </>
-                  ) : (
-                    <>
-                      <ShoppingBag className="w-4 h-4" />
-                      <span>{t('addToBag')}</span>
-                    </>
-                  )}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Streetwear Quick Order Bottom Sheet & Specs Modal (Video Replica) */}
+      <ProductBottomSheet
+        product={selectedProduct}
+        isOpen={Boolean(selectedProduct)}
+        onClose={() => setSelectedProduct(null)}
+      />
     </section>
   );
 };

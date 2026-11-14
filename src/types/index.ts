@@ -152,6 +152,11 @@ export interface HomepageContent {
   qrTitleEn?: string;
   qrTitleAr?: string;
 
+  // Mobile App Experience & Animation Toggles
+  enableEntranceAnimations?: boolean;
+  enableCardFocusAnimations?: boolean;
+  enableMobileBottomNav?: boolean;
+
   // Announcement Bar
   announcementTextEn: string;
   announcementTextAr: string;

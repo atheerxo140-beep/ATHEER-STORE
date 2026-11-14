@@ -10,9 +10,10 @@ import { Heart, ShoppingBag, Eye, Check, Flame, Clock } from 'lucide-react';
 interface ProductCardProps {
   product: Product;
   onQuickView?: (product: Product) => void;
+  index?: number;
 }
 
-export const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView }) => {
+export const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView, index = 0 }) => {
   const { language, t, formatPrice } = useLanguage();
   const { addItem } = useCart();
   const [isHovered, setIsHovered] = useState(false);
@@ -25,6 +26,21 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView }
   const badge = language === 'ar' ? product.badgeAr : product.badgeEn;
   const fit = language === 'ar' ? product.fitAr : product.fitEn;
 
+  const discountPercent =
+    product.originalPrice && product.originalPrice > product.price
+      ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
+      : null;
+
+  const handleQuickAction = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (onQuickView) {
+      onQuickView(product);
+    } else {
+      handleAddToCart(e);
+    }
+  };
+
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -36,17 +52,18 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView }
       );
       return;
     }
-    addItem(product, 1, selectedSize);
+    addItem(product, 1, selectedSize, product.colors[0] || '', false);
     setAddedAnimation(true);
     setTimeout(() => setAddedAnimation(false), 1800);
   };
 
   return (
     <div
-      className={`group flex flex-col bg-brand-black border transition-all duration-500 overflow-hidden ${
+      style={{ animationDelay: `${index * 80}ms` }}
+      className={`group flex flex-col bg-brand-black border transition-all duration-500 overflow-hidden rounded-xs animate-card-entrance ${
         product.category === 'hoodies'
-          ? 'border-brand-border/80 hover:border-brand-gold shadow-luxury-dark'
-          : 'border-brand-border/60 hover:border-brand-gold/70'
+          ? 'border-brand-border/80 hover:border-brand-gold shadow-luxury-dark hover:shadow-gold hover:-translate-y-1'
+          : 'border-brand-border/60 hover:border-brand-gold/70 hover:-translate-y-1'
       }`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -74,8 +91,13 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView }
         {/* Streetwear Dark Vignette */}
         <div className="absolute inset-0 bg-gradient-to-t from-brand-black/85 via-transparent to-black/30 pointer-events-none" />
 
-        {/* GSM & Fit Top Badges */}
+        {/* GSM, Fit & Discount Top Badges */}
         <div className="absolute top-3 left-3 rtl:left-auto rtl:right-3 z-10 flex flex-col space-y-1">
+          {discountPercent && (
+            <span className="inline-block bg-rose-600/95 text-white border border-rose-500/80 text-[10px] font-mono font-bold px-2 py-0.5 rounded-xs shadow-md">
+              {language === 'ar' ? `خصم ${discountPercent}%` : `${discountPercent}% OFF`}
+            </span>
+          )}
           {badge && (
             <span className="inline-block bg-brand-black/90 backdrop-blur-md text-brand-gold border border-brand-gold/50 text-[9px] uppercase tracking-wider font-mono font-semibold px-2 py-0.5">
               {badge}
@@ -103,15 +125,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView }
           />
         </button>
 
-        {/* Quick View Button */}
+        {/* Quick View Button (Desktop) */}
         {onQuickView && (
           <button
             type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              onQuickView(product);
-            }}
-            className={`hidden sm:flex absolute inset-x-8 top-1/2 -translate-y-1/2 items-center justify-center space-x-2 rtl:space-x-reverse bg-brand-black/90 backdrop-blur-md border border-brand-gold text-brand-gold text-xs uppercase tracking-widest py-3 px-4 font-semibold transition-all duration-300 ${
+            onClick={handleQuickAction}
+            className={`hidden sm:flex absolute inset-x-8 top-1/2 -translate-y-1/2 items-center justify-center space-x-2 rtl:space-x-reverse bg-brand-black/90 backdrop-blur-md border border-brand-gold text-brand-gold text-xs uppercase tracking-widest py-3 px-4 font-semibold transition-all duration-300 shadow-xl ${
               isHovered ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2 pointer-events-none'
             }`}
           >
@@ -120,10 +139,23 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView }
           </button>
         )}
 
-        {/* Bottom Slide-Up Quick Add / Coming Soon Bar */}
+        {/* Mobile Quick Order Floating Button (Direct Bottom Sheet Trigger) */}
+        {onQuickView && (
+          <button
+            type="button"
+            onClick={handleQuickAction}
+            className="sm:hidden absolute bottom-3 right-3 rtl:right-auto rtl:left-3 z-20 px-3 py-1.5 rounded-full bg-brand-gold text-brand-black flex items-center space-x-1.5 rtl:space-x-reverse text-[11px] font-mono font-bold shadow-gold active:scale-90 transition-transform"
+            aria-label="Quick order"
+          >
+            <ShoppingBag className="w-3.5 h-3.5" />
+            <span>{language === 'ar' ? 'طلب سريع' : 'Quick Order'}</span>
+          </button>
+        )}
+
+        {/* Desktop Bottom Slide-Up Quick Add / Coming Soon Bar */}
         <div
-          className={`absolute inset-x-0 bottom-0 p-3 bg-brand-black/95 backdrop-blur-md border-t border-brand-border transition-all duration-300 ${
-            isHovered ? 'translate-y-0 opacity-100' : 'sm:translate-y-full sm:opacity-0 opacity-100'
+          className={`hidden sm:block absolute inset-x-0 bottom-0 p-3 bg-brand-black/95 backdrop-blur-md border-t border-brand-border transition-all duration-300 ${
+            isHovered ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'
           }`}
         >
           {/* Sizes */}
@@ -151,7 +183,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView }
 
           <button
             type="button"
-            onClick={handleAddToCart}
+            onClick={handleQuickAction}
             className={`w-full py-2.5 px-3 flex items-center justify-center space-x-2 rtl:space-x-reverse text-xs uppercase tracking-widest font-bold transition-all duration-300 ${
               product.isComingSoon
                 ? 'bg-brand-charcoal text-brand-gold border border-brand-gold/40 hover:bg-brand-gold hover:text-brand-black'

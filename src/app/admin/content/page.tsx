@@ -66,7 +66,7 @@ export default function AdminContentPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
-  const [activeTab, setActiveTab] = useState<'sections' | 'hero' | 'categories' | 'story' | 'future' | 'features'>('sections');
+  const [activeTab, setActiveTab] = useState<'sections' | 'hero' | 'categories' | 'story' | 'future' | 'features' | 'animations'>('sections');
 
   // File Upload States
   const [uploadingHero, setUploadingHero] = useState(false);
@@ -486,6 +486,19 @@ export default function AdminContentPage() {
         >
           <ShieldCheck className="w-3.5 h-3.5" />
           <span>{isAr ? '6. مميزات وثقة المتجر' : '6. Store Guarantees'}</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('animations')}
+          className={`flex items-center space-x-2 rtl:space-x-reverse px-4 py-3 border-b-2 font-bold transition-colors ${
+            activeTab === 'animations'
+              ? 'border-brand-gold text-brand-gold bg-brand-charcoal/40'
+              : 'border-transparent text-brand-cream/60 hover:text-brand-ivory'
+          }`}
+        >
+          <Sparkles className="w-3.5 h-3.5 text-brand-gold" />
+          <span>{isAr ? '7. أنميشن وتطبيق الموبايل (جديد)' : '7. Mobile App & Animations'}</span>
         </button>
       </div>
 
@@ -2130,6 +2143,142 @@ export default function AdminContentPage() {
                   className="w-full bg-brand-black border border-brand-border px-3 py-2 text-xs text-brand-ivory rounded-sm text-right leading-relaxed"
                 />
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* TAB 7: MOBILE APP & ANIMATIONS CONTROL */}
+      {activeTab === 'animations' && (
+        <div className="space-y-6 animate-fade-in">
+          <div className="p-6 bg-brand-charcoal border border-brand-gold/40 rounded-sm">
+            <div className="flex items-center space-x-2 rtl:space-x-reverse text-brand-gold font-bold mb-2">
+              <Sparkles className="w-4 h-4 text-brand-gold" />
+              <span>{isAr ? 'التحكم في أنميشن الموقع وتجربة تطبيق الموبايل (مستوحى من الفيديو المرفق)' : 'Mobile App Experience & 60 FPS Fluid Animations'}</span>
+            </div>
+            <p className="text-xs text-brand-cream/70 leading-relaxed font-mono">
+              {isAr
+                ? 'تحكّم في تشغيل أو إيقاف الأنميشن السريع وشريط تطبيق الموبايل السفلي ونافذة الطلب السريع المنبثقة من الأسفل (Bottom Sheet) وإشعار السلة الانسيابي من الأعلى.'
+                : 'Configure smooth animations, mobile app bottom navigation bar, slide-up order sheets, and top cart toasts.'}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            {/* 1. Mobile Bottom Bar */}
+            <div className="p-6 bg-brand-charcoal border border-brand-border/80 rounded-sm flex flex-col justify-between space-y-4">
+              <div>
+                <div className="flex items-center space-x-2 rtl:space-x-reverse text-brand-gold font-bold text-sm mb-2">
+                  <Layout className="w-4 h-4 text-brand-gold" />
+                  <span>{isAr ? 'شريط تطبيق الموبايل السفلي' : 'Mobile App Bottom Nav'}</span>
+                </div>
+                <p className="text-xs text-brand-cream/60 leading-relaxed">
+                  {isAr
+                    ? 'شريط تنقل ثابت في أسفل شاشات الموبايل (iOS/Android App Style) يتيح للعميل التنقل السريع بين الرئيسية، الأقسام، السلة الحية بعداد مباشر، البحث، وتتبع طلباته برقم هاتفه.'
+                    : 'Fixed mobile bottom app bar with home, categories, cart counter, instant search, and order tracking.'}
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() =>
+                  setContent({
+                    ...content,
+                    enableMobileBottomNav: content.enableMobileBottomNav === false ? true : false,
+                  })
+                }
+                className={`w-full py-2.5 text-xs font-mono font-bold rounded-xs transition-colors flex items-center justify-center space-x-2 rtl:space-x-reverse ${
+                  content.enableMobileBottomNav !== false
+                    ? 'bg-emerald-600 text-white'
+                    : 'bg-brand-stone/60 text-brand-cream/40 border border-brand-border'
+                }`}
+              >
+                {content.enableMobileBottomNav !== false ? (
+                  <>
+                    <Check className="w-3.5 h-3.5" />
+                    <span>{isAr ? 'مفعل (يعمل كتطبيق موبايل)' : 'Active (App Mode)'}</span>
+                  </>
+                ) : (
+                  <span>{isAr ? 'معطل' : 'Disabled'}</span>
+                )}
+              </button>
+            </div>
+
+            {/* 2. Entrance & Stagger Animations */}
+            <div className="p-6 bg-brand-charcoal border border-brand-border/80 rounded-sm flex flex-col justify-between space-y-4">
+              <div>
+                <div className="flex items-center space-x-2 rtl:space-x-reverse text-brand-gold font-bold text-sm mb-2">
+                  <Sparkles className="w-4 h-4 text-brand-gold" />
+                  <span>{isAr ? 'أنميشن ظهور وتدفق القطع' : 'Smooth Card Entrance'}</span>
+                </div>
+                <p className="text-xs text-brand-cream/60 leading-relaxed">
+                  {isAr
+                    ? 'ظهور انسيابي متتابع (Staggered Animation) لبطاقات الهوديز والمنتجات عند التمرير بسرعة 60 إطار بالثانية.'
+                    : 'Smooth staggered entrance animation for product cards on page load and category filtering.'}
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() =>
+                  setContent({
+                    ...content,
+                    enableEntranceAnimations: content.enableEntranceAnimations === false ? true : false,
+                  })
+                }
+                className={`w-full py-2.5 text-xs font-mono font-bold rounded-xs transition-colors flex items-center justify-center space-x-2 rtl:space-x-reverse ${
+                  content.enableEntranceAnimations !== false
+                    ? 'bg-emerald-600 text-white'
+                    : 'bg-brand-stone/60 text-brand-cream/40 border border-brand-border'
+                }`}
+              >
+                {content.enableEntranceAnimations !== false ? (
+                  <>
+                    <Check className="w-3.5 h-3.5" />
+                    <span>{isAr ? 'مفعل (انسيابية 60 FPS)' : 'Active (60 FPS)'}</span>
+                  </>
+                ) : (
+                  <span>{isAr ? 'معطل' : 'Disabled'}</span>
+                )}
+              </button>
+            </div>
+
+            {/* 3. Card Focus & Hover Zoom */}
+            <div className="p-6 bg-brand-charcoal border border-brand-border/80 rounded-sm flex flex-col justify-between space-y-4">
+              <div>
+                <div className="flex items-center space-x-2 rtl:space-x-reverse text-brand-gold font-bold text-sm mb-2">
+                  <Eye className="w-4 h-4 text-brand-gold" />
+                  <span>{isAr ? 'تأثير التكبير وبؤرة التركيز' : 'Focus & Hover Zoom'}</span>
+                </div>
+                <p className="text-xs text-brand-cream/60 leading-relaxed">
+                  {isAr
+                    ? 'تكبير هادئ وجميل لصورة القطعة وزاويتها الثانية عند التمرير بالماوس أو لمس الشاشة لجذب انتباه العميل للمنتج.'
+                    : 'Elevated hover scaling and secondary angle transition when hovering or tapping cards.'}
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() =>
+                  setContent({
+                    ...content,
+                    enableCardFocusAnimations: content.enableCardFocusAnimations === false ? true : false,
+                  })
+                }
+                className={`w-full py-2.5 text-xs font-mono font-bold rounded-xs transition-colors flex items-center justify-center space-x-2 rtl:space-x-reverse ${
+                  content.enableCardFocusAnimations !== false
+                    ? 'bg-emerald-600 text-white'
+                    : 'bg-brand-stone/60 text-brand-cream/40 border border-brand-border'
+                }`}
+              >
+                {content.enableCardFocusAnimations !== false ? (
+                  <>
+                    <Check className="w-3.5 h-3.5" />
+                    <span>{isAr ? 'مفعل (تكبير فاخر)' : 'Active (Luxury Zoom)'}</span>
+                  </>
+                ) : (
+                  <span>{isAr ? 'معطل' : 'Disabled'}</span>
+                )}
+              </button>
             </div>
           </div>
         </div>

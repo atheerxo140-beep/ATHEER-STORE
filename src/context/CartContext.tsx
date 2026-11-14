@@ -5,7 +5,13 @@ import { Product, CartItem } from '@/types';
 
 interface CartContextType {
   items: CartItem[];
-  addItem: (product: Product, quantity?: number, selectedSize?: string, selectedColor?: string) => void;
+  addItem: (
+    product: Product,
+    quantity?: number,
+    selectedSize?: string,
+    selectedColor?: string,
+    autoOpenDrawer?: boolean
+  ) => void;
   removeItem: (productId: string, selectedSize: string) => void;
   updateQuantity: (productId: string, selectedSize: string, quantity: number) => void;
   clearCart: () => void;
@@ -13,6 +19,8 @@ interface CartContextType {
   subtotal: number;
   isCartOpen: boolean;
   setIsCartOpen: (open: boolean) => void;
+  toast: { product: Product; quantity: number } | null;
+  dismissToast: () => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -20,6 +28,7 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [items, setItems] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [toast, setToast] = useState<{ product: Product; quantity: number } | null>(null);
 
   // Load cart from localStorage
   useEffect(() => {
@@ -42,11 +51,14 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [items]);
 
+  const dismissToast = () => setToast(null);
+
   const addItem = (
     product: Product,
     quantity = 1,
     selectedSize = product.sizes[0] || 'Standard',
-    selectedColor = product.colors[0] || 'Noir'
+    selectedColor = product.colors[0] || 'Noir',
+    autoOpenDrawer = false
   ) => {
     setItems((prev) => {
       const existingIndex = prev.findIndex(
@@ -70,8 +82,15 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       ];
     });
 
-    // Auto-open drawer for feedback
-    setIsCartOpen(true);
+    if (autoOpenDrawer) {
+      setIsCartOpen(true);
+    } else {
+      // Show smooth floating toast notification (as in user video reference)
+      setToast({ product, quantity });
+      setTimeout(() => {
+        setToast((current) => (current?.product.id === product.id ? null : current));
+      }, 4200);
+    }
   };
 
   const removeItem = (productId: string, selectedSize: string) => {
@@ -114,6 +133,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         subtotal,
         isCartOpen,
         setIsCartOpen,
+        toast,
+        dismissToast,
       }}
     >
       {children}
