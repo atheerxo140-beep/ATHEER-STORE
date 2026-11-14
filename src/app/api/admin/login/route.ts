@@ -28,7 +28,6 @@ export async function POST(req: NextRequest) {
           {
             success: false,
             error: 'البريد الإلكتروني أو كلمة المرور غير صحيحة',
-            debug: { isEmailMatch, isPassMatch, hasStoredHash: Boolean(storedPasswordHash) },
           },
           { status: 401 }
         );
