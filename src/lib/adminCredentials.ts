@@ -2,7 +2,17 @@ import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
 
-const ENV_PATH = path.join(process.cwd(), '.env.local');
+function getEnvPath(): string {
+  const candidates = [
+    'C:/Users/PROBOOK/ATHEER-STORE/.env.local',
+    path.join(process.cwd(), '.env.local'),
+    path.join('C:\\Users\\PROBOOK\\ATHEER-STORE', '.env.local'),
+  ];
+  for (const c of candidates) {
+    if (fs.existsSync(c)) return c;
+  }
+  return candidates[0];
+}
 
 // In-memory cache for fast lookup
 let cachedAdminEmail: string | null = null;
@@ -57,9 +67,10 @@ export function getAdminEmail(): string {
   }
 
   // Try reading from .env.local
-  if (fs.existsSync(ENV_PATH)) {
+  const envPath = getEnvPath();
+  if (fs.existsSync(envPath)) {
     try {
-      const content = fs.readFileSync(ENV_PATH, 'utf8');
+      const content = fs.readFileSync(envPath, 'utf8');
       const match = content.match(/^ADMIN_EMAIL=([^\r\n]+)/m);
       if (match && match[1]) {
         return match[1].trim();
@@ -83,9 +94,10 @@ export function getAdminPasswordHash(): string | null {
     return process.env.ADMIN_PASSWORD.trim();
   }
 
-  if (fs.existsSync(ENV_PATH)) {
+  const envPath = getEnvPath();
+  if (fs.existsSync(envPath)) {
     try {
-      const content = fs.readFileSync(ENV_PATH, 'utf8');
+      const content = fs.readFileSync(envPath, 'utf8');
       const matchHash = content.match(/^ADMIN_PASSWORD_HASH=([^\r\n]+)/m);
       if (matchHash && matchHash[1]) {
         return matchHash[1].trim();
@@ -116,11 +128,12 @@ export function setAdminCredentials(newEmail: string, newPassword?: string): voi
     process.env.ADMIN_PASSWORD_HASH = passwordHash;
   }
 
-  if (!fs.existsSync(ENV_PATH)) {
-    fs.writeFileSync(ENV_PATH, '', 'utf8');
+  const envPath = getEnvPath();
+  if (!fs.existsSync(envPath)) {
+    fs.writeFileSync(envPath, '', 'utf8');
   }
 
-  let envContent = fs.readFileSync(ENV_PATH, 'utf8');
+  let envContent = fs.readFileSync(envPath, 'utf8');
 
   // Update or insert ADMIN_EMAIL
   if (envContent.match(/^ADMIN_EMAIL=/m)) {
@@ -140,7 +153,7 @@ export function setAdminCredentials(newEmail: string, newPassword?: string): voi
     envContent = envContent.replace(/^ADMIN_PASSWORD=[^\r\n]*[\r\n]?/m, '');
   }
 
-  fs.writeFileSync(ENV_PATH, envContent.trim() + '\n', 'utf8');
+  fs.writeFileSync(envPath, envContent.trim() + '\n', 'utf8');
 }
 
 const TOKEN_SECRET = process.env.SUPABASE_SECRET_KEY || 'atheer-store-super-secret-key-2026';

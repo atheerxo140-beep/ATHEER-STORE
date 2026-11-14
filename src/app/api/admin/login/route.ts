@@ -25,7 +25,11 @@ export async function POST(req: NextRequest) {
 
       if (!isEmailMatch || !isPassMatch) {
         return NextResponse.json(
-          { success: false, error: 'البريد الإلكتروني أو كلمة المرور غير صحيحة' },
+          {
+            success: false,
+            error: 'البريد الإلكتروني أو كلمة المرور غير صحيحة',
+            debug: { isEmailMatch, isPassMatch, hasStoredHash: Boolean(storedPasswordHash) },
+          },
           { status: 401 }
         );
       }
