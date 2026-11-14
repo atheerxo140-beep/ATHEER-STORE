@@ -46,9 +46,13 @@ export default function AdminOrdersPage() {
   const [isInvoiceModalOpen, setIsInvoiceModalOpen] = useState(false);
   const [feedbackMsg, setFeedbackMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+  const isFetchingRef = React.useRef(false);
 
   const fetchOrders = async (silent = false) => {
+    if (isFetchingRef.current && silent) return;
+    isFetchingRef.current = true;
     if (!silent) setLoading(true);
+
     try {
       const params = new URLSearchParams();
       if (statusFilter !== 'all') params.set('status', statusFilter);
@@ -58,7 +62,7 @@ export default function AdminOrdersPage() {
 
       const res = await adminFetch(`/api/admin/orders?${params.toString()}`);
       const data = await res.json();
-      if (data.success) {
+      if (data.success && Array.isArray(data.orders)) {
         setOrders(data.orders);
         // If an order is currently selected in modal, keep it updated
         if (selectedOrder) {
@@ -69,6 +73,7 @@ export default function AdminOrdersPage() {
     } catch (err) {
       console.error('Failed to load orders:', err);
     } finally {
+      isFetchingRef.current = false;
       if (!silent) setLoading(false);
     }
   };
@@ -76,12 +81,26 @@ export default function AdminOrdersPage() {
   useEffect(() => {
     fetchOrders(false);
 
-    // Fast live background auto-sync every 2 seconds (instant order appearance without page reload)
+    // Fast live background auto-sync every 3 seconds (skip if previous request still in flight)
     const interval = setInterval(() => {
       fetchOrders(true);
-    }, 2000);
+    }, 3000);
 
-    return () => clearInterval(interval);
+    // BroadcastChannel for instant cross-tab order notifications
+    let bc: BroadcastChannel | null = null;
+    try {
+      bc = new BroadcastChannel('atheer_orders_sync');
+      bc.onmessage = () => {
+        fetchOrders(true);
+      };
+    } catch (e) {
+      // Ignore if unsupported
+    }
+
+    return () => {
+      clearInterval(interval);
+      if (bc) bc.close();
+    };
   }, [statusFilter, paymentFilter, dateFilter, searchTerm]);
 
   const handleUpdateStatus = async (orderId: string, newStatus: OrderStatus) => {

@@ -1,3 +1,6 @@
+import fs from 'fs';
+import path from 'path';
+
 export interface StoredOrderItem {
   productId: string;
   productNameEn: string;
@@ -35,8 +38,8 @@ export interface StoredOrder {
   couponCode?: string;
   totalAmount: number;
   currency: string;
-  paymentMethod: string; // 'cash_on_delivery', 'instapay', 'vodafone_cash', 'credit_card', 'bank_transfer', etc.
-  paymentReference?: string; // e.g. InstaPay transfer ref / wallet transaction ID
+  paymentMethod: string;
+  paymentReference?: string;
   paymentStatus: PaymentStatus;
   orderStatus: OrderStatus;
   notes?: string;
@@ -46,21 +49,54 @@ export interface StoredOrder {
   backendStorage: 'supabase' | 'local_database';
 }
 
-// In-memory runtime orders store
-// In production, this starts STRICTLY EMPTY. No fake or seeded customer data allowed in production!
+const ORDERS_JSON_PATH = path.join(process.cwd(), 'src', 'data', 'orders_store.json');
+
+function loadOrdersFromDisk(): StoredOrder[] {
+  try {
+    if (fs.existsSync(ORDERS_JSON_PATH)) {
+      const data = fs.readFileSync(ORDERS_JSON_PATH, 'utf8');
+      const parsed = JSON.parse(data);
+      if (Array.isArray(parsed)) {
+        return parsed;
+      }
+    }
+  } catch (err) {
+    console.error('[OrdersStore] Error loading orders from disk:', err);
+  }
+  return [];
+}
+
+function persistOrdersToDisk(orders: StoredOrder[]): void {
+  try {
+    fs.writeFileSync(ORDERS_JSON_PATH, JSON.stringify(orders, null, 2), 'utf8');
+  } catch (err) {
+    console.warn('[OrdersStore] Notice: Could not write orders to disk (read-only environment)');
+  }
+}
+
+// Global runtime instance across both development and production
 const globalForOrders = global as unknown as { localOrdersStore?: StoredOrder[] };
 
 export const localOrdersStore: StoredOrder[] =
   globalForOrders.localOrdersStore && Array.isArray(globalForOrders.localOrdersStore)
     ? globalForOrders.localOrdersStore
-    : [];
+    : loadOrdersFromDisk();
 
-if (process.env.NODE_ENV !== 'production') {
-  globalForOrders.localOrdersStore = localOrdersStore;
-}
+globalForOrders.localOrdersStore = localOrdersStore;
 
 export const saveLocalOrder = (order: StoredOrder): StoredOrder => {
-  localOrdersStore.unshift(order);
+  // If order with same ID or reference already exists, update it in place
+  const existingIdx = localOrdersStore.findIndex(
+    (o) => o.id === order.id || o.orderReference.toLowerCase() === order.orderReference.toLowerCase()
+  );
+
+  if (existingIdx >= 0) {
+    localOrdersStore[existingIdx] = order;
+  } else {
+    localOrdersStore.unshift(order);
+  }
+
+  persistOrdersToDisk(localOrdersStore);
   return order;
 };
 
@@ -71,6 +107,13 @@ export const getLocalOrderByIdOrRef = (idOrRef: string): StoredOrder | undefined
 };
 
 export const getAllLocalOrders = (): StoredOrder[] => {
+  // If in-memory is empty, reload from disk just in case
+  if (localOrdersStore.length === 0) {
+    const fromDisk = loadOrdersFromDisk();
+    if (fromDisk.length > 0) {
+      localOrdersStore.push(...fromDisk);
+    }
+  }
   return localOrdersStore;
 };
 
@@ -80,8 +123,8 @@ export const VALID_STATUS_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
   confirmed: ['processing', 'cancelled'],
   processing: ['shipped', 'cancelled'],
   shipped: ['delivered', 'cancelled'],
-  delivered: [], // Terminal status
-  cancelled: [], // Terminal status
+  delivered: [],
+  cancelled: [],
 };
 
 export const isValidStatusTransition = (from: OrderStatus, to: OrderStatus): boolean => {

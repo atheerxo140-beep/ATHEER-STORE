@@ -228,18 +228,16 @@ export default function CheckoutPage() {
       clearCart();
       const ref = data.order?.orderReference;
 
-      // Automatically launch WhatsApp to notify store owner
+      // Instant cross-tab broadcast to notify admin dashboard tabs immediately
       try {
-        const { getWhatsAppOrderUrl } = await import('@/lib/whatsappUtils');
-        const storeWhatsAppUrl = getWhatsAppOrderUrl(data.order, 'store', undefined, language as 'ar' | 'en');
-        if (typeof window !== 'undefined') {
-          window.open(storeWhatsAppUrl, '_blank');
-        }
+        const bc = new BroadcastChannel('atheer_orders_sync');
+        bc.postMessage({ type: 'new_order', ref });
+        bc.close();
       } catch (e) {
-        // Fallback handled seamlessly on order-success page
+        // Ignore
       }
 
-      router.push(`/order-success?ref=${encodeURIComponent(ref)}&whatsapp=1&auto=1`);
+      router.push(`/order-success?ref=${encodeURIComponent(ref)}`);
     } catch (err: any) {
       console.error('Order submission failed:', err);
       setErrorMessage(

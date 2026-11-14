@@ -37,21 +37,32 @@ function persistLocalContent(content: HomepageContent) {
 const globalForContent = global as unknown as { currentHomepageContent?: HomepageContent };
 export const currentHomepageContent: HomepageContent =
   globalForContent.currentHomepageContent || loadLocalContent();
+globalForContent.currentHomepageContent = currentHomepageContent;
 
-if (process.env.NODE_ENV !== 'production') {
-  globalForContent.currentHomepageContent = currentHomepageContent;
-}
+let lastContentSyncTime = 0;
+const CONTENT_CACHE_TTL_MS = 60 * 1000;
 
 export const getHomepageContent = async (): Promise<HomepageContent> => {
+  if (Date.now() - lastContentSyncTime < CONTENT_CACHE_TTL_MS && currentHomepageContent.heroTitleEn) {
+    return currentHomepageContent;
+  }
+
   if (isSupabaseConfigured()) {
     const supabase = getSupabaseServer();
     if (supabase) {
       try {
-        const { data, error } = await supabase
+        const timeoutPromise = new Promise<{ data: any; error: any }>((resolve) =>
+          setTimeout(() => resolve({ data: null, error: new Error('Content fetch timeout') }), 1200)
+        );
+
+        const fetchPromise = supabase
           .from('store_settings')
           .select('*')
           .eq('id', 'homepage_content_row')
           .single();
+
+        const { data, error } = await Promise.race([fetchPromise, timeoutPromise]);
+        lastContentSyncTime = Date.now();
 
         if (!error && data && data.cairo_showrooms_ar) {
           try {

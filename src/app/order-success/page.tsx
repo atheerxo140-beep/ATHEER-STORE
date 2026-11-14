@@ -87,24 +87,7 @@ function OrderSuccessContent() {
     ? getWhatsAppOrderUrl(order, 'customer', storeWhatsApp, language as 'ar' | 'en')
     : '#';
 
-  // Automatically attempt opening WhatsApp to send invoice to store owner
-  useEffect(() => {
-    if (isFromCheckout && order && typeof window !== 'undefined') {
-      const storageKey = `wa_sent_${order.orderReference}`;
-      if (!sessionStorage.getItem(storageKey)) {
-        sessionStorage.setItem(storageKey, '1');
-        const timer = setTimeout(() => {
-          try {
-            window.open(whatsappUrlStore, '_blank');
-          } catch (e) {
-            // Popup blocker; user will use the prominent button
-          }
-        }, 1000);
-        return () => clearTimeout(timer);
-      }
-    }
-  }, [isFromCheckout, order, whatsappUrlStore]);
-
+  // Prominent WhatsApp button available on screen for user to click voluntarily without intrusive auto-popup
   const handleCopyInvoice = () => {
     if (!order) return;
     const msg = formatOrderWhatsAppMessage(order, language as 'ar' | 'en');

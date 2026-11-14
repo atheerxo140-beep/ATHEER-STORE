@@ -201,23 +201,36 @@ export const mockProducts: Product[] = [
 // Editable product repository in memory & Supabase for admin dashboard & public store
 const globalForProducts = global as unknown as { currentProducts?: Product[] };
 export const currentProducts: Product[] = globalForProducts.currentProducts || [...mockProducts];
-if (process.env.NODE_ENV !== 'production') {
-  globalForProducts.currentProducts = currentProducts;
-}
+globalForProducts.currentProducts = currentProducts;
+
+let lastProductSyncTime = 0;
+const PRODUCT_CACHE_TTL_MS = 60 * 1000;
 
 export const getAllProducts = async (): Promise<Product[]> => {
+  // If memory cache is fresh, return immediately in 0ms
+  if (Date.now() - lastProductSyncTime < PRODUCT_CACHE_TTL_MS && currentProducts.length > 0) {
+    return currentProducts;
+  }
+
   if (isSupabaseConfigured()) {
     const supabase = getSupabaseServer();
     if (supabase) {
       try {
-        const { data: dbProducts, error } = await supabase
+        const timeoutPromise = new Promise<{ data: any; error: any }>((resolve) =>
+          setTimeout(() => resolve({ data: null, error: new Error('Products fetch timeout') }), 1200)
+        );
+
+        const fetchPromise = supabase
           .from('products')
           .select('*, product_variants(*)')
           .eq('is_active', true)
           .order('created_at', { ascending: true });
 
+        const { data: dbProducts, error } = await Promise.race([fetchPromise, timeoutPromise]);
+        lastProductSyncTime = Date.now();
+
         if (!error && dbProducts && dbProducts.length > 0) {
-          const mapped: Product[] = dbProducts.map((p) => {
+          const mapped: Product[] = (dbProducts as any[]).map((p: any) => {
             const variants = p.product_variants || [];
             const sizes = Array.from(new Set(variants.map((v: any) => v.size).filter(Boolean))) as string[];
             const colors = Array.from(new Set(variants.map((v: any) => v.color).filter(Boolean))) as string[];

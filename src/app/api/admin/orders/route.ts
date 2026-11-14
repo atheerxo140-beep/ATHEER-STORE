@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import {
   getAllLocalOrders,
+  saveLocalOrder,
   localOrdersStore,
   isValidStatusTransition,
   OrderStatus,
@@ -121,6 +122,7 @@ export async function PUT(req: NextRequest) {
     }
 
     order.updatedAt = new Date().toISOString();
+    saveLocalOrder(order);
 
     return NextResponse.json({
       success: true,
