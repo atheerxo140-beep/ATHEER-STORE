@@ -221,28 +221,37 @@ export const Footer: React.FC = () => {
             </ul>
           </div>
 
-          {/* Links 3: The Brand & Admin */}
+          {/* Links 3: The Brand & Policies */}
           <div>
             <h4 className="font-sans font-bold text-xs uppercase tracking-widest text-brand-gold mb-5">
-              {t('footerCol3')}
+              {language === 'ar' ? 'الدار والسياسات الرسمية' : 'The Brand & Policies'}
             </h4>
             <ul className="space-y-3 text-xs text-brand-cream/70 font-light">
               <li>
-                <a href="/#about" className="hover:text-brand-gold transition-colors">
-                  {language === 'ar' ? 'فلسفة أثير للستريتوير' : 'The ATHEER Streetwear Story'}
-                </a>
+                <Link href="/p/about" className="hover:text-brand-gold transition-colors font-medium text-brand-ivory">
+                  {language === 'ar' ? 'عن دار أثير وهوية الستريتوير' : 'About ATHEER Heritage'}
+                </Link>
               </li>
               <li>
-                <a href="/#about" className="hover:text-brand-gold transition-colors">
-                  {language === 'ar' ? 'مواصفات أقمشة 500 GSM' : '500 GSM Fabric Standards'}
-                </a>
+                <Link href="/p/faq" className="hover:text-brand-gold transition-colors">
+                  {language === 'ar' ? 'الأسئلة الشائعة وإرشادات المقاس' : 'Frequently Asked Questions'}
+                </Link>
               </li>
               <li>
-                <a href="/#about" className="hover:text-brand-gold transition-colors">
-                  {language === 'ar' ? 'مجتمع شباب أثير في مصر' : 'ATHEER Egypt Youth Club'}
-                </a>
+                <Link href="/p/shipping-policy" className="hover:text-brand-gold transition-colors">
+                  {language === 'ar' ? 'سياسة الشحن لكافة المحافظات' : 'Egypt Shipping Policy'}
+                </Link>
               </li>
-
+              <li>
+                <Link href="/p/return-policy" className="hover:text-brand-gold transition-colors">
+                  {language === 'ar' ? 'ضمان المعاينة والاستبدال' : 'Open Box & Exchange Policy'}
+                </Link>
+              </li>
+              <li>
+                <Link href="/p/contact" className="hover:text-brand-gold transition-colors text-brand-gold font-mono">
+                  {language === 'ar' ? 'تواصل مع الكونسيرج بالقاهرة' : 'Cairo Concierge Contact'}
+                </Link>
+              </li>
             </ul>
           </div>
         </div>

@@ -1,0 +1,44 @@
+[
+  {
+    "id": "cat-hoodies",
+    "slug": "hoodies",
+    "nameEn": "500 GSM Heavyweight Hoodies",
+    "nameAr": "الهوديز الثقيلة 500 GSM",
+    "descriptionEn": "Architectural oversized drop-shoulder heavyweight hoodies engineered with double French Terry fleece.",
+    "descriptionAr": "هوديز بقصة بوكسي أوفرسايز ثقيلة الوزن مصممة بكثافة 500 GSM من القطن المصري الصافي المزدوج.",
+    "image": "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?q=80&w=1200&auto=format&fit=crop",
+    "badgeEn": "SIGNATURE DROP",
+    "badgeAr": "الأساسي الفاخر",
+    "itemCount": 4,
+    "order": 1,
+    "isActive": true
+  },
+  {
+    "id": "cat-sweatshirts",
+    "slug": "sweatshirts",
+    "nameEn": "Atelier Crewneck & Pullovers",
+    "nameAr": "سويت شيرتات الكرو نيك والهاف زيب",
+    "descriptionEn": "Clean structured luxury crewnecks with ribbed cuffs and understated metallic gold embroidery.",
+    "descriptionAr": "سويت شيرتات كلاسيكية معاصرة بياقة دائرية وتطريز أثير الميتاليك الذهبي الخافت وتطريزات أكمام متينة.",
+    "image": "https://images.unsplash.com/photo-1509967419530-da38b4704bc6?q=80&w=1200&auto=format&fit=crop",
+    "badgeEn": "ESSENTIALS",
+    "badgeAr": "إصدارات كلاسيكية",
+    "itemCount": 4,
+    "order": 2,
+    "isActive": true
+  },
+  {
+    "id": "cat-tshirts",
+    "slug": "tshirts",
+    "nameEn": "Heavy 320 GSM Youth Tees",
+    "nameAr": "تي شيرتات ثقيلة 320 GSM",
+    "descriptionEn": "Dense high-collar oversized t-shirts for warm days, featuring double-needle necklines.",
+    "descriptionAr": "تي شيرتات ثقيلة بياقة مضلعة عريضة وقصة بوكسي شبابية، محاكة بوزن 320 GSM لفصلي الربيع والصيف.",
+    "image": "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?q=80&w=1200&auto=format&fit=crop",
+    "badgeEn": "COMING SOON",
+    "badgeAr": "قريباً",
+    "itemCount": 0,
+    "order": 3,
+    "isActive": true
+  }
+]

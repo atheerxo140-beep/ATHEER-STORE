@@ -28,6 +28,9 @@ import {
   Users,
   Percent,
   Mail,
+  Layout,
+  FileText,
+  TrendingUp,
 } from 'lucide-react';
 import { ensureValidAdminSession, clearAdminToken, initAdminAuthSync } from '@/lib/adminAuthClient';
 
@@ -217,17 +220,23 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const menuItems = [
     { labelEn: 'Overview', labelAr: 'لوحة التحكم', href: '/admin', icon: LayoutDashboard },
-    { labelEn: 'Products', labelAr: 'المنتجات', href: '/admin/products', icon: Package },
+    { labelEn: 'Visual Builder', labelAr: 'المحرر المرئي للمتجر', href: '/admin/builder', icon: Layout, badge: 'NEW' },
+    { labelEn: 'Store Pages', labelAr: 'صفحات المتجر والسياسات', href: '/admin/pages', icon: FileText },
+    { labelEn: 'Products', labelAr: 'المنتجات والهوديز', href: '/admin/products', icon: Package },
+    { labelEn: 'Categories', labelAr: 'تصنيفات الكتالوج', href: '/admin/categories', icon: Layers },
     { labelEn: 'Orders', labelAr: 'الطلبات', href: '/admin/orders', icon: ShoppingBag },
     { labelEn: 'Inventory', labelAr: 'المخزون', href: '/admin/inventory', icon: Layers },
+    { labelEn: 'Customers CRM', labelAr: 'العملاء والملفات', href: '/admin/customers', icon: Users },
+    { labelEn: 'Sales Analytics', labelAr: 'تقارير المبيعات والإيراد', href: '/admin/analytics', icon: TrendingUp },
     { labelEn: 'Egypt Shipping', labelAr: 'شحن المحافظات', href: '/admin/shipping', icon: Truck },
     { labelEn: 'Coupons', labelAr: 'كوبونات الخصم', href: '/admin/coupons', icon: Tag },
     { labelEn: 'Loyalty Rewards', labelAr: 'برنامج الأختام والمكافآت', href: '/admin/loyalty', icon: Award },
     { labelEn: 'Bundle Promotions', labelAr: 'عروض الباندل والخصومات', href: '/admin/promotions', icon: Percent },
     { labelEn: 'Staff & Roles', labelAr: 'فريق العمل والصلاحيات', href: '/admin/staff', icon: Users },
     { labelEn: 'Subscribers', labelAr: 'المشتركين بالنشرة', href: '/admin/subscribers', icon: Mail },
-    { labelEn: 'Storefront CMS', labelAr: 'التحكم باللوحة الرئيسية (الواجهة)', href: '/admin/content', icon: ImageIcon },
-    { labelEn: 'Store Settings', labelAr: 'إعدادات المتجر', href: '/admin/settings', icon: Settings },
+    { labelEn: 'Audit Logs', labelAr: 'سجل العمليات الإدارية', href: '/admin/audit-logs', icon: ShieldCheck },
+    { labelEn: 'Storefront CMS', labelAr: 'تعديل نصوص الواجهة', href: '/admin/content', icon: ImageIcon },
+    { labelEn: 'Store Settings', labelAr: 'إعدادات المتجر العامة', href: '/admin/settings', icon: Settings },
   ];
 
   return (
@@ -272,11 +281,18 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     <span>{language === 'ar' ? item.labelAr : item.labelEn}</span>
                   </div>
 
-                  {item.href === '/admin/orders' && unreadCount > 0 && (
-                    <span className="px-1.5 py-0.5 rounded-full bg-emerald-500 text-black text-[9px] font-bold animate-pulse font-mono shadow-sm">
-                      +{unreadCount}
-                    </span>
-                  )}
+                  <div className="flex items-center space-x-1.5 rtl:space-x-reverse">
+                    {item.badge && (
+                      <span className="px-1.5 py-0.5 rounded-xs bg-brand-gold/25 text-brand-gold text-[8px] font-bold font-mono">
+                        {item.badge}
+                      </span>
+                    )}
+                    {item.href === '/admin/orders' && unreadCount > 0 && (
+                      <span className="px-1.5 py-0.5 rounded-full bg-emerald-500 text-black text-[9px] font-bold animate-pulse font-mono shadow-sm">
+                        +{unreadCount}
+                      </span>
+                    )}
+                  </div>
                 </Link>
               );
             })}
@@ -580,11 +596,18 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                         <Icon className="w-4 h-4" />
                         <span>{language === 'ar' ? item.labelAr : item.labelEn}</span>
                       </div>
-                      {item.href === '/admin/orders' && unreadCount > 0 && (
-                        <span className="px-1.5 py-0.5 rounded-full bg-emerald-500 text-black text-[9px] font-bold">
-                          +{unreadCount}
-                        </span>
-                      )}
+                      <div className="flex items-center space-x-1.5 rtl:space-x-reverse">
+                        {item.badge && (
+                          <span className="px-1.5 py-0.5 rounded-xs bg-brand-gold/25 text-brand-gold text-[8px] font-bold font-mono">
+                            {item.badge}
+                          </span>
+                        )}
+                        {item.href === '/admin/orders' && unreadCount > 0 && (
+                          <span className="px-1.5 py-0.5 rounded-full bg-emerald-500 text-black text-[9px] font-bold">
+                            +{unreadCount}
+                          </span>
+                        )}
+                      </div>
                     </Link>
                   );
                 })}

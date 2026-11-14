@@ -1,5 +1,6 @@
 import { MetadataRoute } from 'next';
 import { mockProducts } from '@/data/mockProducts';
+import { getAllPages } from '@/lib/pageService';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://atheer.store';
@@ -9,6 +10,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
     lastModified: new Date(),
     changeFrequency: 'weekly',
     priority: 0.8,
+  }));
+
+  const pages = getAllPages();
+  const customPageUrls: MetadataRoute.Sitemap = pages.filter((p) => p.isPublished).map((p) => ({
+    url: `${baseUrl}/p/${p.slug}`,
+    lastModified: new Date(p.updatedAt || Date.now()),
+    changeFrequency: 'monthly',
+    priority: 0.7,
   }));
 
   const staticUrls: MetadataRoute.Sitemap = [
@@ -32,5 +41,5 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
   ];
 
-  return [...staticUrls, ...productUrls];
+  return [...staticUrls, ...customPageUrls, ...productUrls];
 }

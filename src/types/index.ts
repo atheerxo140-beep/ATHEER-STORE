@@ -283,4 +283,100 @@ export interface HomepageContent {
   feature4DescAr?: string;
 
   updatedAt?: string;
+  sectionsOrder?: BuilderSection[];
+}
+
+export interface BuilderSection {
+  id: string;
+  type: string;
+  nameEn: string;
+  nameAr: string;
+  enabled: boolean;
+  order: number;
+  customData?: Record<string, any>;
+}
+
+export interface ThemeConfig {
+  brandGold: string;
+  brandBlack: string;
+  brandCharcoal: string;
+  brandStone: string;
+  brandIvory: string;
+  brandCream: string;
+  fontFamilyAr: string;
+  fontFamilyEn: string;
+  borderRadius: 'none' | 'subtle' | 'rounded' | 'pill';
+  buttonStyle: 'solid-gold' | 'gold-outline' | 'minimal-charcoal' | 'luxury-gradient';
+  cardStyle?: 'minimal' | 'bordered' | 'elevated';
+  headerSticky: boolean;
+  headerShowSearch: boolean;
+  headerShowWishlist: boolean;
+  headerShowAccount: boolean;
+  headerShowCart: boolean;
+  announcementEnabled: boolean;
+  announcementTextEn: string;
+  announcementTextAr: string;
+  announcementBg: string;
+  announcementColor: string;
+  announcementLink?: string;
+  footerShowroomEn: string;
+  footerShowroomAr: string;
+  footerCopyrightEn: string;
+  footerCopyrightAr: string;
+  maintenanceMode: boolean;
+  maintenanceMessageAr: string;
+  maintenanceMessageEn: string;
+}
+
+export interface CustomPage {
+  id: string;
+  slug: string;
+  titleEn: string;
+  titleAr: string;
+  seoTitleEn?: string;
+  seoTitleAr?: string;
+  seoDescriptionEn?: string;
+  seoDescriptionAr?: string;
+  contentEn: string;
+  contentAr: string;
+  isPublished: boolean;
+  showInHeader: boolean;
+  showInFooter: boolean;
+  updatedAt: string;
+}
+
+export interface CategoryItem {
+  id: string;
+  slug: string;
+  nameEn: string;
+  nameAr: string;
+  descriptionEn?: string;
+  descriptionAr?: string;
+  image: string;
+  badgeEn?: string;
+  badgeAr?: string;
+  itemCount?: number;
+  order: number;
+  isActive: boolean;
+}
+
+export interface AuditLog {
+  id: string;
+  timestamp: string;
+  actorEmail: string;
+  action: string;
+  section: string;
+  details: string;
+  ip?: string;
+}
+
+export interface BuilderSnapshot {
+  id: string;
+  version: number;
+  timestamp: string;
+  authorEmail: string;
+  summary: string;
+  themeConfig: ThemeConfig;
+  homepageContent: HomepageContent;
+  sectionsOrder: BuilderSection[];
 }
