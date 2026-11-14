@@ -31,6 +31,7 @@ import {
   Sparkles,
   AlertCircle,
   QrCode,
+  Bell,
 } from 'lucide-react';
 import { PermanentQrCard } from '@/components/PermanentQrCard';
 
@@ -712,6 +713,31 @@ export default function AdminSettingsPage() {
                 onChange={(e) => setSettings({ ...settings, supportEmail: e.target.value })}
                 className="w-full bg-brand-stone/40 border border-brand-border px-3 py-2 text-brand-ivory rounded-sm focus:border-brand-gold focus:outline-none"
               />
+            </div>
+          </div>
+
+          {/* Order Notification Status Box */}
+          <div className="p-4 bg-brand-stone/20 border border-brand-border/60 rounded-xs space-y-2 text-xs font-mono">
+            <div className="font-bold text-brand-gold flex items-center space-x-2 rtl:space-x-reverse">
+              <Bell className="w-4 h-4 text-emerald-400" />
+              <span>{isAr ? 'قنوات استلام إشعارات الطلبات الجديدة لصاحب المتجر' : 'Store Owner Order Notification Channels'}</span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 text-[11px]">
+              <div className="p-2.5 bg-brand-charcoal border border-brand-border/40 rounded-xs">
+                <span className="text-brand-cream/60 block text-[10px] uppercase font-bold">1. واتساب المتجر (WhatsApp)</span>
+                <span className="text-emerald-400 font-bold">توجيه فوري ✓</span>
+                <span className="text-[10px] text-brand-cream/70 block mt-0.5">فتح محادثة واتساب للعميل بإشعار الفاتورة لرقمك</span>
+              </div>
+              <div className="p-2.5 bg-brand-charcoal border border-brand-border/40 rounded-xs">
+                <span className="text-brand-cream/60 block text-[10px] uppercase font-bold">2. لوحة التحكم (Live Sound & Bell)</span>
+                <span className="text-emerald-400 font-bold">رنين وإشعار لحظي ✓</span>
+                <span className="text-[10px] text-brand-cream/70 block mt-0.5">صوت تنبيه وجرس إشعارات حي بالطلبات</span>
+              </div>
+              <div className="p-2.5 bg-brand-charcoal border border-brand-border/40 rounded-xs">
+                <span className="text-brand-cream/60 block text-[10px] uppercase font-bold">3. بريد الإدارة (Admin Email)</span>
+                <span className="text-emerald-400 font-bold">مسجل ومعتمد ✓</span>
+                <span className="text-[10px] text-brand-cream/70 block mt-0.5">توثيق طلبات المتجر بسجل الإشعارات</span>
+              </div>
             </div>
           </div>
         </div>

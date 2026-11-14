@@ -4,6 +4,7 @@ import { getSupabaseServer, isSupabaseConfigured } from '@/lib/supabaseServer';
 import { localOrdersStore, saveLocalOrder, StoredOrder } from '@/data/localOrdersStore';
 import { getCouponByCode } from '@/data/couponsStore';
 import { addInventoryLog } from '@/data/inventoryLogsStore';
+import { notifyAdminOfNewOrder } from '@/lib/orderNotificationService';
 
 export interface CreateOrderItemInput {
   productId: string;
@@ -363,6 +364,13 @@ export const createOrder = async (input: CreateOrderInput): Promise<OrderCreatio
 
   // Always save in-memory / local runtime store
   saveLocalOrder(newOrder);
+
+  // Dispatch real-time admin order notification
+  try {
+    notifyAdminOfNewOrder(newOrder);
+  } catch (notifErr) {
+    console.warn('[Order Notification Trigger Error]', notifErr);
+  }
 
   // Deduct Inventory Consistently and record movement logs
   for (const item of matchedProducts) {

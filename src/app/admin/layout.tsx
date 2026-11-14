@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useLanguage } from '@/context/LanguageContext';
@@ -21,8 +21,40 @@ import {
   ShieldCheck,
   AlertTriangle,
   Image as ImageIcon,
+  Bell,
+  MessageCircle,
+  Check,
 } from 'lucide-react';
 import { ensureValidAdminSession, clearAdminToken, initAdminAuthSync } from '@/lib/adminAuthClient';
+
+function playOrderChime() {
+  try {
+    const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+    if (!AudioContextClass) return;
+    const ctx = new AudioContextClass();
+    const now = ctx.currentTime;
+
+    const playTone = (freq: number, start: number, dur: number) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, start);
+      gain.gain.setValueAtTime(0.25, start);
+      gain.gain.exponentialRampToValueAtTime(0.001, start + dur);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(start);
+      osc.stop(start + dur);
+    };
+
+    // Cheerful upward chime (C5 -> E5 -> G5)
+    playTone(523.25, now, 0.18);
+    playTone(659.25, now + 0.12, 0.18);
+    playTone(783.99, now + 0.24, 0.38);
+  } catch (e) {
+    // Audio restricted or uninitialized before user interaction
+  }
+}
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -33,6 +65,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [supabaseStatus, setSupabaseStatus] = useState<{ configured: boolean }>({ configured: false });
   const [isVerifyingAuth, setIsVerifyingAuth] = useState(true);
   const [adminEmail, setAdminEmail] = useState<string>('yassinanwar140@gmail.com');
+
+  // Real-time Notification State
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [unreadCount, setUnreadCount] = useState<number>(0);
+  const [showNotificationsDropdown, setShowNotificationsDropdown] = useState(false);
+  const [activeAlertToast, setActiveAlertToast] = useState<any | null>(null);
+  const prevUnreadRef = useRef<number>(0);
 
   // If on /admin/login, don't show the dashboard shell
   const isLoginPage = pathname === '/admin/login';
@@ -95,6 +134,64 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       unsubscribe();
     };
   }, [pathname, isLoginPage, router]);
+
+  // Polling for incoming order notifications
+  useEffect(() => {
+    if (isLoginPage) return;
+
+    let isMounted = true;
+
+    const fetchNotifications = async () => {
+      try {
+        const { adminFetch } = await import('@/lib/adminAuthClient');
+        const res = await adminFetch('/api/admin/notifications', {}, { redirectOnUnauthorized: false });
+        if (res.ok) {
+          const data = await res.json();
+          if (isMounted && data.success) {
+            setNotifications(data.notifications || []);
+            const newUnread = Number(data.unreadCount || 0);
+
+            // If a new unread order arrived since last poll
+            if (prevUnreadRef.current !== undefined && newUnread > prevUnreadRef.current) {
+              const latest = (data.notifications || [])[0];
+              if (latest && !latest.read) {
+                setActiveAlertToast(latest);
+                playOrderChime();
+              }
+            }
+            prevUnreadRef.current = newUnread;
+            setUnreadCount(newUnread);
+          }
+        }
+      } catch (e) {
+        // Silently handle polling errors
+      }
+    };
+
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 6000);
+
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, [isLoginPage]);
+
+  const handleMarkAllRead = async () => {
+    try {
+      const { adminFetch } = await import('@/lib/adminAuthClient');
+      await adminFetch('/api/admin/notifications', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: 'all' }),
+      });
+      setUnreadCount(0);
+      setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+      prevUnreadRef.current = 0;
+    } catch (e) {
+      // Ignore
+    }
+  };
 
   const handleLogout = async () => {
     clearAdminToken();
@@ -168,14 +265,22 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`flex items-center space-x-3 rtl:space-x-reverse px-3.5 py-3 text-xs font-mono tracking-wider transition-all rounded-sm ${
+                  className={`flex items-center justify-between px-3.5 py-3 text-xs font-mono tracking-wider transition-all rounded-sm ${
                     isActive
                       ? 'bg-brand-gold text-brand-black font-bold shadow-gold'
                       : 'text-brand-cream/80 hover:text-brand-gold hover:bg-brand-stone/30'
                   }`}
                 >
-                  <Icon className="w-4 h-4 flex-shrink-0" />
-                  <span>{language === 'ar' ? item.labelAr : item.labelEn}</span>
+                  <div className="flex items-center space-x-3 rtl:space-x-reverse">
+                    <Icon className="w-4 h-4 flex-shrink-0" />
+                    <span>{language === 'ar' ? item.labelAr : item.labelEn}</span>
+                  </div>
+
+                  {item.href === '/admin/orders' && unreadCount > 0 && (
+                    <span className="px-1.5 py-0.5 rounded-full bg-emerald-500 text-black text-[9px] font-bold animate-pulse font-mono shadow-sm">
+                      +{unreadCount}
+                    </span>
+                  )}
                 </Link>
               );
             })}
@@ -200,27 +305,23 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <span className="w-2 h-2 rounded-full bg-current animate-pulse" />
           </button>
 
-          {/* Visit Storefront */}
+          {/* View Storefront Link */}
           <Link
             href="/"
             target="_blank"
-            className="flex items-center justify-between p-2.5 text-xs text-brand-cream/70 hover:text-brand-gold font-mono border border-brand-border/40 hover:border-brand-gold/60 transition-colors"
+            className="flex items-center justify-between p-2.5 text-[10px] font-mono text-brand-cream/70 hover:text-brand-gold hover:bg-brand-stone/30 transition-colors border border-brand-border/40 rounded-xs"
           >
-            <span className="flex items-center space-x-2 rtl:space-x-reverse">
-              <ExternalLink className="w-3.5 h-3.5" />
-              <span>{language === 'ar' ? 'عرض المتجر للعملاء' : 'View Storefront'}</span>
-            </span>
+            <span>{language === 'ar' ? 'عرض المتجر للعملاء' : 'View Public Store'}</span>
+            <ExternalLink className="w-3 h-3" />
           </Link>
 
-          {/* Sign Out Button */}
+          {/* Logout Button */}
           <button
             onClick={handleLogout}
-            className="w-full flex items-center justify-between p-2.5 text-xs text-rose-400/80 hover:text-rose-300 hover:bg-rose-950/20 font-mono border border-rose-900/30 transition-colors"
+            className="w-full flex items-center justify-center space-x-2 rtl:space-x-reverse p-2 text-xs font-mono text-rose-400 hover:text-rose-300 hover:bg-rose-950/30 border border-rose-900/40 rounded-xs transition-colors"
           >
-            <span className="flex items-center space-x-2 rtl:space-x-reverse">
-              <LogOut className="w-3.5 h-3.5" />
-              <span>{language === 'ar' ? 'تسجيل الخروج' : 'Sign Out'}</span>
-            </span>
+            <LogOut className="w-3.5 h-3.5" />
+            <span>{language === 'ar' ? 'تسجيل الخروج' : 'Log Out'}</span>
           </button>
         </div>
       </aside>
@@ -242,7 +343,104 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </span>
           </div>
 
-          <div className="flex items-center space-x-4 rtl:space-x-reverse">
+          <div className="flex items-center space-x-3 sm:space-x-4 rtl:space-x-reverse">
+            {/* Real-time Order Notification Bell */}
+            <div className="relative">
+              <button
+                onClick={() => setShowNotificationsDropdown(!showNotificationsDropdown)}
+                className={`relative p-2 rounded-sm border transition-colors ${
+                  unreadCount > 0
+                    ? 'border-emerald-500/80 bg-emerald-950/50 text-emerald-400 animate-pulse'
+                    : 'border-brand-border bg-brand-stone/30 text-brand-cream/70 hover:text-brand-gold hover:border-brand-gold/50'
+                }`}
+                title={language === 'ar' ? 'إشعارات الطلبات الواردة' : 'Incoming Order Alerts'}
+              >
+                <Bell className="w-4 h-4" />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 text-black text-[9px] font-mono font-bold flex items-center justify-center shadow-lg">
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
+                )}
+              </button>
+
+              {/* Notifications Dropdown Panel */}
+              {showNotificationsDropdown && (
+                <div className="absolute right-0 rtl:right-auto rtl:left-0 mt-2 w-80 sm:w-96 bg-brand-charcoal border border-brand-border/90 rounded-sm shadow-2xl z-50 overflow-hidden font-mono text-xs animate-slide-down">
+                  <div className="p-3 bg-brand-black border-b border-brand-border/60 flex items-center justify-between">
+                    <div className="flex items-center space-x-1.5 rtl:space-x-reverse font-bold text-brand-gold">
+                      <Bell className="w-3.5 h-3.5" />
+                      <span>{language === 'ar' ? 'إشعارات الطلبات' : 'Order Alerts'}</span>
+                      {unreadCount > 0 && (
+                        <span className="text-[10px] px-1.5 py-0.2 bg-emerald-950 text-emerald-400 border border-emerald-500/40 rounded-xs">
+                          {unreadCount} {language === 'ar' ? 'جديد' : 'new'}
+                        </span>
+                      )}
+                    </div>
+                    {unreadCount > 0 && (
+                      <button
+                        onClick={handleMarkAllRead}
+                        className="text-[10px] text-brand-cream/60 hover:text-brand-gold transition-colors"
+                      >
+                        {language === 'ar' ? 'تحديد الكل كمقروء' : 'Mark all read'}
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="max-h-72 overflow-y-auto divide-y divide-brand-border/40">
+                    {notifications.length === 0 ? (
+                      <div className="p-6 text-center text-brand-cream/40 text-[11px]">
+                        {language === 'ar' ? 'لا توجد إشعارات حالياً' : 'No incoming notifications'}
+                      </div>
+                    ) : (
+                      notifications.map((notif) => (
+                        <div
+                          key={notif.id}
+                          className={`p-3 transition-colors ${
+                            notif.read ? 'bg-brand-charcoal/50 opacity-70' : 'bg-emerald-950/20 border-l-2 rtl:border-l-0 rtl:border-r-2 border-emerald-500'
+                          }`}
+                        >
+                          <div className="flex items-start justify-between gap-2">
+                            <div>
+                              <div className="font-bold text-brand-ivory text-[11px]">{notif.title}</div>
+                              <div className="text-[10px] text-brand-cream/70 font-sans mt-0.5 line-clamp-2">
+                                {notif.message}
+                              </div>
+                              <div className="text-[9px] text-brand-gold/60 mt-1 font-mono">
+                                {new Date(notif.createdAt).toLocaleTimeString(language === 'ar' ? 'ar-EG' : 'en-US', { hour: '2-digit', minute: '2-digit' })}
+                              </div>
+                            </div>
+                            <div className="flex items-center space-x-1 rtl:space-x-reverse flex-shrink-0">
+                              <Link
+                                href="/admin/orders"
+                                onClick={() => setShowNotificationsDropdown(false)}
+                                className="p-1 hover:text-brand-gold text-brand-cream/60 transition-colors"
+                                title={language === 'ar' ? 'عرض الطلب' : 'View Order'}
+                              >
+                                <ExternalLink className="w-3.5 h-3.5" />
+                              </Link>
+                              {notif.customerPhone && (
+                                <a
+                                  href={`https://wa.me/${notif.customerPhone.startsWith('0') ? '2' + notif.customerPhone : notif.customerPhone}?text=${encodeURIComponent(
+                                    `أهلاً بك يا ${notif.customerName || 'عميلنا العزيز'} 👋 بخصوص طلبك ${notif.orderReference || ''} في دار أثير!`
+                                  )}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="p-1 text-emerald-400 hover:text-emerald-300 transition-colors"
+                                  title={language === 'ar' ? 'مراسلة العميل على واتساب' : 'WhatsApp'}
+                                >
+                                  <MessageCircle className="w-3.5 h-3.5" />
+                                </a>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
             {/* Language Toggle */}
             <button
               onClick={() => setLanguage(language === 'en' ? 'ar' : 'en')}
@@ -267,6 +465,33 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </button>
           </div>
         </header>
+
+        {/* Floating Active Order Alert Toast with sound trigger */}
+        {activeAlertToast && (
+          <div className="fixed top-20 right-4 rtl:right-auto rtl:left-4 z-50 max-w-sm w-full bg-gradient-to-r from-emerald-950 via-brand-charcoal to-brand-charcoal border-2 border-emerald-500 rounded-sm shadow-2xl p-4 animate-bounce-subtle font-mono text-xs">
+            <div className="flex items-start justify-between pb-2 border-b border-brand-border/60">
+              <div className="flex items-center space-x-2 rtl:space-x-reverse text-emerald-400 font-bold">
+                <Bell className="w-4 h-4 animate-pulse" />
+                <span>{language === 'ar' ? '🔔 طلب جديد وصل الآن!' : '🔔 New Order Received!'}</span>
+              </div>
+              <button onClick={() => setActiveAlertToast(null)} className="text-brand-cream/50 hover:text-brand-ivory">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="mt-2 text-brand-ivory text-[11px] font-sans leading-relaxed">
+              {activeAlertToast.message}
+            </div>
+            <div className="mt-3 flex items-center justify-end space-x-2 rtl:space-x-reverse">
+              <Link
+                href="/admin/orders"
+                onClick={() => setActiveAlertToast(null)}
+                className="px-3 py-1.5 bg-brand-gold text-black font-bold uppercase rounded-xs text-[10px] hover:bg-brand-gold-hover transition-colors shadow-sm"
+              >
+                {language === 'ar' ? 'عرض الطلبات' : 'View Orders'}
+              </Link>
+            </div>
+          </div>
+        )}
 
         {/* Database Status Modal */}
         {showDbInfo && (
@@ -300,7 +525,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <div className="pt-2 flex justify-end">
                 <button
                   onClick={() => setShowDbInfo(false)}
-                  className="px-4 py-2 bg-brand-stone border border-brand-border text-brand-ivory text-xs font-mono rounded-xs"
+                  className="px-4 py-2 bg-brand-gold text-brand-black text-xs font-bold uppercase rounded-xs"
                 >
                   Close
                 </button>
@@ -310,7 +535,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         )}
 
         {/* Page Content */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 min-w-0">{children}</main>
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto">{children}</main>
       </div>
 
       {/* Mobile Drawer */}
@@ -349,14 +574,21 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                       key={item.href}
                       href={item.href}
                       onClick={() => setMobileSidebarOpen(false)}
-                      className={`flex items-center space-x-3 rtl:space-x-reverse px-3 py-2.5 text-xs font-mono rounded-sm ${
+                      className={`flex items-center justify-between px-3 py-2.5 text-xs font-mono rounded-sm ${
                         isActive
                           ? 'bg-brand-gold text-brand-black font-bold'
                           : 'text-brand-cream/80 hover:bg-brand-stone/40'
                       }`}
                     >
-                      <Icon className="w-4 h-4" />
-                      <span>{language === 'ar' ? item.labelAr : item.labelEn}</span>
+                      <div className="flex items-center space-x-3 rtl:space-x-reverse">
+                        <Icon className="w-4 h-4" />
+                        <span>{language === 'ar' ? item.labelAr : item.labelEn}</span>
+                      </div>
+                      {item.href === '/admin/orders' && unreadCount > 0 && (
+                        <span className="px-1.5 py-0.5 rounded-full bg-emerald-500 text-black text-[9px] font-bold">
+                          +{unreadCount}
+                        </span>
+                      )}
                     </Link>
                   );
                 })}
@@ -369,7 +601,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 className="w-full flex items-center justify-center space-x-2 rtl:space-x-reverse py-2 border border-rose-900/40 text-rose-400 text-xs font-mono"
               >
                 <LogOut className="w-3.5 h-3.5" />
-                <span>{language === 'ar' ? 'تسجيل الخروج' : 'Sign Out'}</span>
+                <span>{language === 'ar' ? 'تسجيل الخروج' : 'Log Out'}</span>
               </button>
             </div>
           </div>
