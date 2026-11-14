@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAdminEmail, getAdminPasswordHash, verifyPassword } from '@/lib/adminCredentials';
-import { DEV_ADMIN_TOKEN } from '@/lib/adminAuth';
+import { getAdminEmail, getAdminPasswordHash, verifyPassword, signAdminToken } from '@/lib/adminCredentials';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,7 +15,7 @@ export async function POST(req: NextRequest) {
     }
 
     const cleanInputEmail = email.trim().toLowerCase();
-    const currentAdminEmail = getAdminEmail().toLowerCase();
+    const currentAdminEmail = getAdminEmail().trim().toLowerCase();
     const storedPasswordHash = getAdminPasswordHash();
 
     // Check custom credentials
@@ -32,22 +31,40 @@ export async function POST(req: NextRequest) {
       }
 
       // Valid custom credentials!
-      return NextResponse.json({
+      const sessionToken = signAdminToken(currentAdminEmail);
+      const res = NextResponse.json({
         success: true,
-        token: DEV_ADMIN_TOKEN,
+        token: sessionToken,
         email: currentAdminEmail,
         message: 'تم تسجيل الدخول بنجاح',
       });
+      res.cookies.set('atheer_admin_token', sessionToken, {
+        httpOnly: false,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/',
+        maxAge: 30 * 24 * 60 * 60,
+      });
+      return res;
     }
 
-    // Default development fallback if no custom password set yet
+    // Default fallback if no custom password set yet
     if (cleanInputEmail === currentAdminEmail || cleanInputEmail === 'admin@atheer.store') {
-      return NextResponse.json({
+      const sessionToken = signAdminToken(currentAdminEmail);
+      const res = NextResponse.json({
         success: true,
-        token: DEV_ADMIN_TOKEN,
+        token: sessionToken,
         email: currentAdminEmail,
         message: 'تم تسجيل الدخول بنجاح',
       });
+      res.cookies.set('atheer_admin_token', sessionToken, {
+        httpOnly: false,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/',
+        maxAge: 30 * 24 * 60 * 60,
+      });
+      return res;
     }
 
     return NextResponse.json(

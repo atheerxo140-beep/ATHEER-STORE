@@ -53,6 +53,20 @@ export async function verifyAdminRequest(req: NextRequest): Promise<AdminAuthRes
       };
     }
 
+    // Cryptographic HMAC token verification
+    const { verifyAdminToken, getAdminEmail } = await import('@/lib/adminCredentials');
+    if (verifyAdminToken(token)) {
+      return {
+        authorized: true,
+        statusCode: 200,
+        user: {
+          id: 'admin-owner',
+          email: getAdminEmail(),
+          role: 'admin',
+        },
+      };
+    }
+
     // Forbid any development bypass tokens in production
     if (token === DEV_ADMIN_TOKEN) {
       return {
@@ -136,6 +150,20 @@ export async function verifyAdminRequest(req: NextRequest): Promise<AdminAuthRes
       authorized: false,
       statusCode: 401,
       error: 'Unauthorized: Authentication required. Please log in via /admin/login.',
+    };
+  }
+
+  // Cryptographic HMAC token verification
+  const { verifyAdminToken: verifyDevHmac, getAdminEmail: getDevEmail } = await import('@/lib/adminCredentials');
+  if (verifyDevHmac(token)) {
+    return {
+      authorized: true,
+      statusCode: 200,
+      user: {
+        id: 'admin-owner',
+        email: getDevEmail(),
+        role: 'admin',
+      },
     };
   }
 
