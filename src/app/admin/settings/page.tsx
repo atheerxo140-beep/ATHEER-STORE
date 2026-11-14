@@ -52,6 +52,12 @@ export default function AdminSettingsPage() {
   const [credSaving, setCredSaving] = useState(false);
   const [credMsg, setCredMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
+  // Automated Server WhatsApp Gateway State
+  const [waGateway, setWaGateway] = useState<any>({ provider: 'callmebot', callmebotApiKey: '', ultramsgInstanceId: '', ultramsgToken: '' });
+  const [waSaving, setWaSaving] = useState(false);
+  const [waTesting, setWaTesting] = useState(false);
+  const [waMsg, setWaMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
   // Payment Methods State
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethodConfig[]>([]);
   const [loadingMethods, setLoadingMethods] = useState(false);
@@ -86,10 +92,70 @@ export default function AdminSettingsPage() {
           if (d.success && d.email) setAdminEmail(d.email);
         })
         .catch(() => {});
+
+      adminFetch('/api/admin/whatsapp-gateway')
+        .then((r) => r.json())
+        .then((d) => {
+          if (d.success && d.config) setWaGateway(d.config);
+        })
+        .catch(() => {});
     } catch (err) {
       console.error('Failed to load store settings:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSaveWaGateway = async () => {
+    setWaSaving(true);
+    setWaMsg(null);
+    try {
+      const res = await adminFetch('/api/admin/whatsapp-gateway', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ config: waGateway }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setWaMsg({ type: 'success', text: isAr ? 'تم حفظ إعدادات بوابة الواتساب التلقائية بنجاح!' : 'WhatsApp Gateway saved successfully!' });
+        setTimeout(() => setWaMsg(null), 4000);
+      } else {
+        setWaMsg({ type: 'error', text: data.error || 'Failed to save gateway' });
+      }
+    } catch (e: any) {
+      setWaMsg({ type: 'error', text: e.message });
+    } finally {
+      setWaSaving(false);
+    }
+  };
+
+  const handleTestWaGateway = async () => {
+    setWaTesting(true);
+    setWaMsg(null);
+    try {
+      const res = await adminFetch('/api/admin/whatsapp-gateway', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ config: waGateway, testPhone: settings?.whatsappNumber || '201015993802' }),
+      });
+      const data = await res.json();
+      if (data.testResult?.success) {
+        setWaMsg({
+          type: 'success',
+          text: isAr
+            ? 'نجح الإرسال! تم إرسال رسالة واتساب تجريبية لهاتفك بنجاح الآن ✓'
+            : 'Test message sent to your WhatsApp successfully!',
+        });
+      } else {
+        setWaMsg({
+          type: 'error',
+          text: data.testResult?.error || (isAr ? 'لم ينجح الإرسال: تأكد من تفعيل الكود وإرسال رسالة التفعيل أولاً' : 'Failed to send test message'),
+        });
+      }
+    } catch (e: any) {
+      setWaMsg({ type: 'error', text: e.message });
+    } finally {
+      setWaTesting(false);
     }
   };
 
@@ -738,6 +804,143 @@ export default function AdminSettingsPage() {
                 <span className="text-emerald-400 font-bold">مسجل ومعتمد ✓</span>
                 <span className="text-[10px] text-brand-cream/70 block mt-0.5">توثيق طلبات المتجر بسجل الإشعارات</span>
               </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Automated WhatsApp Gateway Dispatcher */}
+        <div className="bg-brand-charcoal border border-emerald-500/50 rounded-sm p-6 space-y-5 shadow-luxury-dark">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-brand-border/60">
+            <div className="flex items-center space-x-2.5 rtl:space-x-reverse text-sm font-serif font-black text-brand-ivory">
+              <div className="w-8 h-8 rounded-full bg-emerald-500/20 border border-emerald-500 flex items-center justify-center text-emerald-400">
+                <MessageCircle className="w-4 h-4 fill-emerald-400/20" />
+              </div>
+              <div>
+                <span className="block">{isAr ? 'إرسال إشعارات الواتساب تلقائياً من السيرفر (بدون تدخل العميل)' : 'Automated Server WhatsApp Dispatch'}</span>
+                <span className="text-[11px] text-brand-cream/60 font-sans font-normal">
+                  {isAr ? 'أول ما العميل يطلب، السيرفر يرسل رسالة واتساب فورية إلى رقم هاتفك مباشرة' : 'Server automatically pings your WhatsApp number the instant an order is placed'}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {waMsg && (
+            <div
+              className={`p-3 rounded-xs border text-xs font-mono flex items-center justify-between ${
+                waMsg.type === 'success' ? 'bg-emerald-950/40 border-emerald-500/60 text-emerald-300' : 'bg-rose-950/40 border-rose-500/60 text-rose-300'
+              }`}
+            >
+              <span>{waMsg.text}</span>
+              <button onClick={() => setWaMsg(null)} className="text-white/60 hover:text-white">
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          )}
+
+          <div className="space-y-4 text-xs font-mono">
+            {/* Provider Select */}
+            <div>
+              <label className="block text-brand-cream/80 mb-1 font-bold">
+                {isAr ? 'بوابة إرسال الواتساب التلقائية:' : 'WhatsApp Automation Gateway Provider:'}
+              </label>
+              <select
+                value={waGateway.provider || 'callmebot'}
+                onChange={(e) => setWaGateway({ ...waGateway, provider: e.target.value })}
+                className="w-full bg-brand-stone/40 border border-brand-border px-3 py-2 text-brand-ivory rounded-sm focus:border-brand-gold focus:outline-none"
+              >
+                <option value="callmebot">{isAr ? 'خدمة CallMeBot (مجانية 100% — تفعيل سهل في دقيقة واحدة)' : 'CallMeBot (100% Free - 1 minute activation)'}</option>
+                <option value="ultramsg">{isAr ? 'خدمة UltraMsg / GreenAPI (بوابة رمز QR مخصصة)' : 'UltraMsg / GreenAPI (Dedicated QR Gateway)'}</option>
+                <option value="custom_webhook">{isAr ? 'رابط Webhook مخصص (Custom Webhook)' : 'Custom Webhook'}</option>
+              </select>
+            </div>
+
+            {/* CallMeBot Settings & Guide */}
+            {(!waGateway.provider || waGateway.provider === 'callmebot') && (
+              <div className="p-4 bg-brand-stone/20 border border-brand-border/60 rounded-xs space-y-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <label className="block text-brand-ivory mb-1 font-bold">
+                      {isAr ? 'كود الـ API Key الخاص بك من CallMeBot:' : 'CallMeBot Personal API Key:'}
+                    </label>
+                    <input
+                      type="text"
+                      value={waGateway.callmebotApiKey || ''}
+                      onChange={(e) => setWaGateway({ ...waGateway, callmebotApiKey: e.target.value.trim() })}
+                      placeholder={isAr ? 'مثال: 123456' : 'e.g. 123456'}
+                      className="w-full sm:w-80 bg-brand-charcoal border border-brand-border px-3 py-2 text-brand-gold font-bold rounded-sm focus:border-brand-gold focus:outline-none"
+                    />
+                  </div>
+                  <a
+                    href={`https://wa.me/34644444444?text=${encodeURIComponent('I allow callmebot to send me messages')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-3 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xs text-[11px] font-bold flex items-center space-x-1.5 rtl:space-x-reverse transition-colors flex-shrink-0"
+                  >
+                    <MessageCircle className="w-3.5 h-3.5" />
+                    <span>{isAr ? 'احصل على كود التفعيل المجاني (10 ثوانٍ)' : 'Get Free Activation Key'}</span>
+                  </a>
+                </div>
+
+                <div className="text-[11px] text-brand-cream/80 font-sans leading-relaxed pt-2 border-t border-brand-border/40">
+                  <p className="font-bold text-brand-gold mb-1">{isAr ? 'طريقة التفعيل المجاني في 3 خطوات بسيطة:' : 'Easy 3-step Activation:'}</p>
+                  <ol className="list-decimal list-inside space-y-0.5 text-brand-cream/70">
+                    <li>{isAr ? 'اضغط على الزر الأخضر بالأعلى لفتح محادثة الواتساب مع بوت التفعيل.' : 'Click the button above to message the activation bot on WhatsApp.'}</li>
+                    <li>{isAr ? 'اضغط إرسال (Send) للرسالة الجاهزة؛ سيرد عليك البوت بكود الـ API Key في ثوانٍ.' : 'Send the pre-filled message; the bot responds with your API Key instantly.'}</li>
+                    <li>{isAr ? 'الصق الكود هنا واضغط "حفظ وتجربة الإرسال". من الآن ستصلك رسالة مع كل طلب جديد!' : 'Paste the key above and click Save & Test. New orders will now ping your phone automatically!'}</li>
+                  </ol>
+                </div>
+              </div>
+            )}
+
+            {/* UltraMsg Settings */}
+            {waGateway.provider === 'ultramsg' && (
+              <div className="p-4 bg-brand-stone/20 border border-brand-border/60 rounded-xs space-y-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-brand-cream/80 mb-1 font-bold">UltraMsg Instance ID:</label>
+                    <input
+                      type="text"
+                      value={waGateway.ultramsgInstanceId || ''}
+                      onChange={(e) => setWaGateway({ ...waGateway, ultramsgInstanceId: e.target.value.trim() })}
+                      placeholder="instance12345"
+                      className="w-full bg-brand-charcoal border border-brand-border px-3 py-2 text-brand-ivory rounded-sm focus:border-brand-gold focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-brand-cream/80 mb-1 font-bold">UltraMsg Token:</label>
+                    <input
+                      type="text"
+                      value={waGateway.ultramsgToken || ''}
+                      onChange={(e) => setWaGateway({ ...waGateway, ultramsgToken: e.target.value.trim() })}
+                      placeholder="token_xxxx"
+                      className="w-full bg-brand-charcoal border border-brand-border px-3 py-2 text-brand-ivory rounded-sm focus:border-brand-gold focus:outline-none"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Action Buttons */}
+            <div className="flex flex-wrap items-center justify-end gap-3 pt-2">
+              <button
+                type="button"
+                disabled={waTesting}
+                onClick={handleTestWaGateway}
+                className="px-4 py-2 border border-emerald-500/70 text-emerald-400 hover:bg-emerald-950/40 rounded-xs font-bold transition-colors flex items-center space-x-1.5 rtl:space-x-reverse"
+              >
+                <MessageCircle className="w-3.5 h-3.5" />
+                <span>{waTesting ? (isAr ? 'جاري الإرسال التجريبي...' : 'Sending Test...') : (isAr ? 'تجربة إرسال رسالة لهاتفي الآن' : 'Test WhatsApp Ping')}</span>
+              </button>
+
+              <button
+                type="button"
+                disabled={waSaving}
+                onClick={handleSaveWaGateway}
+                className="px-5 py-2 bg-emerald-500 hover:bg-emerald-400 text-black font-bold rounded-xs transition-colors flex items-center space-x-1.5 rtl:space-x-reverse shadow-md"
+              >
+                <Save className="w-3.5 h-3.5" />
+                <span>{waSaving ? (isAr ? 'جاري الحفظ...' : 'Saving...') : (isAr ? 'حفظ إعدادات البوابة' : 'Save Gateway')}</span>
+              </button>
             </div>
           </div>
         </div>

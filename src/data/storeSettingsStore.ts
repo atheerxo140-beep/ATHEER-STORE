@@ -61,16 +61,34 @@ export function normalizeWhatsAppNumber(raw: string): string {
   return digits;
 }
 
+// Cache tracking for cloud sync to prevent 7-20 second network blocking on each request
+let lastSettingsSyncTime = 0;
+const SETTINGS_CACHE_TTL_MS = 60 * 1000; // 60 seconds memory cache
+
 export const getStoreSettings = async (): Promise<StoreSettings> => {
+  // If memory cache is fresh, return immediately in 0ms
+  const now = Date.now();
+  if (now - lastSettingsSyncTime < SETTINGS_CACHE_TTL_MS && currentStoreSettings.storeNameEn) {
+    return currentStoreSettings;
+  }
+
   if (isSupabaseConfigured()) {
     const supabase = getSupabaseServer();
     if (supabase) {
       try {
-        const { data, error } = await supabase
+        const timeoutPromise = new Promise<{ data: any; error: any }>((resolve) =>
+          setTimeout(() => resolve({ data: null, error: new Error('Settings fetch timeout') }), 1200)
+        );
+
+        const fetchPromise = supabase
           .from('store_settings')
           .select('*')
           .eq('id', 'main_settings')
           .single();
+
+        const { data, error } = await Promise.race([fetchPromise, timeoutPromise]);
+
+        lastSettingsSyncTime = Date.now();
 
         if (!error && data) {
           const cloudSettings: StoreSettings = {
@@ -99,6 +117,7 @@ export const getStoreSettings = async (): Promise<StoreSettings> => {
     }
   }
 
+  lastSettingsSyncTime = Date.now();
   return currentStoreSettings;
 };
 

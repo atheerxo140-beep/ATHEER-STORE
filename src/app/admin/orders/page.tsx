@@ -47,8 +47,8 @@ export default function AdminOrdersPage() {
   const [feedbackMsg, setFeedbackMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
 
-  const fetchOrders = async () => {
-    setLoading(true);
+  const fetchOrders = async (silent = false) => {
+    if (!silent) setLoading(true);
     try {
       const params = new URLSearchParams();
       if (statusFilter !== 'all') params.set('status', statusFilter);
@@ -69,12 +69,19 @@ export default function AdminOrdersPage() {
     } catch (err) {
       console.error('Failed to load orders:', err);
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchOrders();
+    fetchOrders(false);
+
+    // Fast live background auto-sync every 2 seconds (instant order appearance without page reload)
+    const interval = setInterval(() => {
+      fetchOrders(true);
+    }, 2000);
+
+    return () => clearInterval(interval);
   }, [statusFilter, paymentFilter, dateFilter, searchTerm]);
 
   const handleUpdateStatus = async (orderId: string, newStatus: OrderStatus) => {
@@ -231,7 +238,7 @@ export default function AdminOrdersPage() {
 
         <div className="flex items-center space-x-3 rtl:space-x-reverse">
           <button
-            onClick={fetchOrders}
+            onClick={() => fetchOrders(false)}
             className="p-2.5 bg-brand-charcoal border border-brand-border text-brand-cream/80 hover:text-brand-gold hover:border-brand-gold/40 transition-colors rounded-sm"
             title={isAr ? 'تحديث الطلبات' : 'Refresh'}
           >

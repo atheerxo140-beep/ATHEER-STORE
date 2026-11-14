@@ -68,4 +68,14 @@ export async function notifyAdminOfNewOrder(order: StoredOrder): Promise<void> {
       console.warn('[Webhook Dispatch Exception]', e);
     }
   }
+
+  // 4. Automated Direct Server-to-WhatsApp Dispatch to Store Owner
+  try {
+    const { sendAutomatedOrderWhatsApp } = await import('@/lib/serverWhatsAppDispatcher');
+    const settings = await getStoreSettings();
+    const ownerPhone = settings.whatsappNumber || '201015993802';
+    await sendAutomatedOrderWhatsApp(order, ownerPhone);
+  } catch (waErr) {
+    console.warn('[Automated Server WhatsApp Dispatch Exception]', waErr);
+  }
 }

@@ -26,6 +26,13 @@ export function clearAdminToken() {
 export async function ensureValidAdminSession(): Promise<string | null> {
   if (typeof window === 'undefined') return null;
 
+  // 1. FAST PATH (Instant 0ms): Check for cryptographic HMAC admin session token
+  const savedToken = localStorage.getItem('atheer_admin_token');
+  if (savedToken && (savedToken.startsWith('ath_') || savedToken.startsWith('dev-admin-'))) {
+    return savedToken;
+  }
+
+  // 2. Fallback: Supabase Auth Session (only if no HMAC token exists)
   const client = getSupabaseClient();
   if (client) {
     try {
@@ -48,21 +55,12 @@ export async function ensureValidAdminSession(): Promise<string | null> {
           syncAdminToken(session.access_token);
           return session.access_token;
         }
-      } else {
-        // No current active session in memory, try refreshing using persisted refresh token
-        const { data: refreshed, error: refreshErr } = await client.auth.refreshSession();
-        if (!refreshErr && refreshed?.session?.access_token) {
-          syncAdminToken(refreshed.session.access_token);
-          return refreshed.session.access_token;
-        }
       }
     } catch (e) {
-      console.warn('[AdminAuthClient] Error checking/refreshing session:', e);
+      console.warn('[AdminAuthClient] Error checking session:', e);
     }
   }
 
-  // Fallback for non-Supabase dev tokens or saved token
-  const savedToken = typeof window !== 'undefined' ? localStorage.getItem('atheer_admin_token') : null;
   return savedToken;
 }
 
@@ -90,6 +88,14 @@ export async function adminFetch(
 
   // If 401 Unauthorized, token might have just expired: attempt one immediate refresh and retry
   if (res.status === 401) {
+    if (token && (token.startsWith('ath_') || token.startsWith('dev-admin-'))) {
+      if (options.redirectOnUnauthorized && typeof window !== 'undefined') {
+        clearAdminToken();
+        window.location.href = '/admin/login?reason=expired';
+      }
+      return res;
+    }
+
     const client = getSupabaseClient();
     if (client) {
       try {
