@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useLanguage } from '@/context/LanguageContext';
 import { BuilderSection, HomepageContent, ThemeConfig } from '@/types';
 import { adminFetch } from '@/lib/adminAuthClient';
+import { hexToRgb, adjustHexBrightness } from '@/lib/themeService';
 import {
   Layout,
   Eye,
@@ -71,6 +72,125 @@ export default function VisualBuilderPage() {
   const futureFileRef = useRef<HTMLInputElement>(null);
   const categoryFileInputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const [showManualHeroUrl, setShowManualHeroUrl] = useState(false);
+  const [savingTheme, setSavingTheme] = useState(false);
+
+  // Luxury streetwear pre-composed palettes
+  const luxuryPalettes = [
+    {
+      id: 'royal-gold',
+      nameAr: 'الذهب الملكي (الأصلي)',
+      nameEn: 'Royal Gold & Onyx',
+      gold: '#C5A880',
+      black: '#0A0A0A',
+      charcoal: '#141414',
+      border: '#282828',
+    },
+    {
+      id: 'imperial-emerald',
+      nameAr: 'الزمرد الإمبراطوري',
+      nameEn: 'Imperial Emerald',
+      gold: '#10B981',
+      black: '#070C0A',
+      charcoal: '#0F1A15',
+      border: '#1B3329',
+    },
+    {
+      id: 'crimson-ruby',
+      nameAr: 'العنابي والياقوت الفاخر',
+      nameEn: 'Crimson Ruby',
+      gold: '#E11D48',
+      black: '#0C0708',
+      charcoal: '#1A0F12',
+      border: '#33171F',
+    },
+    {
+      id: 'electric-amber',
+      nameAr: 'أمبر نيون وستريت',
+      nameEn: 'Electric Amber',
+      gold: '#F59E0B',
+      black: '#09090C',
+      charcoal: '#141419',
+      border: '#2D281E',
+    },
+    {
+      id: 'royal-sapphire',
+      nameAr: 'الأزرق الملكي (سفاير)',
+      nameEn: 'Royal Sapphire',
+      gold: '#3B82F6',
+      black: '#060913',
+      charcoal: '#0D1424',
+      border: '#1E2C48',
+    },
+    {
+      id: 'cyber-chrome',
+      nameAr: 'كروم فضي مونوكروم',
+      nameEn: 'Cyber Chrome',
+      gold: '#E2E8F0',
+      black: '#050505',
+      charcoal: '#121212',
+      border: '#2B2B2B',
+    },
+    {
+      id: 'warm-bronze',
+      nameAr: 'البرونز والموكا الدافئ',
+      nameEn: 'Artisan Bronze',
+      gold: '#D97706',
+      black: '#0E0B08',
+      charcoal: '#18130F',
+      border: '#33271D',
+    },
+    {
+      id: 'imperial-violet',
+      nameAr: 'البنفسجي الإمبراطوري',
+      nameEn: 'Imperial Violet',
+      gold: '#A855F7',
+      black: '#0B0714',
+      charcoal: '#150E24',
+      border: '#2E1A47',
+    },
+  ];
+
+  const applyPalette = (p: typeof luxuryPalettes[0]) => {
+    if (!theme) return;
+    setTheme({
+      ...theme,
+      brandGold: p.gold,
+      brandBlack: p.black,
+      brandCharcoal: p.charcoal,
+      brandBorder: p.border,
+      announcementBg: p.gold,
+      announcementColor: p.black,
+    });
+  };
+
+  const handleSaveThemeDirectly = async () => {
+    if (!theme) return;
+    setSavingTheme(true);
+    setFeedback(null);
+    try {
+      const res = await adminFetch('/api/admin/theme', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(theme),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setFeedback({
+          type: 'success',
+          message: isAr
+            ? 'تم حفظ وتطبيق ألوان وهوية المتجر بالكامل بنجاح على المتجر الحقيقي!'
+            : 'Theme colors and identity applied live to the storefront successfully!',
+        });
+        setTimeout(() => setFeedback(null), 5000);
+      } else {
+        alert(data.error || 'Failed to save theme');
+      }
+    } catch (e: any) {
+      alert(e.message || 'Error saving theme');
+    } finally {
+      setSavingTheme(false);
+    }
+  };
 
   // Direct file uploader to Supabase Storage
   const handleUploadFile = async (
@@ -564,55 +684,148 @@ export default function VisualBuilderPage() {
             </div>
           </div>
 
-          {/* Theme Quick Styler */}
+          {/* REAL DYNAMIC THEME & COLOR ENGINE */}
           {theme && (
             <div className="bg-brand-charcoal border border-brand-border/80 rounded-sm p-4 space-y-4">
-              <div className="flex items-center space-x-2 rtl:space-x-reverse pb-2 border-b border-brand-border/60">
-                <Palette className="w-4 h-4 text-brand-gold" />
-                <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-brand-ivory">
-                  {isAr ? 'ألوان وهوية المتجر العامة' : 'Theme & Color Palette'}
-                </h3>
+              <div className="flex items-center justify-between pb-2 border-b border-brand-border/60">
+                <div className="flex items-center space-x-2 rtl:space-x-reverse">
+                  <Palette className="w-4 h-4 text-brand-gold" />
+                  <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-brand-ivory">
+                    {isAr ? 'تخصيص وهوية ألوان المتجر الحقيقية' : 'Store Theme & Live Colors'}
+                  </h3>
+                </div>
+                <span className="text-[10px] text-emerald-400 font-mono">
+                  {isAr ? '● ينعكس فوراً على المتجر' : '● Live Applied'}
+                </span>
               </div>
 
-              <div className="grid grid-cols-2 gap-3 text-xs font-mono">
-                <div>
-                  <label className="block text-[11px] text-brand-cream/70 mb-1">{isAr ? 'اللون الذهبي' : 'Gold Accent'}</label>
-                  <div className="flex items-center space-x-2 rtl:space-x-reverse bg-brand-stone/40 border border-brand-border p-1.5 rounded-xs">
-                    <input
-                      type="color"
-                      value={theme.brandGold}
-                      onChange={(e) => setTheme({ ...theme, brandGold: e.target.value })}
-                      className="w-6 h-6 border-0 bg-transparent cursor-pointer rounded-xs"
-                    />
-                    <input
-                      type="text"
-                      value={theme.brandGold}
-                      onChange={(e) => setTheme({ ...theme, brandGold: e.target.value })}
-                      className="w-full bg-transparent text-brand-ivory font-mono text-[11px] focus:outline-none"
-                    />
+              {/* 1. Quick Streetwear Luxury Palettes */}
+              <div className="space-y-2">
+                <label className="block text-[11px] font-bold text-brand-ivory font-mono">
+                  {isAr ? 'باليتات ألوان جاهزة بضغطة زر:' : 'Curated Luxury Palettes:'}
+                </label>
+                <div className="grid grid-cols-2 gap-2 text-[10px] font-mono">
+                  {luxuryPalettes.map((p) => {
+                    const isSelected =
+                      theme.brandGold.toLowerCase() === p.gold.toLowerCase() &&
+                      theme.brandBlack.toLowerCase() === p.black.toLowerCase();
+                    return (
+                      <button
+                        key={p.id}
+                        type="button"
+                        onClick={() => applyPalette(p)}
+                        className={`p-2 rounded-xs border text-right transition-all flex items-center justify-between ${
+                          isSelected
+                            ? 'border-brand-gold bg-brand-stone/90 shadow-sm'
+                            : 'border-brand-border/70 bg-brand-black/60 hover:border-brand-gold/60'
+                        }`}
+                      >
+                        <span className={`truncate text-[10px] ${isSelected ? 'text-brand-gold font-bold' : 'text-brand-cream/80'}`}>
+                          {isAr ? p.nameAr : p.nameEn}
+                        </span>
+                        <div className="flex items-center gap-1 flex-shrink-0 mr-1 rtl:mr-0 rtl:ml-1">
+                          <span
+                            className="w-3.5 h-3.5 rounded-full border border-white/20 shadow-xs"
+                            style={{ backgroundColor: p.gold }}
+                            title="Accent Color"
+                          />
+                          <span
+                            className="w-3.5 h-3.5 rounded-full border border-white/20 shadow-xs"
+                            style={{ backgroundColor: p.black }}
+                            title="Background Color"
+                          />
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* 2. Custom Color Pickers */}
+              <div className="border-t border-brand-border/60 pt-3 space-y-3">
+                <label className="block text-[11px] font-bold text-brand-ivory font-mono">
+                  {isAr ? 'أو اختر درجاتك المخصصة بدقة:' : 'Or Fine-Tune Custom Colors:'}
+                </label>
+
+                <div className="grid grid-cols-2 gap-2.5 text-xs font-mono">
+                  <div>
+                    <label className="block text-[10px] text-brand-cream/70 mb-1">{isAr ? 'اللون الرئيسي / الذهبي' : 'Primary / Gold'}</label>
+                    <div className="flex items-center space-x-1.5 rtl:space-x-reverse bg-brand-stone/40 border border-brand-border p-1.5 rounded-xs">
+                      <input
+                        type="color"
+                        value={theme.brandGold}
+                        onChange={(e) => setTheme({ ...theme, brandGold: e.target.value })}
+                        className="w-6 h-6 border-0 bg-transparent cursor-pointer rounded-xs"
+                      />
+                      <input
+                        type="text"
+                        value={theme.brandGold}
+                        onChange={(e) => setTheme({ ...theme, brandGold: e.target.value })}
+                        className="w-full bg-transparent text-brand-ivory font-mono text-[11px] focus:outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] text-brand-cream/70 mb-1">{isAr ? 'خلفية المتجر' : 'Background'}</label>
+                    <div className="flex items-center space-x-1.5 rtl:space-x-reverse bg-brand-stone/40 border border-brand-border p-1.5 rounded-xs">
+                      <input
+                        type="color"
+                        value={theme.brandBlack}
+                        onChange={(e) => setTheme({ ...theme, brandBlack: e.target.value })}
+                        className="w-6 h-6 border-0 bg-transparent cursor-pointer rounded-xs"
+                      />
+                      <input
+                        type="text"
+                        value={theme.brandBlack}
+                        onChange={(e) => setTheme({ ...theme, brandBlack: e.target.value })}
+                        className="w-full bg-transparent text-brand-ivory font-mono text-[11px] focus:outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] text-brand-cream/70 mb-1">{isAr ? 'لون الحاويات والبطاقات' : 'Cards / Charcoal'}</label>
+                    <div className="flex items-center space-x-1.5 rtl:space-x-reverse bg-brand-stone/40 border border-brand-border p-1.5 rounded-xs">
+                      <input
+                        type="color"
+                        value={theme.brandCharcoal || '#141414'}
+                        onChange={(e) => setTheme({ ...theme, brandCharcoal: e.target.value })}
+                        className="w-6 h-6 border-0 bg-transparent cursor-pointer rounded-xs"
+                      />
+                      <input
+                        type="text"
+                        value={theme.brandCharcoal || '#141414'}
+                        onChange={(e) => setTheme({ ...theme, brandCharcoal: e.target.value })}
+                        className="w-full bg-transparent text-brand-ivory font-mono text-[11px] focus:outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] text-brand-cream/70 mb-1">{isAr ? 'لون الحدود والفواصل' : 'Borders'}</label>
+                    <div className="flex items-center space-x-1.5 rtl:space-x-reverse bg-brand-stone/40 border border-brand-border p-1.5 rounded-xs">
+                      <input
+                        type="color"
+                        value={theme.brandBorder || '#282828'}
+                        onChange={(e) => setTheme({ ...theme, brandBorder: e.target.value })}
+                        className="w-6 h-6 border-0 bg-transparent cursor-pointer rounded-xs"
+                      />
+                      <input
+                        type="text"
+                        value={theme.brandBorder || '#282828'}
+                        onChange={(e) => setTheme({ ...theme, brandBorder: e.target.value })}
+                        className="w-full bg-transparent text-brand-ivory font-mono text-[11px] focus:outline-none"
+                      />
+                    </div>
                   </div>
                 </div>
+              </div>
 
+              {/* 3. Typography & Button Corners */}
+              <div className="grid grid-cols-2 gap-2.5 text-xs font-mono border-t border-brand-border/60 pt-3">
                 <div>
-                  <label className="block text-[11px] text-brand-cream/70 mb-1">{isAr ? 'خلفية المتجر' : 'Background'}</label>
-                  <div className="flex items-center space-x-2 rtl:space-x-reverse bg-brand-stone/40 border border-brand-border p-1.5 rounded-xs">
-                    <input
-                      type="color"
-                      value={theme.brandBlack}
-                      onChange={(e) => setTheme({ ...theme, brandBlack: e.target.value })}
-                      className="w-6 h-6 border-0 bg-transparent cursor-pointer rounded-xs"
-                    />
-                    <input
-                      type="text"
-                      value={theme.brandBlack}
-                      onChange={(e) => setTheme({ ...theme, brandBlack: e.target.value })}
-                      className="w-full bg-transparent text-brand-ivory font-mono text-[11px] focus:outline-none"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-[11px] text-brand-cream/70 mb-1">{isAr ? 'خط العناوين العربي' : 'Arabic Font'}</label>
+                  <label className="block text-[10px] text-brand-cream/70 mb-1">{isAr ? 'خط العناوين العربي' : 'Arabic Font'}</label>
                   <select
                     value={theme.fontFamilyAr}
                     onChange={(e) => setTheme({ ...theme, fontFamilyAr: e.target.value })}
@@ -626,7 +839,7 @@ export default function VisualBuilderPage() {
                 </div>
 
                 <div>
-                  <label className="block text-[11px] text-brand-cream/70 mb-1">{isAr ? 'زوايا الأزرار' : 'Button Style'}</label>
+                  <label className="block text-[10px] text-brand-cream/70 mb-1">{isAr ? 'زوايا الأزرار' : 'Button Style'}</label>
                   <select
                     value={theme.borderRadius}
                     onChange={(e) => setTheme({ ...theme, borderRadius: e.target.value as any })}
@@ -639,6 +852,79 @@ export default function VisualBuilderPage() {
                   </select>
                 </div>
               </div>
+
+              {/* 4. Live Contrast & Swatch Test Strip */}
+              <div
+                className="p-3 rounded-xs border space-y-2 transition-colors"
+                style={{
+                  backgroundColor: theme.brandBlack,
+                  borderColor: theme.brandBorder || '#282828',
+                }}
+              >
+                <div className="flex items-center justify-between text-[10px] font-mono">
+                  <span style={{ color: theme.brandGold }} className="font-bold">
+                    {isAr ? 'معاينة حية للتباين:' : 'Contrast Preview:'}
+                  </span>
+                  <span
+                    className="px-1.5 py-0.5 rounded-full text-[9px] font-bold"
+                    style={{
+                      backgroundColor: theme.brandGold,
+                      color: theme.brandBlack,
+                    }}
+                  >
+                    500 GSM
+                  </span>
+                </div>
+                <div className="flex items-center justify-between gap-2">
+                  <div
+                    className="p-2 rounded-xs border text-[10px] font-mono flex-1 text-center truncate"
+                    style={{
+                      backgroundColor: theme.brandCharcoal || '#141414',
+                      borderColor: theme.brandBorder || '#282828',
+                      color: theme.brandIvory || '#FAF9F6',
+                    }}
+                  >
+                    {isAr ? 'بطاقة المنتج' : 'Card Surface'}
+                  </div>
+                  <button
+                    type="button"
+                    className="px-3 py-1.5 font-bold text-[10px] font-mono transition-opacity flex-1 truncate"
+                    style={{
+                      backgroundColor: theme.brandGold,
+                      color: theme.brandBlack,
+                      borderRadius:
+                        theme.borderRadius === 'pill'
+                          ? '9999px'
+                          : theme.borderRadius === 'rounded'
+                          ? '6px'
+                          : theme.borderRadius === 'subtle'
+                          ? '2px'
+                          : '0px',
+                    }}
+                  >
+                    {isAr ? 'تسوق التشكيلة' : 'Shop Drop'}
+                  </button>
+                </div>
+              </div>
+
+              {/* 5. Direct Save Theme Button */}
+              <button
+                type="button"
+                onClick={handleSaveThemeDirectly}
+                disabled={savingTheme}
+                className="w-full py-2.5 bg-brand-gold hover:bg-brand-gold-hover text-brand-black text-xs font-mono font-bold uppercase tracking-wider rounded-xs transition-colors flex items-center justify-center space-x-2 rtl:space-x-reverse shadow-gold disabled:opacity-50"
+              >
+                {savingTheme ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <Save className="w-3.5 h-3.5" />
+                )}
+                <span>
+                  {savingTheme
+                    ? (isAr ? 'جاري تطبيق الهوية...' : 'Applying Theme...')
+                    : (isAr ? '💾 حفظ وتطبيق الألوان فوراً على المتجر' : 'Save & Apply Theme Live')}
+                </span>
+              </button>
             </div>
           )}
         </div>
@@ -1262,14 +1548,29 @@ export default function VisualBuilderPage() {
               <span className="text-[10px] font-mono text-emerald-400">● {isAr ? 'محدث ومتزامن' : 'Synchronized'}</span>
             </div>
 
-            {/* Scaled Responsive Iframe Wrapper */}
+            {/* Scaled Responsive Iframe Wrapper with Dynamic Live Theme CSS Variables */}
             <div className="flex justify-center bg-black/60 p-4 rounded-xs overflow-x-auto min-h-[480px]">
               <div
                 style={{
                   width: previewDevice === 'mobile' ? '375px' : previewDevice === 'tablet' ? '768px' : '100%',
-                  transition: 'width 0.3s ease',
-                }}
-                className="bg-brand-black border border-brand-border shadow-2xl overflow-hidden rounded-xs flex flex-col"
+                  transition: 'width 0.3s ease, background-color 0.2s ease',
+                  backgroundColor: theme?.brandBlack || '#0A0A0A',
+                  '--brand-gold': theme?.brandGold || '#C5A880',
+                  '--brand-gold-rgb': hexToRgb(theme?.brandGold || '#C5A880'),
+                  '--brand-gold-hover': adjustHexBrightness(theme?.brandGold || '#C5A880', -15),
+                  '--brand-gold-hover-rgb': hexToRgb(adjustHexBrightness(theme?.brandGold || '#C5A880', -15)),
+                  '--brand-black': theme?.brandBlack || '#0A0A0A',
+                  '--brand-black-rgb': hexToRgb(theme?.brandBlack || '#0A0A0A'),
+                  '--brand-charcoal': theme?.brandCharcoal || adjustHexBrightness(theme?.brandBlack || '#0A0A0A', 10),
+                  '--brand-charcoal-rgb': hexToRgb(theme?.brandCharcoal || adjustHexBrightness(theme?.brandBlack || '#0A0A0A', 10)),
+                  '--brand-stone': theme?.brandStone || adjustHexBrightness(theme?.brandBlack || '#0A0A0A', 22),
+                  '--brand-stone-rgb': hexToRgb(theme?.brandStone || adjustHexBrightness(theme?.brandBlack || '#0A0A0A', 22)),
+                  '--brand-border': theme?.brandBorder || adjustHexBrightness(theme?.brandBlack || '#0A0A0A', 28),
+                  '--brand-border-rgb': hexToRgb(theme?.brandBorder || adjustHexBrightness(theme?.brandBlack || '#0A0A0A', 28)),
+                  '--brand-ivory': theme?.brandIvory || '#FAF9F6',
+                  '--brand-ivory-rgb': hexToRgb(theme?.brandIvory || '#FAF9F6'),
+                } as React.CSSProperties}
+                className="bg-brand-black border border-brand-border shadow-2xl overflow-hidden rounded-xs flex flex-col transition-colors duration-200"
               >
                 {/* Simulated Header */}
                 <div className="p-3 bg-brand-charcoal border-b border-brand-border flex items-center justify-between text-xs">

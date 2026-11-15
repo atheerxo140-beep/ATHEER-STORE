@@ -9,18 +9,42 @@
   --font-inter: 'Inter', system-ui, sans-serif;
   --font-tajawal: 'Tajawal', system-ui, sans-serif;
   --font-amiri: 'Amiri', serif;
+
+  --brand-gold: #C5A880;
+  --brand-gold-rgb: 197, 168, 128;
+  --brand-gold-hover: #B8966C;
+  --brand-gold-hover-rgb: 184, 150, 108;
+  --brand-gold-light: #E3D3BE;
+  --brand-gold-light-rgb: 227, 211, 190;
+  --brand-gold-dark: #8F6E45;
+  --brand-gold-dark-rgb: 143, 110, 69;
+
+  --brand-black: #0A0A0A;
+  --brand-black-rgb: 10, 10, 10;
+  --brand-charcoal: #161616;
+  --brand-charcoal-rgb: 22, 22, 22;
+  --brand-dark: #1C1C1E;
+  --brand-dark-rgb: 28, 28, 30;
+  --brand-stone: #2C2C2E;
+  --brand-stone-rgb: 44, 44, 46;
+  --brand-border: #282828;
+  --brand-border-rgb: 40, 40, 40;
+  --brand-ivory: #FBF9F5;
+  --brand-ivory-rgb: 251, 249, 245;
+  --brand-cream: #F5F0E8;
+  --brand-cream-rgb: 245, 240, 232;
 }
 
 html {
   scroll-behavior: smooth;
-  background-color: #0A0A0A;
-  color: #FBF9F5;
+  background-color: var(--brand-black, #0A0A0A);
+  color: var(--brand-ivory, #FBF9F5);
 }
 
 body {
   font-family: var(--font-inter);
-  background-color: #0A0A0A;
-  color: #FBF9F5;
+  background-color: var(--brand-black, #0A0A0A);
+  color: var(--brand-ivory, #FBF9F5);
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -40,13 +64,13 @@ body {
 
 /* Luxury selection styling */
 ::selection {
-  background-color: #C5A880;
-  color: #0A0A0A;
+  background-color: var(--brand-gold, #C5A880);
+  color: var(--brand-black, #0A0A0A);
 }
 
 ::-moz-selection {
-  background-color: #C5A880;
-  color: #0A0A0A;
+  background-color: var(--brand-gold, #C5A880);
+  color: var(--brand-black, #0A0A0A);
 }
 
 /* Custom Luxury Scrollbar */
@@ -55,16 +79,16 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: #0A0A0A;
+  background: var(--brand-black, #0A0A0A);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #2C2C2E;
+  background: var(--brand-stone, #2C2C2E);
   border-radius: 2px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #C5A880;
+  background: var(--brand-gold, #C5A880);
 }
 
 /* =========================================================================

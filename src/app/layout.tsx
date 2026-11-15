@@ -4,7 +4,7 @@ import { LanguageProvider } from '@/context/LanguageContext';
 import { CartProvider } from '@/context/CartContext';
 import { WishlistProvider } from '@/context/WishlistContext';
 import { CustomerAuthProvider } from '@/context/CustomerAuthContext';
-import { getThemeConfig } from '@/lib/themeService';
+import { getThemeConfig, generateThemeCss } from '@/lib/themeService';
 
 export const metadata: Metadata = {
   title: 'ATHEER | أثير — Premium Egyptian Streetwear · 500 GSM Heavyweight Drops',
@@ -21,18 +21,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   const theme = getThemeConfig();
-  const themeStyles = `
-    :root {
-      --brand-gold: ${theme.brandGold || '#C5A880'};
-      --brand-black: ${theme.brandBlack || '#0A0A0A'};
-      --brand-charcoal: ${theme.brandCharcoal || '#141414'};
-    }
-  `;
+  const themeStyles = generateThemeCss(theme);
 
   return (
     <html lang="ar" dir="rtl">
       <head>
-        <style dangerouslySetInnerHTML={{ __html: themeStyles }} />
+        <style id="atheer-theme-vars" dangerouslySetInnerHTML={{ __html: themeStyles }} />
       </head>
       <body className="min-h-screen bg-brand-black text-brand-ivory antialiased">
         <LanguageProvider>

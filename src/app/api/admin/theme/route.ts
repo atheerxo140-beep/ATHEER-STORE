@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getThemeConfig, updateThemeConfig } from '@/lib/themeService';
 import { verifyAdminRequest } from '@/lib/adminAuth';
 import { logAuditEvent } from '@/lib/auditService';
+import { revalidatePath } from 'next/cache';
 
 export const dynamic = 'force-dynamic';
 
@@ -24,6 +25,9 @@ export async function PUT(req: NextRequest) {
   try {
     const body = await req.json();
     const updated = updateThemeConfig(body);
+    try {
+      revalidatePath('/', 'layout');
+    } catch (e) {}
     logAuditEvent(auth.user?.email || 'admin@atheer.store', 'UPDATE_THEME', 'Theme & Design', 'Updated brand colors, typography, or styling');
     return NextResponse.json({ success: true, theme: updated });
   } catch (err: any) {

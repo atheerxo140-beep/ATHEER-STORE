@@ -10,6 +10,7 @@ export const defaultThemeConfig: ThemeConfig = {
   brandBlack: '#0A0A0A',
   brandCharcoal: '#141414',
   brandStone: '#1F1F1F',
+  brandBorder: '#282828',
   brandIvory: '#FAF9F6',
   brandCream: '#F0EAE1',
   fontFamilyAr: 'Cairo',
@@ -37,6 +38,98 @@ export const defaultThemeConfig: ThemeConfig = {
   maintenanceMessageEn: 'Our digital atelier is preparing the next heavyweight drop... We will be back shortly!'
 };
 
+/**
+ * Converts a 3 or 6 digit hex string to comma-separated RGB values: "r, g, b"
+ */
+export function hexToRgb(hex?: string): string {
+  if (!hex) return '197, 168, 128';
+  let cleaned = hex.replace('#', '').trim();
+  if (cleaned.length === 3) {
+    cleaned = cleaned.split('').map((c) => c + c).join('');
+  }
+  if (cleaned.length !== 6) return '197, 168, 128';
+  const r = parseInt(cleaned.substring(0, 2), 16);
+  const g = parseInt(cleaned.substring(2, 4), 16);
+  const b = parseInt(cleaned.substring(4, 6), 16);
+  if (isNaN(r) || isNaN(g) || isNaN(b)) return '197, 168, 128';
+  return `${r}, ${g}, ${b}`;
+}
+
+/**
+ * Adjusts brightness of a hex color (+- percentage)
+ */
+export function adjustHexBrightness(hex: string, percent: number): string {
+  if (!hex) return hex;
+  let cleaned = hex.replace('#', '').trim();
+  if (cleaned.length === 3) {
+    cleaned = cleaned.split('').map((c) => c + c).join('');
+  }
+  if (cleaned.length !== 6) return hex;
+  const num = parseInt(cleaned, 16);
+  const amt = Math.round(2.55 * percent);
+  const R = Math.min(255, Math.max(0, (num >> 16) + amt));
+  const G = Math.min(255, Math.max(0, ((num >> 8) & 0x00ff) + amt));
+  const B = Math.min(255, Math.max(0, (num & 0x0000ff) + amt));
+  return `#${(0x1000000 + R * 0x10000 + G * 0x100 + B).toString(16).slice(1)}`;
+}
+
+/**
+ * Compiles dynamic CSS variables reflecting the live ThemeConfig
+ */
+export function generateThemeCss(theme: ThemeConfig): string {
+  const gold = theme.brandGold || '#C5A880';
+  const goldHover = adjustHexBrightness(gold, -15);
+  const goldLight = adjustHexBrightness(gold, 25);
+  const goldDark = adjustHexBrightness(gold, -35);
+
+  const black = theme.brandBlack || '#0A0A0A';
+  const charcoal = theme.brandCharcoal || adjustHexBrightness(black, 10);
+  const dark = adjustHexBrightness(black, 16);
+  const stone = theme.brandStone || adjustHexBrightness(black, 22);
+  const border = theme.brandBorder || adjustHexBrightness(black, 28);
+  const ivory = theme.brandIvory || '#FAF9F6';
+  const cream = theme.brandCream || '#F0EAE1';
+
+  return `
+    :root {
+      --brand-gold: ${gold};
+      --brand-gold-rgb: ${hexToRgb(gold)};
+      --brand-gold-hover: ${goldHover};
+      --brand-gold-hover-rgb: ${hexToRgb(goldHover)};
+      --brand-gold-light: ${goldLight};
+      --brand-gold-light-rgb: ${hexToRgb(goldLight)};
+      --brand-gold-dark: ${goldDark};
+      --brand-gold-dark-rgb: ${hexToRgb(goldDark)};
+
+      --brand-black: ${black};
+      --brand-black-rgb: ${hexToRgb(black)};
+      --brand-charcoal: ${charcoal};
+      --brand-charcoal-rgb: ${hexToRgb(charcoal)};
+      --brand-dark: ${dark};
+      --brand-dark-rgb: ${hexToRgb(dark)};
+      --brand-stone: ${stone};
+      --brand-stone-rgb: ${hexToRgb(stone)};
+      --brand-border: ${border};
+      --brand-border-rgb: ${hexToRgb(border)};
+
+      --brand-ivory: ${ivory};
+      --brand-ivory-rgb: ${hexToRgb(ivory)};
+      --brand-cream: ${cream};
+      --brand-cream-rgb: ${hexToRgb(cream)};
+    }
+
+    html, body {
+      background-color: var(--brand-black, #0A0A0A) !important;
+      color: var(--brand-ivory, #FAF9F6) !important;
+    }
+
+    ::selection {
+      background-color: var(--brand-gold, #C5A880) !important;
+      color: var(--brand-black, #0A0A0A) !important;
+    }
+  `;
+}
+
 export function getThemeConfig(): ThemeConfig {
   try {
     const filePath = getStorePath();
@@ -54,6 +147,18 @@ export function updateThemeConfig(updates: Partial<ThemeConfig>): ThemeConfig {
   try {
     const current = getThemeConfig();
     const updated = { ...current, ...updates };
+
+    // If black was changed but charcoal/stone/border were not explicitly passed, auto-harmonize them
+    if (updates.brandBlack && !updates.brandCharcoal) {
+      updated.brandCharcoal = adjustHexBrightness(updates.brandBlack, 10);
+    }
+    if (updates.brandBlack && !updates.brandStone) {
+      updated.brandStone = adjustHexBrightness(updates.brandBlack, 22);
+    }
+    if (updates.brandBlack && !updates.brandBorder) {
+      updated.brandBorder = adjustHexBrightness(updates.brandBlack, 28);
+    }
+
     fs.writeFileSync(getStorePath(), JSON.stringify(updated, null, 2), 'utf8');
     return updated;
   } catch (e) {

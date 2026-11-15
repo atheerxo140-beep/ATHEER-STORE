@@ -303,6 +303,7 @@ export interface ThemeConfig {
   brandStone: string;
   brandIvory: string;
   brandCream: string;
+  brandBorder?: string;
   fontFamilyAr: string;
   fontFamilyEn: string;
   borderRadius: 'none' | 'subtle' | 'rounded' | 'pill';
