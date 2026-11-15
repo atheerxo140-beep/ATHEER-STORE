@@ -6,11 +6,11 @@ import { useThemeMode } from '@/context/ThemeModeContext';
 import { useStoreSettings } from '@/hooks/useStoreSettings';
 import { useHomepageContent } from '@/hooks/useHomepageContent';
 import QRCode from 'qrcode';
-import { Flame, ArrowRight, ArrowLeft, Check, MapPin, Phone, QrCode, Sun, Moon, ShieldCheck, Truck, Sparkles } from 'lucide-react';
+import { Flame, ArrowRight, ArrowLeft, Check, MapPin, Phone, QrCode, Sun, Moon, ShieldCheck, Truck, Sparkles, Globe } from 'lucide-react';
 import Link from 'next/link';
 
 export const Footer: React.FC = () => {
-  const { t, language, isRtl } = useLanguage();
+  const { t, language, setLanguage, isRtl } = useLanguage();
   const { mode, isDark, toggleMode } = useThemeMode();
   const { settings } = useStoreSettings();
   const { content } = useHomepageContent();
@@ -383,6 +383,17 @@ export const Footer: React.FC = () => {
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5 rtl:space-x-reverse text-[10px] tracking-wider uppercase font-mono text-brand-cream/70">
+            {/* Language Switcher Button */}
+            <button
+              type="button"
+              onClick={() => setLanguage(language === 'en' ? 'ar' : 'en')}
+              className="px-2.5 py-1 border border-brand-border bg-brand-charcoal text-brand-gold hover:border-brand-gold flex items-center space-x-1.5 rtl:space-x-reverse transition-colors rounded-xs"
+              title={language === 'en' ? 'التحويل للغة العربية' : 'Switch to English'}
+            >
+              <Globe className="w-3.5 h-3.5 text-brand-gold" />
+              <span>{language === 'en' ? 'العربية' : 'EN'}</span>
+            </button>
+
             {/* Theme Switcher Button */}
             <button
               type="button"

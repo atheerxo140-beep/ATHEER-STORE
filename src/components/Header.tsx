@@ -287,12 +287,16 @@ export const Header: React.FC = () => {
                 <Search className="w-5 h-5 stroke-[1.5]" />
               </button>
 
-              {/* Mobile Language Switcher */}
+              {/* Language Switcher (Always visible on Desktop & Mobile) */}
               <button
+                type="button"
                 onClick={() => setLanguage(language === 'en' ? 'ar' : 'en')}
-                className="lg:hidden p-1.5 text-xs text-brand-ivory font-medium border border-brand-border/80 px-2 rounded-sm hover:text-brand-gold hover:border-brand-gold"
+                className="flex items-center space-x-1.5 rtl:space-x-reverse px-2.5 py-1 text-xs text-brand-ivory font-mono font-medium border border-brand-border/80 hover:border-brand-gold hover:text-brand-gold transition-colors rounded-xs bg-brand-charcoal/50"
+                aria-label={language === 'en' ? 'التحويل للغة العربية' : 'Switch to English'}
+                title={language === 'en' ? 'التحويل للغة العربية (عربي)' : 'Switch to English (EN)'}
               >
-                {language === 'en' ? 'عربي' : 'EN'}
+                <Globe className="w-3.5 h-3.5 text-brand-gold opacity-90" />
+                <span className="font-bold tracking-wider">{language === 'en' ? 'عربي' : 'EN'}</span>
               </button>
 
               {/* Wishlist Link with Live Badge */}
