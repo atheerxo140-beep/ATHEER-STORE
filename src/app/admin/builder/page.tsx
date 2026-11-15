@@ -779,7 +779,114 @@ export default function VisualBuilderPage() {
               </div>
             )}
 
-            {!['hero', 'offers', 'story', 'categories'].includes(activeSection?.id || '') && (
+            {activeSection?.id === 'future' && (
+              <div className="space-y-4 text-xs font-mono">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-brand-cream/80 mb-1">
+                      {isAr ? 'شارة الإصدار القادم (عربي)' : 'Badge (Arabic)'}
+                    </label>
+                    <input
+                      type="text"
+                      value={content.futureBadgeAr || ''}
+                      onChange={(e) => setContent({ ...content, futureBadgeAr: e.target.value })}
+                      placeholder="الإصدار القادم · قريباً"
+                      className="w-full bg-brand-stone/40 border border-brand-border px-3 py-2 text-brand-ivory rounded-xs text-right focus:border-brand-gold focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-brand-cream/80 mb-1">
+                      {isAr ? 'العنوان الرئيسي (عربي)' : 'Title (Arabic)'}
+                    </label>
+                    <input
+                      type="text"
+                      value={content.futureTitleAr || ''}
+                      onChange={(e) => setContent({ ...content, futureTitleAr: e.target.value })}
+                      placeholder="تي شيرت أثير البوكسي الثقيل 320 GSM"
+                      className="w-full bg-brand-stone/40 border border-brand-border px-3 py-2 text-brand-ivory rounded-xs text-right focus:border-brand-gold focus:outline-none"
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-brand-cream/80 mb-1">
+                      {isAr ? 'الوصف التفصيلي (عربي)' : 'Description (Arabic)'}
+                    </label>
+                    <textarea
+                      rows={2}
+                      value={content.futureDescAr || ''}
+                      onChange={(e) => setContent({ ...content, futureDescAr: e.target.value })}
+                      className="w-full bg-brand-stone/40 border border-brand-border p-2.5 text-brand-ivory rounded-xs text-right focus:border-brand-gold focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-brand-cream/80 mb-1">
+                      {isAr ? 'الشارة على الصورة (عربي)' : 'Image Overlay Badge'}
+                    </label>
+                    <input
+                      type="text"
+                      value={content.futureBadgeBottomAr || ''}
+                      onChange={(e) => setContent({ ...content, futureBadgeBottomAr: e.target.value })}
+                      placeholder="مرحلة العينات · قريباً في الأسواق"
+                      className="w-full bg-brand-stone/40 border border-brand-border px-3 py-2 text-brand-ivory rounded-xs text-right focus:border-brand-gold focus:outline-none"
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <div className="flex-1">
+                      <label className="block text-brand-cream/80 mb-1">{isAr ? 'وسم 1' : 'Chip 1'}</label>
+                      <input
+                        type="text"
+                        value={content.futureChip1 || ''}
+                        onChange={(e) => setContent({ ...content, futureChip1: e.target.value })}
+                        className="w-full bg-brand-stone/40 border border-brand-border px-2 py-1.5 text-brand-ivory rounded-xs"
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <label className="block text-brand-cream/80 mb-1">{isAr ? 'وسم 2' : 'Chip 2'}</label>
+                      <input
+                        type="text"
+                        value={content.futureChip2 || ''}
+                        onChange={(e) => setContent({ ...content, futureChip2: e.target.value })}
+                        className="w-full bg-brand-stone/40 border border-brand-border px-2 py-1.5 text-brand-ivory rounded-xs"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Photo & Upload Section */}
+                <div className="border-t border-brand-border/60 pt-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    {content.futureImage ? (
+                      <img
+                        src={content.futureImage}
+                        alt="Future Visual"
+                        className="w-12 h-12 object-cover rounded-xs border border-brand-gold/50 shadow-sm"
+                      />
+                    ) : (
+                      <div className="w-12 h-12 bg-brand-stone/40 rounded-xs border border-brand-border" />
+                    )}
+                    <div>
+                      <div className="text-[11px] font-bold text-brand-ivory">
+                        {isAr ? 'صورة التي شيرت / الإصدار القادم' : 'Future Drop Teaser Photo'}
+                      </div>
+                      <div className="text-[10px] text-brand-cream/60">
+                        {isAr ? 'يمكنك رفع صورة جديدة من الاستوديو أو استبدالها' : 'Upload or replace photo'}
+                      </div>
+                    </div>
+                  </div>
+
+                  <a
+                    href="/admin/content?tab=future"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-shrink-0 px-3 py-1.5 bg-brand-gold text-brand-black text-[11px] font-bold rounded-xs hover:bg-brand-gold-hover transition-colors flex items-center gap-1 shadow-gold"
+                  >
+                    <span>{isAr ? 'رفع وتعديل صورة التي شيرت بالكامل ←' : 'Upload Tee Photo & Details →'}</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                </div>
+              </div>
+            )}
+
+            {!['hero', 'offers', 'story', 'categories', 'future'].includes(activeSection?.id || '') && (
               <div className="py-6 text-center text-xs font-mono text-brand-cream/60">
                 <Sparkles className="w-5 h-5 mx-auto mb-2 text-brand-gold animate-pulse" />
                 <p>{isAr ? 'هذا القسم مهيأ تلقائياً بالكتالوج والبيانات الحية للمتجر.' : 'This section automatically pulls live store data.'}</p>

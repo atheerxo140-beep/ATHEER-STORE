@@ -487,7 +487,7 @@ export default function AdminContentPage() {
           }`}
         >
           <Clock className="w-3.5 h-3.5" />
-          <span>{isAr ? '6. الإصدار القادم / التي شيرتات' : '6. Future Drop'}</span>
+          <span>{isAr ? '6. الإصدار القادم (تي شيرت أثير 320 GSM وصورته)' : '6. Future Drop (320 GSM Tee)'}</span>
         </button>
 
         <button
@@ -2234,6 +2234,21 @@ export default function AdminContentPage() {
       {/* TAB 4: FUTURE DROP TEASER */}
       {activeTab === 'future' && (
         <div className="space-y-8 animate-fade-in">
+          {/* Informative Help Banner for Future Drop Section */}
+          <div className="bg-brand-stone/30 border border-brand-gold/40 rounded-sm p-4 flex items-start gap-3">
+            <Clock className="w-5 h-5 text-brand-gold flex-shrink-0 mt-0.5" />
+            <div className="text-xs space-y-1">
+              <div className="font-bold text-brand-gold">
+                {isAr ? 'التحكم في قسم (تي شيرت أثير البوكسي الثقيل GSM 320 - الإصدار القادم)' : 'Future Drop Teaser Control'}
+              </div>
+              <p className="text-brand-cream/80 leading-relaxed font-sans">
+                {isAr
+                  ? 'من هنا يمكنك رفع صورة التي شيرت والموديل، تعديل الشارة والعنوان والوصف، وتعديل وسوم المواصفات (Oversized Cut, High-Neck Rib, GSM Jersey 320) وشارة الصورة المعلقة.'
+                  : 'Customize the future drop teaser photo, headline, description, spec chips, and image overlay badge.'}
+              </p>
+            </div>
+          </div>
+
           {/* Section Overview & Visibility */}
           <div className="bg-brand-charcoal border border-brand-border/80 rounded-sm p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
