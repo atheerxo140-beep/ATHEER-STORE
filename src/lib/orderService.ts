@@ -435,7 +435,7 @@ export const createOrder = async (input: CreateOrderInput): Promise<OrderCreatio
 
   // 12. Dispatch real-time admin order notification & automated WhatsApp
   try {
-    notifyAdminOfNewOrder(newOrder);
+    await notifyAdminOfNewOrder(newOrder);
   } catch (notifErr) {
     console.warn('[Order Notification Trigger Error]', notifErr);
   }

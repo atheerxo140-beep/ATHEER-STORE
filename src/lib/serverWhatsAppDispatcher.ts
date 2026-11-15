@@ -3,6 +3,7 @@ import { normalizeWhatsAppNumber } from '@/lib/whatsappUtils';
 import fs from 'fs';
 import path from 'path';
 import { getStoreFilePath } from '@/lib/storePath';
+import { getSupabaseServer, isSupabaseConfigured } from '@/lib/supabaseServer';
 
 export interface WhatsAppGatewayConfig {
   provider: 'callmebot' | 'ultramsg' | 'custom_webhook' | 'none';
@@ -13,6 +14,9 @@ export interface WhatsAppGatewayConfig {
   customWebhookUrl?: string;
 }
 
+// In-memory runtime cache for serverless execution
+let cachedGatewayConfig: WhatsAppGatewayConfig | null = null;
+
 function getGatewayConfigPath(): string {
   try {
     return getStoreFilePath('whatsapp_gateway.json');
@@ -21,7 +25,12 @@ function getGatewayConfigPath(): string {
   }
 }
 
-export function getWhatsAppGatewayConfig(): WhatsAppGatewayConfig {
+export async function getWhatsAppGatewayConfig(): Promise<WhatsAppGatewayConfig> {
+  // Check memory cache first
+  if (cachedGatewayConfig && (cachedGatewayConfig.callmebotApiKey || cachedGatewayConfig.ultramsgToken)) {
+    return cachedGatewayConfig;
+  }
+
   // Check env vars first
   const callmebotApiKey = process.env.CALLMEBOT_APIKEY || '';
   const ultramsgInstanceId = process.env.ULTRAMSG_INSTANCE_ID || '';
@@ -29,13 +38,42 @@ export function getWhatsAppGatewayConfig(): WhatsAppGatewayConfig {
   const customWebhookUrl = process.env.WHATSAPP_WEBHOOK_URL || '';
 
   if (callmebotApiKey) {
-    return { provider: 'callmebot', callmebotApiKey };
+    cachedGatewayConfig = { provider: 'callmebot', callmebotApiKey };
+    return cachedGatewayConfig;
   }
   if (ultramsgInstanceId && ultramsgToken) {
-    return { provider: 'ultramsg', ultramsgInstanceId, ultramsgToken };
+    cachedGatewayConfig = { provider: 'ultramsg', ultramsgInstanceId, ultramsgToken };
+    return cachedGatewayConfig;
   }
   if (customWebhookUrl) {
-    return { provider: 'custom_webhook', customWebhookUrl };
+    cachedGatewayConfig = { provider: 'custom_webhook', customWebhookUrl };
+    return cachedGatewayConfig;
+  }
+
+  // Check Supabase store_settings row id: 'whatsapp_gateway'
+  if (isSupabaseConfigured()) {
+    const supabase = getSupabaseServer();
+    if (supabase) {
+      try {
+        const { data, error } = await supabase
+          .from('store_settings')
+          .select('cairo_showrooms_ar')
+          .eq('id', 'whatsapp_gateway')
+          .maybeSingle();
+
+        if (!error && data?.cairo_showrooms_ar) {
+          try {
+            const parsed = JSON.parse(data.cairo_showrooms_ar);
+            if (parsed && (parsed.callmebotApiKey || parsed.ultramsgToken || parsed.provider !== 'none')) {
+              cachedGatewayConfig = parsed;
+              return parsed;
+            }
+          } catch (e) {}
+        }
+      } catch (err) {
+        console.warn('[WhatsAppGateway] Supabase load error', err);
+      }
+    }
   }
 
   // Check persistent JSON file
@@ -44,7 +82,10 @@ export function getWhatsAppGatewayConfig(): WhatsAppGatewayConfig {
     if (fs.existsSync(configPath)) {
       const data = fs.readFileSync(configPath, 'utf8');
       const parsed = JSON.parse(data);
-      if (parsed) return parsed;
+      if (parsed) {
+        cachedGatewayConfig = parsed;
+        return parsed;
+      }
     }
   } catch (e) {
     // Ignore
@@ -53,12 +94,37 @@ export function getWhatsAppGatewayConfig(): WhatsAppGatewayConfig {
   return { provider: 'none' };
 }
 
-export function saveWhatsAppGatewayConfig(config: WhatsAppGatewayConfig): void {
+export async function saveWhatsAppGatewayConfig(config: WhatsAppGatewayConfig): Promise<void> {
+  cachedGatewayConfig = config;
+
+  // Persist locally
   try {
     const configPath = getGatewayConfigPath();
     fs.writeFileSync(configPath, JSON.stringify(config, null, 2), 'utf8');
   } catch (e) {
     console.warn('[WhatsAppGateway] Notice: read-only filesystem on serverless.');
+  }
+
+  // Persist permanently in Supabase PostgreSQL
+  if (isSupabaseConfigured()) {
+    const supabase = getSupabaseServer();
+    if (supabase) {
+      try {
+        await supabase
+          .from('store_settings')
+          .upsert({
+            id: 'whatsapp_gateway',
+            store_name_en: 'WHATSAPP_GATEWAY',
+            store_name_ar: 'إعدادات بوابة الواتساب التلقائية',
+            cairo_showrooms_ar: JSON.stringify(config),
+            whatsapp_number: config.targetPhone || '',
+            default_currency: 'EGP',
+            updated_at: new Date().toISOString(),
+          });
+      } catch (err) {
+        console.warn('[WhatsAppGateway] Failed to save gateway config to Supabase', err);
+      }
+    }
   }
 }
 
@@ -70,8 +136,8 @@ export async function sendAutomatedOrderWhatsApp(
   order: StoredOrder,
   ownerPhone: string
 ): Promise<{ success: boolean; provider?: string; error?: string }> {
-  const config = getWhatsAppGatewayConfig();
-  const cleanPhone = normalizeWhatsAppNumber(config.targetPhone || ownerPhone) || '201021483802';
+  const config = await getWhatsAppGatewayConfig();
+  const cleanPhone = normalizeWhatsAppNumber(config.targetPhone || ownerPhone) || '201500429943';
 
   const itemsSummary = order.items
     .map((i) => `• ${i.quantity}x ${i.productNameAr || i.productNameEn} (${i.selectedSize} | ${i.selectedColor})`)

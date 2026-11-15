@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ success: false, error: auth.error }, { status: auth.statusCode });
   }
 
-  const config = getWhatsAppGatewayConfig();
+  const config = await getWhatsAppGatewayConfig();
   return NextResponse.json({
     success: true,
     config,
@@ -34,13 +34,13 @@ export async function POST(req: NextRequest) {
     const { config, testPhone } = body;
 
     if (config) {
-      saveWhatsAppGatewayConfig(config as WhatsAppGatewayConfig);
+      await saveWhatsAppGatewayConfig(config as WhatsAppGatewayConfig);
     }
 
     // Optional test message
     let testResult = null;
     if (testPhone) {
-      const cleanPhone = normalizeWhatsAppNumber(testPhone) || '201021483802';
+      const cleanPhone = normalizeWhatsAppNumber(testPhone) || '201500429943';
       const fakeOrder: any = {
         id: 'test-order',
         orderReference: 'ATH-TEST-001',
@@ -69,7 +69,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      config: getWhatsAppGatewayConfig(),
+      config: await getWhatsAppGatewayConfig(),
       testResult,
     });
   } catch (err: any) {

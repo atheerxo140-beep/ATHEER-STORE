@@ -73,8 +73,9 @@ export async function notifyAdminOfNewOrder(order: StoredOrder): Promise<void> {
   try {
     const { sendAutomatedOrderWhatsApp } = await import('@/lib/serverWhatsAppDispatcher');
     const settings = await getStoreSettings();
-    const ownerPhone = settings.whatsappNumber || '201015993802';
-    await sendAutomatedOrderWhatsApp(order, ownerPhone);
+    const ownerPhone = settings.whatsappNumber || '201500429943';
+    const waResult = await sendAutomatedOrderWhatsApp(order, ownerPhone);
+    console.log('[Order Notification WA Result]', waResult);
   } catch (waErr) {
     console.warn('[Automated Server WhatsApp Dispatch Exception]', waErr);
   }
