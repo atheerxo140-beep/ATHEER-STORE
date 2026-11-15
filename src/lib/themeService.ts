@@ -90,8 +90,19 @@ export function generateThemeCss(theme: ThemeConfig): string {
   const ivory = theme.brandIvory || '#FAF9F6';
   const cream = theme.brandCream || '#F0EAE1';
 
+  const fontAr = theme.fontFamilyAr || 'Cairo';
+  const fontEn = theme.fontFamilyEn || 'Cinzel';
+  const fontArParam = encodeURIComponent(fontAr).replace(/%20/g, '+');
+  const fontEnParam = encodeURIComponent(fontEn).replace(/%20/g, '+');
+  const googleFontsUrl = `https://fonts.googleapis.com/css2?family=${fontArParam}:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=${fontEnParam}:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400&display=swap`;
+
   return `
+    @import url('${googleFontsUrl}');
+
     :root {
+      --font-family-ar: '${fontAr}', 'Cairo', 'Tajawal', system-ui, sans-serif;
+      --font-family-en: '${fontEn}', 'Cinzel', 'Inter', system-ui, sans-serif;
+
       --brand-gold: ${gold};
       --brand-gold-rgb: ${hexToRgb(gold)};
       --brand-gold-hover: ${goldHover};
@@ -116,6 +127,24 @@ export function generateThemeCss(theme: ThemeConfig): string {
       --brand-ivory-rgb: ${hexToRgb(ivory)};
       --brand-cream: ${cream};
       --brand-cream-rgb: ${hexToRgb(cream)};
+    }
+
+    [dir="rtl"], [dir="rtl"] body {
+      font-family: var(--font-family-ar) !important;
+    }
+
+    [dir="rtl"] h1, [dir="rtl"] h2, [dir="rtl"] h3, [dir="rtl"] h4, [dir="rtl"] h5, [dir="rtl"] h6,
+    [dir="rtl"] .font-serif, [dir="rtl"] .font-sans {
+      font-family: var(--font-family-ar) !important;
+    }
+
+    [dir="ltr"], [dir="ltr"] body {
+      font-family: var(--font-family-en) !important;
+    }
+
+    [dir="ltr"] h1, [dir="ltr"] h2, [dir="ltr"] h3, [dir="ltr"] h4, [dir="ltr"] h5, [dir="ltr"] h6,
+    [dir="ltr"] .font-serif, [dir="ltr"] .font-sans {
+      font-family: var(--font-family-en) !important;
     }
 
     html, body {

@@ -6,6 +6,7 @@ import { useLanguage } from '@/context/LanguageContext';
 import { BuilderSection, HomepageContent, ThemeConfig } from '@/types';
 import { adminFetch } from '@/lib/adminAuthClient';
 import { hexToRgb, adjustHexBrightness } from '@/lib/themeService';
+import { ARABIC_FONTS, ENGLISH_FONTS } from '@/lib/fontConstants';
 import {
   Layout,
   Eye,
@@ -823,23 +824,45 @@ export default function VisualBuilderPage() {
               </div>
 
               {/* 3. Typography & Button Corners */}
-              <div className="grid grid-cols-2 gap-2.5 text-xs font-mono border-t border-brand-border/60 pt-3">
-                <div>
-                  <label className="block text-[10px] text-brand-cream/70 mb-1">{isAr ? 'خط العناوين العربي' : 'Arabic Font'}</label>
-                  <select
-                    value={theme.fontFamilyAr}
-                    onChange={(e) => setTheme({ ...theme, fontFamilyAr: e.target.value })}
-                    className="w-full bg-brand-stone/60 border border-brand-border px-2 py-1.5 text-brand-ivory text-xs rounded-xs"
-                  >
-                    <option value="Cairo">Cairo (القاهرة - رسمي)</option>
-                    <option value="Amiri">Amiri (أميري كلاسيك)</option>
-                    <option value="Tajawal">Tajawal (تجوال مودرن)</option>
-                    <option value="Almarai">Almarai (المراعي هادئ)</option>
-                  </select>
+              <div className="space-y-3 text-xs font-mono border-t border-brand-border/60 pt-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  <div>
+                    <label className="block text-[10px] text-brand-cream/70 mb-1">
+                      {isAr ? 'الخط العربي الأساسي' : 'Arabic Font'}
+                    </label>
+                    <select
+                      value={theme.fontFamilyAr}
+                      onChange={(e) => setTheme({ ...theme, fontFamilyAr: e.target.value })}
+                      className="w-full bg-brand-stone/60 border border-brand-border px-2 py-1.5 text-brand-ivory text-xs rounded-xs font-bold"
+                    >
+                      {ARABIC_FONTS.map((font) => (
+                        <option key={font.name} value={font.name}>
+                          {font.name} — {font.categoryAr}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] text-brand-cream/70 mb-1">
+                      {isAr ? 'الخط الإنجليزي الأساسي' : 'English Font'}
+                    </label>
+                    <select
+                      value={theme.fontFamilyEn || 'Cinzel'}
+                      onChange={(e) => setTheme({ ...theme, fontFamilyEn: e.target.value })}
+                      className="w-full bg-brand-stone/60 border border-brand-border px-2 py-1.5 text-brand-ivory text-xs rounded-xs font-bold"
+                    >
+                      {ENGLISH_FONTS.map((font) => (
+                        <option key={font.name} value={font.name}>
+                          {font.name} — {font.categoryAr}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
 
                 <div>
-                  <label className="block text-[10px] text-brand-cream/70 mb-1">{isAr ? 'زوايا الأزرار' : 'Button Style'}</label>
+                  <label className="block text-[10px] text-brand-cream/70 mb-1">{isAr ? 'زوايا الأزرار والبطاقات' : 'Button Style'}</label>
                   <select
                     value={theme.borderRadius}
                     onChange={(e) => setTheme({ ...theme, borderRadius: e.target.value as any })}

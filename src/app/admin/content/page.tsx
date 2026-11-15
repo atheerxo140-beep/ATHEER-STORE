@@ -5,6 +5,7 @@ import { useLanguage } from '@/context/LanguageContext';
 import { HomepageContent, ShowcaseCategoryItem } from '@/types';
 import { defaultHomepageContent } from '@/data/defaultHomepageContent';
 import { adminFetch } from '@/lib/adminAuthClient';
+import { ARABIC_FONTS, ENGLISH_FONTS, FontOption } from '@/lib/fontConstants';
 import {
   Image as ImageIcon,
   Save,
@@ -67,7 +68,15 @@ export default function AdminContentPage() {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
-  const [activeTab, setActiveTab] = useState<'sections' | 'offers' | 'hero' | 'categories' | 'story' | 'future' | 'features' | 'animations'>('sections');
+  const [activeTab, setActiveTab] = useState<'sections' | 'offers' | 'hero' | 'categories' | 'story' | 'future' | 'features' | 'animations' | 'fonts'>('sections');
+
+  // Typography States
+  const [selectedFontAr, setSelectedFontAr] = useState('Cairo');
+  const [selectedFontEn, setSelectedFontEn] = useState('Cinzel');
+  const [customFontSample, setCustomFontSample] = useState('');
+  const [fontFilterAr, setFontFilterAr] = useState<string>('all');
+  const [fontFilterEn, setFontFilterEn] = useState<string>('all');
+  const [savingFonts, setSavingFonts] = useState(false);
 
   // File Upload States
   const [uploadingHero, setUploadingHero] = useState(false);
@@ -81,6 +90,17 @@ export default function AdminContentPage() {
   const categoryFileInputRefs = useRef<{ [key: number]: HTMLInputElement | null }>({});
   const storyFileInputRef = useRef<HTMLInputElement>(null);
   const futureFileInputRef = useRef<HTMLInputElement>(null);
+
+  const fetchThemeFonts = async () => {
+    try {
+      const res = await adminFetch('/api/admin/theme');
+      const data = await res.json();
+      if (data.success && data.theme) {
+        if (data.theme.fontFamilyAr) setSelectedFontAr(data.theme.fontFamilyAr);
+        if (data.theme.fontFamilyEn) setSelectedFontEn(data.theme.fontFamilyEn);
+      }
+    } catch (e) {}
+  };
 
   const fetchContent = async () => {
     setLoading(true);
@@ -101,17 +121,64 @@ export default function AdminContentPage() {
 
   useEffect(() => {
     fetchContent();
+    fetchThemeFonts();
     if (typeof window !== 'undefined') {
       const urlParams = new URLSearchParams(window.location.search);
       const tabParam = urlParams.get('tab');
       if (
         tabParam &&
-        ['sections', 'offers', 'hero', 'categories', 'story', 'future', 'features', 'animations'].includes(tabParam)
+        ['sections', 'offers', 'hero', 'categories', 'story', 'future', 'features', 'animations', 'fonts'].includes(tabParam)
       ) {
         setActiveTab(tabParam as any);
       }
     }
   }, []);
+
+  // Dynamically load Google Font previews in real-time
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    const fontArParam = encodeURIComponent(selectedFontAr).replace(/%20/g, '+');
+    const fontEnParam = encodeURIComponent(selectedFontEn).replace(/%20/g, '+');
+    const linkId = 'atheer-content-font-preview';
+    let link = document.getElementById(linkId) as HTMLLinkElement;
+    if (!link) {
+      link = document.createElement('link');
+      link.id = linkId;
+      link.rel = 'stylesheet';
+      document.head.appendChild(link);
+    }
+    link.href = `https://fonts.googleapis.com/css2?family=${fontArParam}:ital,wght@0,300;0,400;0,600;0,700;0,800;0,900;1,400&family=${fontEnParam}:ital,wght@0,300;0,400;0,600;0,700;0,800;0,900;1,400&display=swap`;
+  }, [selectedFontAr, selectedFontEn]);
+
+  const handleSaveFonts = async () => {
+    setSavingFonts(true);
+    try {
+      const res = await adminFetch('/api/admin/theme', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fontFamilyAr: selectedFontAr,
+          fontFamilyEn: selectedFontEn,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setFeedback({
+          type: 'success',
+          message: isAr
+            ? `تم حفظ وتطبيق الخطوط الجديدة على المتجر بنجاح! (الخط العربي: ${selectedFontAr} • الخط الإنجليزي: ${selectedFontEn})`
+            : `Storefront typography saved & published! (Arabic: ${selectedFontAr} • English: ${selectedFontEn})`,
+        });
+        setTimeout(() => setFeedback(null), 5000);
+      } else {
+        setFeedback({ type: 'error', message: data.error || 'Failed to save fonts' });
+      }
+    } catch (err: any) {
+      setFeedback({ type: 'error', message: err.message });
+    } finally {
+      setSavingFonts(false);
+    }
+  };
 
   // Upload handler to upload file from local device/studio directly to Supabase Storage
   const uploadMediaFile = async (file: File, folder: string): Promise<string | null> => {
@@ -514,6 +581,19 @@ export default function AdminContentPage() {
         >
           <Sparkles className="w-3.5 h-3.5 text-brand-gold" />
           <span>{isAr ? '8. أنميشن وتطبيق الموبايل (جديد)' : '8. Mobile App & Animations'}</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('fonts')}
+          className={`flex items-center space-x-2 rtl:space-x-reverse px-4 py-3 border-b-2 font-bold transition-colors ${
+            activeTab === 'fonts'
+              ? 'border-brand-gold text-brand-gold bg-brand-charcoal/40 shadow-inner'
+              : 'border-transparent text-brand-cream/60 hover:text-brand-ivory'
+          }`}
+        >
+          <Type className="w-3.5 h-3.5 text-brand-gold" />
+          <span>{isAr ? '9. خطوط المتجر والتايبوجرافي (عربي وإنجليزي)' : '9. Store Fonts & Typography'}</span>
         </button>
       </div>
 
@@ -2710,6 +2790,395 @@ export default function AdminContentPage() {
                 )}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* TAB 8: STORE FONTS & TYPOGRAPHY STUDIO */}
+      {activeTab === 'fonts' && (
+        <div className="space-y-8 animate-fade-in font-sans">
+          {/* Top Banner & Quick Save */}
+          <div className="p-6 bg-brand-charcoal border border-brand-gold/40 rounded-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <div className="flex items-center space-x-2 rtl:space-x-reverse text-brand-gold font-bold text-xs font-mono uppercase tracking-widest">
+                <Type className="w-4 h-4 text-brand-gold" />
+                <span>{isAr ? 'استوديو الخطوط والتايبوجرافي الفاخر' : 'Luxury Typography Studio'}</span>
+                <span className="px-2 py-0.5 rounded-full bg-brand-gold/10 text-brand-gold border border-brand-gold/30 text-[10px]">
+                  Google Fonts 4K
+                </span>
+              </div>
+              <h2 className="text-xl font-serif font-black text-brand-ivory">
+                {isAr ? 'تخصيص وتغيير خطوط المتجر (عربي وإنجليزي)' : 'Customize Storefront Typography (Arabic & English)'}
+              </h2>
+              <p className="text-xs text-brand-cream/70 max-w-2xl leading-relaxed">
+                {isAr
+                  ? 'اختر التوليفة المثالية لعلامتك التجارية من بين 12 خطاً عربياً و 12 خطاً إنجليزياً منتقاة لأشهر دور الأزياء والستريتوير. يتم تطبيق الخطوط فوراً على العناوين والمنتجات والأسعار وزوايا المتجر بالكامل.'
+                  : 'Select your signature font combination from 24 hand-picked streetwear & luxury typefaces. Changes apply instantly across storefront headings, products, and prices.'}
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleSaveFonts}
+              disabled={savingFonts}
+              className="px-6 py-3 bg-brand-gold text-brand-black hover:bg-brand-gold-hover text-xs font-mono font-bold tracking-wider uppercase rounded-xs transition-colors flex items-center justify-center space-x-2 rtl:space-x-reverse shadow-gold disabled:opacity-50 flex-shrink-0"
+            >
+              {savingFonts ? (
+                <RefreshCw className="w-4 h-4 animate-spin" />
+              ) : (
+                <Save className="w-4 h-4" />
+              )}
+              <span>{savingFonts ? (isAr ? 'جاري الحفظ...' : 'Saving...') : (isAr ? 'حفظ وتطبيق الخطوط فوراً' : 'Save & Publish Fonts')}</span>
+            </button>
+          </div>
+
+          {/* REAL-TIME INTERACTIVE TYPOGRAPHY CANVAS */}
+          <div className="border border-brand-gold/50 bg-brand-black rounded-sm p-6 sm:p-8 space-y-6 shadow-2xl relative overflow-hidden">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-brand-border/60 pb-4">
+              <div className="flex items-center space-x-2 rtl:space-x-reverse text-xs font-mono">
+                <Sparkles className="w-4 h-4 text-brand-gold" />
+                <span className="text-brand-gold font-bold uppercase tracking-wider">
+                  {isAr ? 'المعاينة الحية الفورية للخطوط المختارة' : 'Live Interactive Typography Canvas'}
+                </span>
+              </div>
+              <div className="flex flex-wrap items-center gap-2 text-xs font-mono">
+                <span className="px-3 py-1 rounded-xs bg-brand-stone/60 border border-brand-border text-brand-cream/80">
+                  {isAr ? 'الخط العربي الحالي:' : 'Active Arabic:'}{' '}
+                  <strong className="text-brand-gold">{selectedFontAr}</strong>
+                </span>
+                <span className="px-3 py-1 rounded-xs bg-brand-stone/60 border border-brand-border text-brand-cream/80">
+                  {isAr ? 'الخط الإنجليزي الحالي:' : 'Active English:'}{' '}
+                  <strong className="text-brand-gold">{selectedFontEn}</strong>
+                </span>
+              </div>
+            </div>
+
+            {/* Typography Live Demonstration */}
+            <div className="space-y-6">
+              {/* Tagline */}
+              <div
+                style={{ fontFamily: selectedFontEn }}
+                className="text-xs tracking-[0.25em] uppercase text-brand-gold font-semibold"
+              >
+                THE WINTER 2027 ATELIER LAUNCH · 500 GSM STREETWEAR
+              </div>
+
+              {/* Big Arabic H1 */}
+              <h1
+                style={{ fontFamily: selectedFontAr }}
+                className="text-2xl sm:text-4xl lg:text-5xl font-black text-brand-ivory leading-tight tracking-tight"
+              >
+                أثير — معيار جديد لأزياء الستريتوير الشبابية الفاخرة
+              </h1>
+
+              {/* English Subheading */}
+              <h3
+                style={{ fontFamily: selectedFontEn }}
+                className="text-lg sm:text-2xl text-brand-cream/90 font-bold tracking-wide"
+              >
+                HEAVYWEIGHT 500 GSM FABRIC ENGINEERED FOR DAILY LIFE IN EGYPT
+              </h3>
+
+              {/* Arabic Body Paragraph */}
+              <p
+                style={{ fontFamily: selectedFontAr }}
+                className="text-sm sm:text-base text-brand-cream/70 leading-relaxed max-w-3xl"
+              >
+                انطلقت دار أثير في القاهرة لتتحدى الأقمشة الخفيفة والرديئة في السوق. صممنا تصاميم أوفرسايز ذات قوام ثابت وهيكل قوي، وأغطية رأس مزدوجة متماسكة لا تسقط، مع صوف فرنش تيري كثيف يدوم لسنوات دون وبر أو انكماش.
+              </p>
+
+              {/* Live Mock Product Snippet */}
+              <div className="p-4 bg-brand-charcoal/80 border border-brand-border/80 rounded-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <div
+                    style={{ fontFamily: selectedFontAr }}
+                    className="text-base sm:text-lg font-bold text-brand-ivory"
+                  >
+                    هودي أثير بوكسي الثقيل 500 GSM (Onyx Black)
+                  </div>
+                  <div
+                    style={{ fontFamily: selectedFontEn }}
+                    className="text-xs text-brand-gold font-mono font-bold tracking-wider"
+                  >
+                    EGP 1,550 · In Stock (Egypt Delivery with Open Box Inspection)
+                  </div>
+                </div>
+
+                <div className="flex items-center space-x-2 rtl:space-x-reverse">
+                  <button
+                    type="button"
+                    style={{ fontFamily: selectedFontAr }}
+                    className="px-5 py-2.5 bg-brand-gold text-brand-black text-xs font-bold uppercase rounded-xs shadow-gold hover:bg-brand-gold-hover transition-colors"
+                  >
+                    تسوق التشكيلة الآن ←
+                  </button>
+                  <button
+                    type="button"
+                    style={{ fontFamily: selectedFontEn }}
+                    className="px-4 py-2.5 border border-brand-border text-brand-cream text-xs font-bold uppercase rounded-xs hover:border-brand-gold transition-colors"
+                  >
+                    QUICK VIEW
+                  </button>
+                </div>
+              </div>
+
+              {/* Freeform Live Tester Input */}
+              <div className="pt-2 border-t border-brand-border/40 space-y-2">
+                <label className="block text-xs font-mono text-brand-cream/60">
+                  {isAr ? '✍️ اكتب أي عبارة أو جملة مخصصة هنا لتجربتها بالخطين المحددين فوراً:' : '✍️ Test your own custom phrase:'}
+                </label>
+                <input
+                  type="text"
+                  value={customFontSample}
+                  onChange={(e) => setCustomFontSample(e.target.value)}
+                  placeholder={isAr ? 'مثال: هودي أسود أوفرسايز مطرز بقطن مصري أصيل...' : 'e.g. Signature Boxy Oversized Hoodie...'}
+                  className="w-full bg-brand-stone/40 border border-brand-border px-3 py-2 text-brand-ivory text-xs rounded-xs font-mono focus:border-brand-gold focus:outline-none"
+                />
+                {customFontSample.trim() && (
+                  <div className="p-4 bg-brand-stone/20 border border-brand-gold/30 rounded-xs space-y-3 mt-2">
+                    <div>
+                      <span className="text-[10px] text-brand-gold font-mono uppercase block mb-1">
+                        {isAr ? `بالخط العربي (${selectedFontAr}):` : `Arabic (${selectedFontAr}):`}
+                      </span>
+                      <p style={{ fontFamily: selectedFontAr }} className="text-xl font-bold text-brand-ivory">
+                        {customFontSample}
+                      </p>
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-brand-gold font-mono uppercase block mb-1">
+                        {isAr ? `بالخط الإنجليزي (${selectedFontEn}):` : `English (${selectedFontEn}):`}
+                      </span>
+                      <p style={{ fontFamily: selectedFontEn }} className="text-xl font-bold text-brand-ivory">
+                        {customFontSample}
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* TWO COLUMNS: ARABIC & ENGLISH FONT CHOOSERS */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* COLUMN 1: ARABIC FONTS */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between border-b border-brand-border/80 pb-3">
+                <div className="flex items-center space-x-2 rtl:space-x-reverse">
+                  <div className="w-2.5 h-2.5 rounded-full bg-brand-gold" />
+                  <h3 className="text-lg font-serif font-black text-brand-ivory">
+                    {isAr ? 'الخطوط العربية المنتقاة (12 خياراً)' : 'Curated Arabic Typefaces (12 Options)'}
+                  </h3>
+                </div>
+                <span className="text-[11px] font-mono text-brand-gold font-bold">
+                  {selectedFontAr}
+                </span>
+              </div>
+
+              {/* Category Filter Pills */}
+              <div className="flex flex-wrap gap-1.5 text-[11px] font-mono">
+                {[
+                  { id: 'all', label: isAr ? 'الكل (12)' : 'All (12)' },
+                  { id: 'streetwear', label: isAr ? 'ستريتوير وهندسي' : 'Streetwear' },
+                  { id: 'luxury', label: isAr ? 'فخامة هادئة' : 'Luxury' },
+                  { id: 'modern', label: isAr ? 'مودرن مريح' : 'Modern' },
+                  { id: 'classic', label: isAr ? 'كلاسيكي وتراثي' : 'Classic' },
+                ].map((f) => (
+                  <button
+                    key={f.id}
+                    type="button"
+                    onClick={() => setFontFilterAr(f.id)}
+                    className={`px-2.5 py-1 rounded-xs border transition-colors ${
+                      fontFilterAr === f.id
+                        ? 'bg-brand-gold text-brand-black border-brand-gold font-bold'
+                        : 'bg-brand-stone/40 border-brand-border text-brand-cream/60 hover:text-brand-ivory'
+                    }`}
+                  >
+                    {f.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Font Cards Grid */}
+              <div className="space-y-3 max-h-[720px] overflow-y-auto pr-1 rtl:pr-0 rtl:pl-1">
+                {ARABIC_FONTS.filter((font) => fontFilterAr === 'all' || font.category === fontFilterAr).map((font) => {
+                  const isSelected = selectedFontAr === font.name;
+                  return (
+                    <div
+                      key={font.name}
+                      onClick={() => setSelectedFontAr(font.name)}
+                      className={`p-4 rounded-xs border transition-all cursor-pointer relative ${
+                        isSelected
+                          ? 'bg-brand-stone/60 border-brand-gold shadow-gold-sm ring-1 ring-brand-gold'
+                          : 'bg-brand-charcoal/60 border-brand-border/70 hover:border-brand-gold/40 hover:bg-brand-stone/30'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between gap-2 mb-2">
+                        <div className="flex items-center space-x-2 rtl:space-x-reverse">
+                          <span className="font-bold text-sm text-brand-ivory font-mono">
+                            {font.name}
+                          </span>
+                          <span className="text-[10px] font-mono text-brand-gold bg-brand-gold/10 border border-brand-gold/30 px-2 py-0.5 rounded-xs">
+                            {font.categoryAr}
+                          </span>
+                        </div>
+                        {isSelected ? (
+                          <span className="flex items-center space-x-1 rtl:space-x-reverse text-xs font-mono font-bold text-brand-gold">
+                            <Check className="w-4 h-4" />
+                            <span>{isAr ? 'مُحدد حالياً' : 'Active'}</span>
+                          </span>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedFontAr(font.name);
+                            }}
+                            className="text-[11px] font-mono text-brand-cream/50 hover:text-brand-gold"
+                          >
+                            {isAr ? 'اختيار' : 'Select'}
+                          </button>
+                        )}
+                      </div>
+
+                      <p className="text-[11px] text-brand-cream/60 font-sans mb-3 leading-relaxed">
+                        {font.descriptionAr}
+                      </p>
+
+                      {/* Font Sample Rendered in this specific font */}
+                      <div className="p-3 bg-brand-black/70 border border-brand-border/60 rounded-xs">
+                        <p
+                          style={{ fontFamily: font.name }}
+                          className="text-base font-bold text-brand-ivory leading-snug"
+                        >
+                          {font.sampleAr}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* COLUMN 2: ENGLISH FONTS */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between border-b border-brand-border/80 pb-3">
+                <div className="flex items-center space-x-2 rtl:space-x-reverse">
+                  <div className="w-2.5 h-2.5 rounded-full bg-brand-gold" />
+                  <h3 className="text-lg font-serif font-black text-brand-ivory">
+                    {isAr ? 'الخطوط الإنجليزية المنتقاة (12 خياراً)' : 'Curated English Typefaces (12 Options)'}
+                  </h3>
+                </div>
+                <span className="text-[11px] font-mono text-brand-gold font-bold">
+                  {selectedFontEn}
+                </span>
+              </div>
+
+              {/* Category Filter Pills */}
+              <div className="flex flex-wrap gap-1.5 text-[11px] font-mono">
+                {[
+                  { id: 'all', label: isAr ? 'الكل (12)' : 'All (12)' },
+                  { id: 'luxury', label: isAr ? 'فخامة ملكية وأزياء' : 'Luxury & Editorial' },
+                  { id: 'streetwear', label: isAr ? 'ستريتوير باريسي وعمودي' : 'Streetwear & Bold' },
+                  { id: 'modern', label: isAr ? 'مودرن وصناعي' : 'Modern & Industrial' },
+                ].map((f) => (
+                  <button
+                    key={f.id}
+                    type="button"
+                    onClick={() => setFontFilterEn(f.id)}
+                    className={`px-2.5 py-1 rounded-xs border transition-colors ${
+                      fontFilterEn === f.id
+                        ? 'bg-brand-gold text-brand-black border-brand-gold font-bold'
+                        : 'bg-brand-stone/40 border-brand-border text-brand-cream/60 hover:text-brand-ivory'
+                    }`}
+                  >
+                    {f.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Font Cards Grid */}
+              <div className="space-y-3 max-h-[720px] overflow-y-auto pr-1 rtl:pr-0 rtl:pl-1">
+                {ENGLISH_FONTS.filter((font) => fontFilterEn === 'all' || font.category === fontFilterEn).map((font) => {
+                  const isSelected = selectedFontEn === font.name;
+                  return (
+                    <div
+                      key={font.name}
+                      onClick={() => setSelectedFontEn(font.name)}
+                      className={`p-4 rounded-xs border transition-all cursor-pointer relative ${
+                        isSelected
+                          ? 'bg-brand-stone/60 border-brand-gold shadow-gold-sm ring-1 ring-brand-gold'
+                          : 'bg-brand-charcoal/60 border-brand-border/70 hover:border-brand-gold/40 hover:bg-brand-stone/30'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between gap-2 mb-2">
+                        <div className="flex items-center space-x-2 rtl:space-x-reverse">
+                          <span className="font-bold text-sm text-brand-ivory font-mono">
+                            {font.name}
+                          </span>
+                          <span className="text-[10px] font-mono text-brand-gold bg-brand-gold/10 border border-brand-gold/30 px-2 py-0.5 rounded-xs">
+                            {font.categoryAr}
+                          </span>
+                        </div>
+                        {isSelected ? (
+                          <span className="flex items-center space-x-1 rtl:space-x-reverse text-xs font-mono font-bold text-brand-gold">
+                            <Check className="w-4 h-4" />
+                            <span>{isAr ? 'مُحدد حالياً' : 'Active'}</span>
+                          </span>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedFontEn(font.name);
+                            }}
+                            className="text-[11px] font-mono text-brand-cream/50 hover:text-brand-gold"
+                          >
+                            {isAr ? 'اختيار' : 'Select'}
+                          </button>
+                        )}
+                      </div>
+
+                      <p className="text-[11px] text-brand-cream/60 font-sans mb-3 leading-relaxed">
+                        {font.descriptionAr}
+                      </p>
+
+                      {/* Font Sample Rendered in this specific font */}
+                      <div className="p-3 bg-brand-black/70 border border-brand-border/60 rounded-xs">
+                        <p
+                          style={{ fontFamily: font.name }}
+                          className="text-base font-bold text-brand-ivory leading-snug tracking-wide"
+                        >
+                          {font.sampleEn}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom Save Action */}
+          <div className="pt-6 border-t border-brand-border/60 flex items-center justify-between">
+            <span className="text-xs font-mono text-brand-cream/60">
+              {isAr
+                ? '💡 عند حفظ الخطوط، سيتم تحديث كامل شاشات المتجر، السلة، صفحات الهوديز، والأسعار تلقائياً.'
+                : '💡 Saving will update the entire storefront, checkout, and cart typography instantly.'}
+            </span>
+
+            <button
+              type="button"
+              onClick={handleSaveFonts}
+              disabled={savingFonts}
+              className="px-8 py-3 bg-brand-gold text-brand-black hover:bg-brand-gold-hover text-xs font-mono font-bold tracking-wider uppercase rounded-xs transition-colors flex items-center space-x-2 rtl:space-x-reverse shadow-gold disabled:opacity-50"
+            >
+              {savingFonts ? (
+                <RefreshCw className="w-4 h-4 animate-spin" />
+              ) : (
+                <Save className="w-4 h-4" />
+              )}
+              <span>{savingFonts ? (isAr ? 'جاري الحفظ...' : 'Saving...') : (isAr ? 'حفظ ونشر الخطوط للمتجر' : 'Save & Publish Fonts')}</span>
+            </button>
           </div>
         </div>
       )}
