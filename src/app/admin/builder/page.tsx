@@ -641,7 +641,82 @@ export default function VisualBuilderPage() {
               </div>
             )}
 
-            {!['hero', 'offers', 'story'].includes(activeSection?.id || '') && (
+            {activeSection?.id === 'categories' && (
+              <div className="space-y-4 text-xs font-mono">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-brand-cream/80 mb-1">
+                      {isAr ? 'العنوان الرئيسي للقسم (عربي)' : 'Categories Title (Arabic)'}
+                    </label>
+                    <input
+                      type="text"
+                      value={content.categoriesTitleAr || ''}
+                      onChange={(e) => setContent({ ...content, categoriesTitleAr: e.target.value })}
+                      placeholder="خزانة الستريتوير الشبابية الفاخرة"
+                      className="w-full bg-brand-stone/40 border border-brand-border px-3 py-2 text-brand-ivory rounded-xs text-right focus:border-brand-gold focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-brand-cream/80 mb-1">
+                      {isAr ? 'الشارة العلوية - بجانب اللهب (عربي)' : 'Badge Tag (Arabic)'}
+                    </label>
+                    <input
+                      type="text"
+                      value={content.categoriesSubtitleAr || ''}
+                      onChange={(e) => setContent({ ...content, categoriesSubtitleAr: e.target.value })}
+                      placeholder="فئات الإطلاق الرسمي"
+                      className="w-full bg-brand-stone/40 border border-brand-border px-3 py-2 text-brand-ivory rounded-xs text-right focus:border-brand-gold focus:outline-none"
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-brand-cream/80 mb-1">
+                      {isAr ? 'الوصف التوضيحي للقسم (عربي)' : 'Description (Arabic)'}
+                    </label>
+                    <textarea
+                      rows={2}
+                      value={content.categoriesDescriptionAr || ''}
+                      onChange={(e) => setContent({ ...content, categoriesDescriptionAr: e.target.value })}
+                      className="w-full bg-brand-stone/40 border border-brand-border px-3 py-2 text-brand-ivory rounded-xs text-right focus:border-brand-gold focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                {/* Cards Preview & Direct link to upload pictures */}
+                <div className="border-t border-brand-border/60 pt-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[11px] font-bold text-brand-ivory">
+                      {isAr ? 'بطاقات التشكيلات الأربعة الحالية:' : 'Showcase Cards (4 Items):'}
+                    </span>
+                    <a
+                      href="/admin/content?tab=categories"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[10px] text-brand-gold hover:underline flex items-center gap-1 font-bold"
+                    >
+                      <span>{isAr ? 'رفع صور جديدة أو تعديل البطاقات بالكامل ←' : 'Upload Images & Full Cards Editor →'}</span>
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    {(content.categories || []).map((cat: any, idx: number) => (
+                      <div key={cat.id || idx} className="bg-brand-black/60 border border-brand-border p-2 rounded-xs flex items-center gap-2">
+                        {cat.image ? (
+                          <img src={cat.image} alt="" className="w-9 h-9 object-cover rounded-xs border border-brand-border flex-shrink-0" />
+                        ) : (
+                          <div className="w-9 h-9 bg-brand-stone/50 rounded-xs flex-shrink-0" />
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <div className="text-[11px] font-bold text-brand-ivory truncate">{isAr ? cat.titleAr : cat.titleEn}</div>
+                          <div className="text-[9px] text-brand-gold truncate">{isAr ? cat.tagAr : cat.tagEn}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {!['hero', 'offers', 'story', 'categories'].includes(activeSection?.id || '') && (
               <div className="py-6 text-center text-xs font-mono text-brand-cream/60">
                 <Sparkles className="w-5 h-5 mx-auto mb-2 text-brand-gold animate-pulse" />
                 <p>{isAr ? 'هذا القسم مهيأ تلقائياً بالكتالوج والبيانات الحية للمتجر.' : 'This section automatically pulls live store data.'}</p>

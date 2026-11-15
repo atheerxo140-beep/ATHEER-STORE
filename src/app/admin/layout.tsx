@@ -244,6 +244,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const menuItems = [
     { labelEn: 'Overview', labelAr: 'لوحة التحكم', href: '/admin', icon: LayoutDashboard },
     { labelEn: 'Visual Builder', labelAr: 'المحرر المرئي للمتجر', href: '/admin/builder', icon: Layout, badge: 'NEW' },
+    { labelEn: 'Storefront CMS & Media', labelAr: 'محتوى وصور الواجهة', href: '/admin/content', icon: ImageIcon },
     { labelEn: 'Store Pages', labelAr: 'صفحات المتجر والسياسات', href: '/admin/pages', icon: FileText },
     { labelEn: 'Products', labelAr: 'المنتجات والهوديز', href: '/admin/products', icon: Package },
     { labelEn: 'Categories', labelAr: 'تصنيفات الكتالوج', href: '/admin/categories', icon: Layers },
@@ -258,7 +259,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { labelEn: 'Staff & Roles', labelAr: 'فريق العمل والصلاحيات', href: '/admin/staff', icon: Users },
     { labelEn: 'Subscribers', labelAr: 'المشتركين بالنشرة', href: '/admin/subscribers', icon: Mail },
     { labelEn: 'Audit Logs', labelAr: 'سجل العمليات الإدارية', href: '/admin/audit-logs', icon: ShieldCheck },
-    { labelEn: 'Storefront CMS', labelAr: 'تعديل نصوص الواجهة', href: '/admin/content', icon: ImageIcon },
     { labelEn: 'Store Settings', labelAr: 'إعدادات المتجر العامة', href: '/admin/settings', icon: Settings },
   ];
 

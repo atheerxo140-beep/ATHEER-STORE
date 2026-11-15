@@ -145,6 +145,29 @@ export default function AdminCategoriesPage() {
         </button>
       </div>
 
+      {/* Helpful Directional Banner for Homepage Showcase vs Catalog Taxonomy */}
+      <div className="bg-brand-stone/30 border border-brand-gold/40 rounded-sm p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs animate-fade-in">
+        <div className="flex items-start gap-3">
+          <Sparkles className="w-4 h-4 text-brand-gold flex-shrink-0 mt-0.5" />
+          <div className="text-brand-cream/90 leading-relaxed font-sans">
+            <span className="font-bold text-brand-gold">
+              {isAr ? 'هل تبحث عن التحكم في قسم (خزانة الستريتوير الشبابية الفاخرة) وصور الواجهة الرئيسية؟' : 'Looking to control the Homepage Showcase section & images?'}
+            </span>
+            <p className="text-brand-cream/70 text-[11px] mt-0.5">
+              {isAr
+                ? 'هذه الصفحة مخصصة فقط لتصنيفات الكتالوج وفلاتر المنتجات. للتحكم في بطاقات التشكيلات الأربعة المعروضة بالصفحة الرئيسية مع صورها ونصوصها:'
+                : 'This page configures product catalog taxonomy. To edit the 4 homepage showcase cards, images, and headlines:'}
+            </p>
+          </div>
+        </div>
+        <a
+          href="/admin/content?tab=categories"
+          className="flex-shrink-0 px-3.5 py-1.5 bg-brand-gold text-brand-black text-[11px] font-mono font-bold hover:bg-brand-gold-hover transition-colors rounded-xs shadow-gold whitespace-nowrap"
+        >
+          {isAr ? 'تعديل بطاقات وصور الواجهة ←' : 'Edit Homepage Cards →'}
+        </a>
+      </div>
+
       {feedback && (
         <div
           className={`p-3.5 rounded-xs border text-xs font-mono flex items-center justify-between ${

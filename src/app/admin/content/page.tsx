@@ -101,6 +101,16 @@ export default function AdminContentPage() {
 
   useEffect(() => {
     fetchContent();
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const tabParam = urlParams.get('tab');
+      if (
+        tabParam &&
+        ['sections', 'offers', 'hero', 'categories', 'story', 'future', 'features', 'animations'].includes(tabParam)
+      ) {
+        setActiveTab(tabParam as any);
+      }
+    }
   }, []);
 
   // Upload handler to upload file from local device/studio directly to Supabase Storage
@@ -451,7 +461,7 @@ export default function AdminContentPage() {
           }`}
         >
           <Layers className="w-3.5 h-3.5" />
-          <span>{isAr ? '4. بطاقات الفئات (4 فئات)' : '4. Category Cards'}</span>
+          <span>{isAr ? '4. خزانة الستريتوير والبطاقات الأربعة (فئات الإطلاق)' : '4. Category Showcase & 4 Cards'}</span>
         </button>
 
         <button
@@ -1673,6 +1683,21 @@ export default function AdminContentPage() {
       {/* TAB 2: CATEGORY CARDS */}
       {activeTab === 'categories' && (
         <div className="space-y-8 animate-fade-in">
+          {/* Informative Help Banner */}
+          <div className="bg-brand-stone/30 border border-brand-gold/40 rounded-sm p-4 flex items-start gap-3">
+            <Flame className="w-5 h-5 text-brand-gold flex-shrink-0 mt-0.5" />
+            <div className="text-xs space-y-1">
+              <div className="font-bold text-brand-gold">
+                {isAr ? 'التحكم في قسم (خزانة الستريتوير الشبابية الفاخرة) والبطاقات الأربعة على الواجهة' : 'Homepage Category Showcase Control'}
+              </div>
+              <p className="text-brand-cream/80 leading-relaxed font-sans">
+                {isAr
+                  ? 'من هنا يمكنك تعديل الشارة العلوية (فئات الإطلاق الرسمي)، العنوان الرئيسي، والوصف التوضيحي، بالإضافة إلى رفع وتغيير صور الهوديز والكرو نيك والورشة والإصدار القادم، وتعديل نصوصها أو روابطها.'
+                  : 'Customize the flame badge, section title, description, and the 4 showcase cards with custom images and text.'}
+              </p>
+            </div>
+          </div>
+
           {/* Section Headings */}
           <div className="bg-brand-charcoal border border-brand-border/80 rounded-sm p-6 space-y-4">
             <div className="text-sm font-bold text-brand-ivory">
@@ -1680,6 +1705,32 @@ export default function AdminContentPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-mono text-brand-cream/70 mb-1">
+                  {isAr ? 'الشارة العلوية بالعربية (بجانب شعلة اللهب - الافتراضي: فئات الإطلاق الرسمي)' : 'Arabic Badge Subtitle'}
+                </label>
+                <input
+                  type="text"
+                  value={content.categoriesSubtitleAr || ''}
+                  onChange={(e) => setContent({ ...content, categoriesSubtitleAr: e.target.value })}
+                  placeholder="فئات الإطلاق الرسمي"
+                  className="w-full bg-brand-black border border-brand-border px-3 py-2 text-sm text-brand-ivory rounded-sm focus:border-brand-gold focus:outline-none text-right font-sans"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-mono text-brand-cream/70 mb-1">
+                  {isAr ? 'الشارة العلوية بالإنجليزية' : 'English Badge Subtitle'}
+                </label>
+                <input
+                  type="text"
+                  value={content.categoriesSubtitleEn || ''}
+                  onChange={(e) => setContent({ ...content, categoriesSubtitleEn: e.target.value })}
+                  placeholder="Launch Collection Categories"
+                  className="w-full bg-brand-black border border-brand-border px-3 py-2 text-sm text-brand-ivory rounded-sm focus:border-brand-gold focus:outline-none font-sans"
+                />
+              </div>
+
               <div>
                 <label className="block text-xs font-mono text-brand-cream/70 mb-1">
                   {isAr ? 'العنوان الرئيسي بالعربية (الافتراضي: خزانة الستريتوير الشبابية الفاخرة)' : 'Arabic Title'}
