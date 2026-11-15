@@ -98,6 +98,29 @@ export function deletePromotion(id: string): boolean {
   return false;
 }
 
+export function syncPromoCodeStatus(code: string, isActive: boolean, isDeleted = false): void {
+  if (!code) return;
+  const clean = code.trim().toUpperCase();
+  const promos = readPromotions();
+  if (isDeleted) {
+    const filtered = promos.filter((p) => p.code?.toUpperCase() !== clean);
+    if (filtered.length !== promos.length) {
+      writePromotions(filtered);
+    }
+  } else {
+    let modified = false;
+    for (const p of promos) {
+      if (p.code?.toUpperCase() === clean) {
+        p.isActive = isActive;
+        modified = true;
+      }
+    }
+    if (modified) {
+      writePromotions(promos);
+    }
+  }
+}
+
 export interface PromotionEvaluationResult {
   appliedDiscount: number;
   promoCode?: string;

@@ -1,5 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAllCoupons, createCoupon, toggleCouponActive, deleteCoupon } from '@/data/couponsStore';
+import {
+  getAllCoupons,
+  createCoupon,
+  toggleCouponActive,
+  deleteCoupon,
+  clearAllCoupons,
+  toggleAllCoupons,
+  resetDefaultCoupons,
+} from '@/data/couponsStore';
 import { verifyAdminRequest } from '@/lib/adminAuth';
 
 export const dynamic = 'force-dynamic';
@@ -13,6 +21,7 @@ export async function GET(req: NextRequest) {
   const coupons = getAllCoupons();
   return NextResponse.json({
     success: true,
+    count: coupons.length,
     coupons,
   });
 }
@@ -57,10 +66,38 @@ export async function PUT(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { id } = body;
 
+    // Batch Actions
+    if (body.action === 'deactivate_all') {
+      const updated = toggleAllCoupons(false);
+      return NextResponse.json({
+        success: true,
+        message: 'All coupons deactivated successfully.',
+        coupons: updated,
+      });
+    }
+
+    if (body.action === 'activate_all') {
+      const updated = toggleAllCoupons(true);
+      return NextResponse.json({
+        success: true,
+        message: 'All coupons activated successfully.',
+        coupons: updated,
+      });
+    }
+
+    if (body.action === 'reset_defaults') {
+      const updated = resetDefaultCoupons();
+      return NextResponse.json({
+        success: true,
+        message: 'Default coupons restored successfully.',
+        coupons: updated,
+      });
+    }
+
+    const { id } = body;
     if (!id) {
-      return NextResponse.json({ success: false, error: 'Coupon ID is required.' }, { status: 400 });
+      return NextResponse.json({ success: false, error: 'Coupon ID or action is required.' }, { status: 400 });
     }
 
     const toggled = toggleCouponActive(id);
@@ -83,6 +120,16 @@ export async function DELETE(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');
+    const all = searchParams.get('all');
+
+    // Wipe all coupons
+    if (all === 'true') {
+      clearAllCoupons();
+      return NextResponse.json({
+        success: true,
+        message: 'All coupons deleted successfully.',
+      });
+    }
 
     if (!id) {
       return NextResponse.json({ success: false, error: 'Coupon ID is required.' }, { status: 400 });

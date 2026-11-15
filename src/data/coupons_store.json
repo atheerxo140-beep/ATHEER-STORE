@@ -6,9 +6,9 @@
     "discountValue": 10,
     "minOrderAmount": 1000,
     "usageLimit": 500,
-    "timesUsed": 42,
+    "timesUsed": 0,
     "isActive": true,
-    "createdAt": "2026-11-14T21:33:26.838Z"
+    "createdAt": "2026-11-15T04:03:31.629Z"
   },
   {
     "id": "coup-02",
@@ -17,9 +17,9 @@
     "discountValue": 15,
     "minOrderAmount": 1400,
     "usageLimit": 500,
-    "timesUsed": 24,
+    "timesUsed": 0,
     "isActive": true,
-    "createdAt": "2026-11-14T21:33:26.839Z"
+    "createdAt": "2026-11-15T04:03:31.630Z"
   },
   {
     "id": "coup-03",
@@ -28,9 +28,9 @@
     "discountValue": 100,
     "minOrderAmount": 1000,
     "usageLimit": 1000,
-    "timesUsed": 67,
+    "timesUsed": 0,
     "isActive": true,
-    "createdAt": "2026-11-14T21:33:26.839Z"
+    "createdAt": "2026-11-15T04:03:31.630Z"
   },
   {
     "id": "coup-04",
@@ -39,8 +39,8 @@
     "discountValue": 15,
     "minOrderAmount": 1500,
     "usageLimit": 200,
-    "timesUsed": 19,
+    "timesUsed": 0,
     "isActive": true,
-    "createdAt": "2026-11-14T21:33:26.839Z"
+    "createdAt": "2026-11-15T04:03:31.630Z"
   }
 ]
