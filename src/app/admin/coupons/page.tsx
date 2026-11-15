@@ -43,7 +43,7 @@ export default function AdminCouponsPage() {
   const [submitting, setSubmitting] = useState(false);
 
   const fetchCoupons = async () => {
-    setLoading(true);
+    if (coupons.length === 0) setLoading(true);
     try {
       const res = await adminFetch('/api/admin/coupons');
       const data = await res.json();
@@ -220,7 +220,7 @@ export default function AdminCouponsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-brand-border/40 text-xs font-mono">
-              {loading ? (
+              {loading && coupons.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="py-12 text-center text-brand-cream/50">
                     <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-brand-gold" />

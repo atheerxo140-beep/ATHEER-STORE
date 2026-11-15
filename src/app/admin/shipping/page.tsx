@@ -31,7 +31,7 @@ export default function AdminShippingPage() {
   const [saving, setSaving] = useState(false);
 
   const fetchShippingZones = async () => {
-    setLoading(true);
+    if (zones.length === 0) setLoading(true);
     try {
       const res = await adminFetch('/api/admin/shipping');
       const data = await res.json();
@@ -177,7 +177,7 @@ export default function AdminShippingPage() {
 
       {/* Zones List */}
       <div className="space-y-4">
-        {loading ? (
+        {loading && zones.length === 0 ? (
           <div className="bg-brand-charcoal border border-brand-border/80 p-12 text-center text-brand-cream/50 font-mono text-xs">
             <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-brand-gold" />
             {isAr ? 'جاري تحميل مناطق الشحن...' : 'Loading shipping zones...'}

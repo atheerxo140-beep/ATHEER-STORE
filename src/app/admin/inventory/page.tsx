@@ -63,7 +63,7 @@ export default function AdminInventoryPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const fetchInventory = async () => {
-    setLoading(true);
+    if (items.length === 0) setLoading(true);
     try {
       const res = await adminFetch('/api/admin/inventory');
       const data = await res.json();
@@ -280,7 +280,7 @@ export default function AdminInventoryPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-brand-border/40 text-xs font-mono">
-              {loading ? (
+              {loading && items.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="py-12 text-center text-brand-cream/50">
                     <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-brand-gold" />

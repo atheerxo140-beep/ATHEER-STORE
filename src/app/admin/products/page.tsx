@@ -127,7 +127,7 @@ export default function AdminProductsPage() {
   const [newColorInput, setNewColorInput] = useState('');
 
   const fetchProducts = async () => {
-    setLoading(true);
+    if (products.length === 0) setLoading(true);
     try {
       const res = await adminFetch('/api/admin/products', {
         cache: 'no-store',
@@ -428,7 +428,7 @@ export default function AdminProductsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-brand-border/40 text-xs">
-              {loading ? (
+              {loading && filteredProducts.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="py-12 text-center text-brand-cream/50 font-mono">
                     <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-brand-gold" />
