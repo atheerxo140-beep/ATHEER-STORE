@@ -37,7 +37,7 @@ export async function GET(req: NextRequest) {
     },
     ADMIN_EMAIL: {
       configured: Boolean(process.env.ADMIN_EMAIL),
-      value: process.env.ADMIN_EMAIL || 'yassinanwar140@gmail.com',
+      value: process.env.ADMIN_EMAIL || 'atheerxo140@gmail.com',
     },
     ADMIN_PASSWORD_HASH: {
       configured: Boolean(adminPasswordHash),

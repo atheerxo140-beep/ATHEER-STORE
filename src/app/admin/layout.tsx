@@ -79,7 +79,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     configured: false,
     connected: false,
   });
-  const [adminEmail, setAdminEmail] = useState<string>('yassinanwar140@gmail.com');
+  const [adminEmail, setAdminEmail] = useState<string>('atheerxo140@gmail.com');
 
   // Real-time Notification State
   const [notifications, setNotifications] = useState<any[]>([]);
