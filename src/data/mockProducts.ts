@@ -490,9 +490,33 @@ export const deleteProduct = async (id: string): Promise<boolean> => {
   if (isSupabaseConfigured()) {
     const supabase = getSupabaseServer();
     if (supabase) {
+      // 1. First attempt to hard delete the product
       const { error } = await supabase.from('products').delete().eq('id', id);
       if (error) {
-        throw new Error(`Supabase product delete failed: ${error.message}`);
+        // 2. If product is linked to customer orders (foreign key constraint in order_items),
+        // gracefully archive/soft-delete it so it is permanently removed from the storefront
+        // and admin catalog without breaking past order records and receipts.
+        if (
+          error.code === '23503' ||
+          error.message?.includes('foreign key constraint') ||
+          error.message?.includes('order_items')
+        ) {
+          const { error: archiveErr } = await supabase
+            .from('products')
+            .update({ is_active: false })
+            .eq('id', id);
+
+          await supabase
+            .from('product_variants')
+            .update({ is_active: false })
+            .eq('product_id', id);
+
+          if (archiveErr) {
+            throw new Error(`Supabase product archive failed: ${archiveErr.message}`);
+          }
+        } else {
+          throw new Error(`Supabase product delete failed: ${error.message}`);
+        }
       }
     }
   }
