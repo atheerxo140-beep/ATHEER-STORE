@@ -85,7 +85,7 @@ export const Hero: React.FC = () => {
         {content.showHeroChips === true && (
           <div className="mt-8 flex flex-wrap items-center justify-center gap-2 sm:gap-3 text-[11px] font-mono text-brand-gold uppercase tracking-wider">
             <span className="px-3 py-1 bg-brand-charcoal/90 border border-brand-gold/40">
-              {language === 'ar' ? 'مواصفات النسيج: 500 GSM' : 'Fabric: 500 GSM Spec Fleece'}
+              {language === 'ar' ? 'مواصفات النسيج: ٥٠٠ جم/م²' : 'Fabric: 500 GSM Spec Fleece'}
             </span>
             <span className="px-3 py-1 bg-brand-charcoal/90 border border-brand-border">
               {language === 'ar' ? 'قصّة: بوكسي أكتاف ساقطة' : 'Fit: Drop-Shoulder Boxy'}

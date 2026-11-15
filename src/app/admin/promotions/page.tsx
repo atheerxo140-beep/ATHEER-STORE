@@ -93,6 +93,43 @@ export default function AdminPromotionsPage() {
     setShowModal(true);
   };
 
+  const getPromoTypeLabel = (promoType: string) => {
+    const norm = (promoType || '').toLowerCase().trim();
+    if (isAr) {
+      switch (norm) {
+        case 'bundle_items':
+        case 'bundle':
+          return 'باندل قطع';
+        case 'percentage':
+        case 'percent':
+          return 'نسبة مئوية';
+        case 'fixed_amount':
+        case 'fixed':
+          return 'مبلغ ثابت';
+        case 'free_shipping':
+          return 'شحن مجاني';
+        default:
+          return promoType;
+      }
+    } else {
+      switch (norm) {
+        case 'bundle_items':
+        case 'bundle':
+          return 'Bundle Items';
+        case 'percentage':
+        case 'percent':
+          return 'Percentage';
+        case 'fixed_amount':
+        case 'fixed':
+          return 'Fixed Amount';
+        case 'free_shipping':
+          return 'Free Shipping';
+        default:
+          return promoType;
+      }
+    }
+  };
+
   const handleSavePromo = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
@@ -342,12 +379,12 @@ export default function AdminPromotionsPage() {
                       <span className="text-brand-cream/40 text-[11px]">—</span>
                     )}
                     <span className="px-2 py-0.5 bg-brand-gold/10 text-brand-gold border border-brand-gold/30 rounded-xs font-bold">
-                      {p.type === 'fixed_amount' ? `${p.discountValue} ج.م` : `${p.discountValue}%`}
+                      {(p.type || '').toLowerCase() === 'fixed_amount' ? (isAr ? `${p.discountValue} ج.م` : `${p.discountValue} EGP`) : `${p.discountValue}%`}
                     </span>
                   </div>
 
                   <div className="text-[11px] text-brand-cream/60">
-                    {p.minItemsRequired ? `${p.minItemsRequired} قطع` : ''} {p.minSpendEgp ? `| ${p.minSpendEgp} ج.م` : ''}
+                    {p.minItemsRequired ? (isAr ? `${p.minItemsRequired} قطع` : `${p.minItemsRequired} items`) : ''} {p.minSpendEgp ? (isAr ? `| ${p.minSpendEgp} ج.م` : `| ${p.minSpendEgp} EGP`) : ''}
                   </div>
                 </div>
 
@@ -407,19 +444,19 @@ export default function AdminPromotionsPage() {
                       )}
                     </td>
                     <td className="py-3 px-3 text-center text-[10px] uppercase text-brand-cream/70">
-                      {p.type}
+                      {getPromoTypeLabel(p.type)}
                     </td>
                     <td className="py-3 px-3 text-center font-bold text-brand-gold">
-                      {p.type === 'fixed_amount' ? `${p.discountValue} ج.م` : `${p.discountValue}%`}
+                      {(p.type || '').toLowerCase() === 'fixed_amount' ? (isAr ? `${p.discountValue} ج.م` : `${p.discountValue} EGP`) : `${p.discountValue}%`}
                     </td>
                     <td className="py-3 px-3 text-center text-[10px] text-brand-cream/60">
-                      {p.minItemsRequired ? `${p.minItemsRequired} قطع` : ''} {p.minSpendEgp ? `| ${p.minSpendEgp} ج.م` : ''}
+                      {p.minItemsRequired ? (isAr ? `${p.minItemsRequired} قطع` : `${p.minItemsRequired} items`) : ''} {p.minSpendEgp ? (isAr ? `| ${p.minSpendEgp} ج.م` : `| ${p.minSpendEgp} EGP`) : ''}
                     </td>
                     <td className="py-3 px-3 text-center">
                       {p.isAutomatic ? (
-                        <span className="text-emerald-400 font-bold text-[10px]">نعم (تلقائي)</span>
+                        <span className="text-emerald-400 font-bold text-[10px]">{isAr ? 'نعم (تلقائي)' : 'Yes (Auto)'}</span>
                       ) : (
-                        <span className="text-brand-cream/40 text-[10px]">بالكوبون</span>
+                        <span className="text-brand-cream/40 text-[10px]">{isAr ? 'بالكوبون' : 'Coupon'}</span>
                       )}
                     </td>
                     <td className="py-3 px-3 text-center">
@@ -520,10 +557,10 @@ export default function AdminPromotionsPage() {
                   onChange={(e) => setType(e.target.value)}
                   className="w-full bg-brand-stone/40 border border-brand-border/80 text-brand-ivory text-xs px-3 py-2 rounded-xs font-mono"
                 >
-                  <option value="bundle_items">باندل قطع متعددة (Multi-Item)</option>
-                  <option value="percentage">نسبة مئوية (%)</option>
-                  <option value="fixed_amount">مبلغ كاش ثابت (EGP)</option>
-                  <option value="free_shipping">شحن مجاني</option>
+                  <option value="bundle_items">{isAr ? 'باندل قطع متعددة' : 'Multi-Item Bundle'}</option>
+                  <option value="percentage">{isAr ? 'نسبة مئوية (%)' : 'Percentage (%)'}</option>
+                  <option value="fixed_amount">{isAr ? 'مبلغ كاش ثابت (ج.م)' : 'Fixed Cash Discount (EGP)'}</option>
+                  <option value="free_shipping">{isAr ? 'شحن مجاني' : 'Free Shipping'}</option>
                 </select>
               </div>
 

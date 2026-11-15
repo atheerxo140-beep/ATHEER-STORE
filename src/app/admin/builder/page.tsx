@@ -895,7 +895,7 @@ export default function VisualBuilderPage() {
                       color: theme.brandBlack,
                     }}
                   >
-                    500 GSM
+                    {isAr ? '٥٠٠ جم/م²' : '500 GSM'}
                   </span>
                 </div>
                 <div className="flex items-center justify-between gap-2">
@@ -1308,7 +1308,7 @@ export default function VisualBuilderPage() {
                       target="_blank"
                       rel="noopener noreferrer"
                       className="px-2.5 py-2 bg-brand-stone/60 border border-brand-border hover:border-brand-gold text-brand-cream hover:text-brand-ivory text-[11px] rounded-xs transition-colors flex items-center gap-1"
-                      title={isAr ? 'تعديل أرقام الجراماج 500 GSM والمقاييس' : 'Edit Specs'}
+                      title={isAr ? 'تعديل أرقام الجراماج ٥٠٠ جم/م² والمقاييس' : 'Edit Specs'}
                     >
                       <span>{isAr ? 'المقاييس' : 'Specs'}</span>
                       <ExternalLink className="w-3 h-3" />
@@ -1450,7 +1450,7 @@ export default function VisualBuilderPage() {
                       type="text"
                       value={content.futureTitleAr || ''}
                       onChange={(e) => setContent({ ...content, futureTitleAr: e.target.value })}
-                      placeholder="تي شيرت أثير البوكسي الثقيل 320 GSM"
+                      placeholder="تي شيرت أثير البوكسي الثقيل ٣٢٠ جم/م²"
                       className="w-full bg-brand-stone/40 border border-brand-border px-3 py-2 text-brand-ivory rounded-xs text-right focus:border-brand-gold focus:outline-none"
                     />
                   </div>
@@ -1641,7 +1641,7 @@ export default function VisualBuilderPage() {
                             style={content.heroBgImage ? { backgroundImage: `linear-gradient(to top, rgba(0,0,0,0.85), rgba(0,0,0,0.3)), url('${content.heroBgImage}')` } : {}}
                           >
                             <span className="text-[10px] bg-brand-gold/20 text-brand-gold px-2 py-0.5 rounded-full font-mono inline-block w-fit mb-1 border border-brand-gold/40">
-                              {content.heroBadgeAr || '500 GSM HEAVYWEIGHT'}
+                              {content.heroBadgeAr || (isAr ? 'إصدار ثقيل ٥٠٠ جم/م²' : '500 GSM HEAVYWEIGHT')}
                             </span>
                             <h4 className="text-base font-black text-brand-ivory font-serif drop-shadow-md">
                               {content.heroTitleAr || 'إصدار الانطلاق: الهوديز الثقيلة'}
@@ -1700,7 +1700,7 @@ export default function VisualBuilderPage() {
                               <div className="w-12 h-12 bg-brand-stone/40 rounded-xs border border-brand-border flex-shrink-0" />
                             )}
                             <div>
-                              <div className="text-xs font-bold text-brand-ivory">{content.futureTitleAr || 'تي شيرت أثير الثقيل 320 GSM'}</div>
+                              <div className="text-xs font-bold text-brand-ivory">{content.futureTitleAr || (isAr ? 'تي شيرت أثير الثقيل ٣٢٠ جم/م²' : 'Heavyweight 320 GSM Tee')}</div>
                               <span className="text-[9px] text-brand-gold font-mono">{content.futureBadgeAr || 'قريباً'}</span>
                             </div>
                           </div>

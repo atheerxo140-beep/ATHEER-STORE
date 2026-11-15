@@ -1,12 +1,12 @@
 {
   "announcementTextEn": "THE LAUNCH DROP: 500 GSM Heavyweight Hoodies & Sweatshirts | Fast Delivery Across Egypt",
-  "announcementTextAr": "الإصدار الأول: هوديز وسويت شيرتات 500 GSM الفاخرة للشباب | شحن سريع لجميع محافظات مصر",
+  "announcementTextAr": "الإصدار الأول: هوديز وسويت شيرتات ٥٠٠ جم/م² الفاخرة للشباب | شحن سريع لجميع محافظات مصر",
   "heroBadgeEn": "THE LAUNCH COLLECTION · 500 GSM HOODIES",
-  "heroBadgeAr": "المجموعة الافتتاحية · هوديز 500 GSM",
+  "heroBadgeAr": "المجموعة الافتتاحية · هوديز ٥٠٠ جم/م²",
   "heroTitleEn": "Engineered For The New Youth Standard",
   "heroTitleAr": "معيار جديد لأزياء الستريتوير الشبابية",
   "heroSubtitleEn": "Ultra-dense 500 GSM specification French terry cotton. Sculpted drop-shoulder boxy silhouette. No drawstrings, pure structural volume.",
-  "heroSubtitleAr": "قطن فرنش تيري كثيف بمواصفات 500 GSM. قصّة بوكسي عريضة وأكتاف ساقطة تمنح قواماً ثابتاً وفخامة مينيمالية خالية من التعقيد.",
+  "heroSubtitleAr": "قطن فرنش تيري كثيف بمواصفات ٥٠٠ جم/م². قصّة بوكسي عريضة وأكتاف ساقطة تمنح قواماً ثابتاً وفخامة مينيمالية خالية من التعقيد.",
   "heroBgImage": "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?q=80&w=2200&auto=format&fit=crop",
   "heroMediaType": "image",
   "heroBgVideo": "",
@@ -19,16 +19,16 @@
   "categoriesTitleEn": "The Heavyweight Youth Wardrobe",
   "categoriesTitleAr": "خزانة الستريتوير الشبابية الفاخرة",
   "categoriesDescriptionEn": "Centred around our flagship 500 GSM hoodies and tailored crewnecks, engineered for daily wear and unmatched durability across Egypt.",
-  "categoriesDescriptionAr": "محورها الرئيسي الهوديز فائقة الثقل 500 GSM والسويت شيرتات المتقنة، صُممت لتتحمل الارتداء اليومي في شوارع مصر.",
+  "categoriesDescriptionAr": "محورها الرئيسي الهوديز فائقة الثقل ٥٠٠ جم/م² والسويت شيرتات المتقنة، صُممت لتتحمل الارتداء اليومي في شوارع مصر.",
   "categories": [
     {
       "id": "hoodies",
       "titleEn": "Heavyweight Boxy Hoodies",
       "titleAr": "الهوديز الثقيلة (المنتج الرئيسي)",
       "descEn": "Our signature 480-500 GSM double-hood silhouettes in Onyx, Bone, and Washed Charcoal.",
-      "descAr": "القطعة الأساسية للدار بوزن 480 إلى 500 GSM بغطاء رأس مزدوج بدون حبال.",
+      "descAr": "القطعة الأساسية للدار بوزن ٤٨٠ إلى ٥٠٠ جم/م² بغطاء رأس مزدوج بدون حبال.",
       "tagEn": "01 / MAIN DROP · 500 GSM",
-      "tagAr": "MAIN DROP · 500 GSM / 01",
+      "tagAr": "٠١ / الإصدار الرئيسي · ٥٠٠ جم/م²",
       "image": "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?q=80&w=1000&auto=format&fit=crop",
       "href": "#products",
       "isPrimary": true
@@ -38,9 +38,9 @@
       "titleEn": "Atelier Crewnecks & Sweatshirts",
       "titleAr": "سويت شيرتات الكرو نيك الراقية",
       "descEn": "Minimalist 450 GSM crewneck pullovers and quarter-zip cuts with reinforced cuffs.",
-      "descAr": "تصاميم كرو نيك وهاف زيب بمواصفات 450 GSM مع أساور مقواة لا تتمدد.",
+      "descAr": "تصاميم كرو نيك وهاف زيب بمواصفات ٤٥٠ جم/م² مع أساور مقواة لا تتمدد.",
       "tagEn": "02 / CREWNECKS · 450 GSM",
-      "tagAr": "CREWNECKS · 450 GSM / 02",
+      "tagAr": "٠٢ / سويت شيرتات · ٤٥٠ جم/م²",
       "image": "https://images.unsplash.com/photo-1578632767115-351597cf2477?q=80&w=1000&auto=format&fit=crop",
       "href": "#products",
       "isPrimary": false
@@ -52,7 +52,7 @@
       "descEn": "Custom milled loopback cotton blend, zero chemical softening, natural drape.",
       "descAr": "مزيج قطن مريح ومتين، خالٍ من المعالجات الكيميائية الزائدة.",
       "tagEn": "03 / FABRIC LAB",
-      "tagAr": "FABRIC LAB / 03",
+      "tagAr": "٠٣ / معمل النسيج",
       "image": "https://images.unsplash.com/photo-1618354691373-d851c5c3a990?q=80&w=1000&auto=format&fit=crop",
       "href": "#fabric-fit",
       "isPrimary": false
@@ -60,11 +60,11 @@
     {
       "id": "tshirts",
       "titleEn": "Future Drop: 320 GSM Tees",
-      "titleAr": "الإصدار القادم: تي شيرتات GSM 320",
+      "titleAr": "الإصدار القادم: تي شيرتات ٣٢٠ جم/م²",
       "descEn": "Upcoming oversized youth tees currently in sampling. Launching in the next drop.",
       "descAr": "تي شيرتات شبابية أوفرسايز فائقة الكثافة. يجري تجهيزها للإطلاق القادم.",
       "tagEn": "04 / FUTURE DROP",
-      "tagAr": "FUTURE DROP / 04",
+      "tagAr": "٠٤ / الإصدار القادم",
       "image": "https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?q=80&w=1000&auto=format&fit=crop",
       "href": "#future-drop",
       "isPrimary": false
@@ -149,7 +149,7 @@
     }
   ],
   "sectionsOrder": [
-    { "id": "hero", "type": "hero", "nameEn": "Heavyweight Hero Showcase", "nameAr": "شاشة البانر الرئيسية (الهوديز 500 GSM)", "enabled": true, "order": 1 },
+    { "id": "hero", "type": "hero", "nameEn": "Heavyweight Hero Showcase", "nameAr": "شاشة البانر الرئيسية (الهوديز ٥٠٠ جم/م²)", "enabled": true, "order": 1 },
     { "id": "offers", "type": "offers", "nameEn": "Caesar-Style Promotional Offers", "nameAr": "عروض وباندلات الشتاء (اختار عرضك)", "enabled": false, "order": 2 },
     { "id": "categories", "type": "categories", "nameEn": "Category Showcase & Garment Lab", "nameAr": "أقسام الكتالوج وتفاصيل الخامات", "enabled": true, "order": 3 },
     { "id": "products", "type": "products", "nameEn": "Heavyweight Product Grid", "nameAr": "شبكة المنتجات ومواصفات القطع", "enabled": true, "order": 4 },

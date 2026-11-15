@@ -83,6 +83,7 @@ export default function AdminSettingsPage() {
       charcoal: '#141414',
       border: '#282828',
       accentLabel: 'Gold on Jet Black',
+      accentLabelAr: 'ذهب كلاسيكي على أسود داكن',
     },
     {
       id: 'cyber-gold',
@@ -93,6 +94,7 @@ export default function AdminSettingsPage() {
       charcoal: '#161922',
       border: '#2D3240',
       accentLabel: 'Vibrant Neon Gold',
+      accentLabelAr: 'ذهب نيون شبابي متوهج',
     },
     {
       id: 'platinum-silver',
@@ -103,6 +105,7 @@ export default function AdminSettingsPage() {
       charcoal: '#1A1A1A',
       border: '#333333',
       accentLabel: 'Matte Platinum Silver',
+      accentLabelAr: 'فضة بلاتينيوم مطفأة',
     },
     {
       id: 'imperial-burgundy',
@@ -113,6 +116,7 @@ export default function AdminSettingsPage() {
       charcoal: '#1E1015',
       border: '#3D1B26',
       accentLabel: 'Deep Imperial Burgundy',
+      accentLabelAr: 'خمري ملكي عميق مع لمسات ذهبية',
     },
     {
       id: 'emerald-luxe',
@@ -123,6 +127,7 @@ export default function AdminSettingsPage() {
       charcoal: '#0F1A13',
       border: '#1E3827',
       accentLabel: 'Luxe Emerald Green',
+      accentLabelAr: 'أخضر زمردي فاخر مع ذهب',
     },
   ];
 
@@ -1141,7 +1146,7 @@ export default function AdminSettingsPage() {
                         {isAr ? preset.nameAr : preset.nameEn}
                       </span>
                       <span className="text-[10px] text-brand-cream/60 font-mono block mt-0.5">
-                        {preset.accentLabel}
+                        {isAr ? preset.accentLabelAr : preset.accentLabel}
                       </span>
                     </div>
                     <div className="flex items-center space-x-1.5 rtl:space-x-reverse flex-shrink-0 ml-2 rtl:mr-2">
@@ -1295,7 +1300,7 @@ export default function AdminSettingsPage() {
                 <div className="p-3 border rounded-xs space-y-2" style={{ backgroundColor: themeConfig.brandCharcoal || '#141414', borderColor: themeConfig.brandBorder || '#282828' }}>
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold" style={{ color: themeConfig.brandIvory || '#FAF9F6' }}>
-                      هودي أثير 500 GSM
+                      {isAr ? 'هودي أثير ٥٠٠ جم/م²' : 'ATHEER 500 GSM Hoodie'}
                     </span>
                     <span className="text-xs font-bold font-mono" style={{ color: themeConfig.brandGold || '#C5A880' }}>
                       1,850 ج.م

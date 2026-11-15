@@ -166,7 +166,7 @@ export default function CustomerOrdersPage() {
                       </span>
                       <span className="text-[10px] font-mono text-brand-cream/60">
                         {order.paymentMethod === 'cash_on_delivery'
-                          ? (isAr ? 'الدفع عند الاستلام (COD)' : 'Cash on Delivery')
+                          ? (isAr ? 'الدفع عند الاستلام' : 'Cash on Delivery')
                           : order.paymentMethod}
                       </span>
                     </div>

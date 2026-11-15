@@ -114,7 +114,7 @@ export default function AdminProductsPage() {
     fitEn: 'Signature Boxy Oversized',
     fitAr: 'قصّة بوكسي أوفرسايز معتمدة',
     fabricEn: 'Heavyweight Cotton Fleece Blend (500 GSM Spec)',
-    fabricAr: 'مزيج قطن صوف ثقيل فاخر (مواصفات 500 GSM)',
+    fabricAr: 'مزيج قطن صوف ثقيل فاخر (مواصفات ٥٠٠ جم/م²)',
     colors: ['Onyx Black', 'Bone Ivory'],
     sizes: ['S', 'M', 'L', 'XL', 'XXL'],
     isNewArrival: false,
@@ -454,10 +454,14 @@ export default function AdminProductsPage() {
                     </h3>
                     <div className="flex flex-wrap items-center gap-1.5 mt-1 font-mono text-[10px]">
                       <span className="px-1.5 py-0.5 bg-brand-stone text-brand-ivory border border-brand-border/60 rounded-xs font-bold">
-                        {product.gsm || 500} GSM
+                        {product.gsm || 500} {isAr ? 'جم/م²' : 'GSM'}
                       </span>
                       <span className="text-brand-cream/60 capitalize">
-                        {product.category === 'hoodies' ? '500 GSM Hoodie' : product.category === 'sweatshirts' ? 'Sweatshirt' : 'T-Shirt'}
+                        {product.category === 'hoodies'
+                          ? (isAr ? 'هودي ٥٠٠ جم/م²' : '500 GSM Hoodie')
+                          : product.category === 'sweatshirts'
+                          ? (isAr ? 'سويت شيرت' : 'Sweatshirt')
+                          : (isAr ? 'تي شيرت' : 'T-Shirt')}
                       </span>
                       {product.isComingSoon ? (
                         <span className="px-1.5 py-0.2 bg-brand-stone/60 text-brand-cream/70 rounded-xs">
@@ -472,11 +476,11 @@ export default function AdminProductsPage() {
                     <div className="flex items-center justify-between mt-2 font-mono text-xs">
                       <div>
                         <span className="font-bold text-brand-ivory">
-                          {product.price.toLocaleString()} <span className="text-[10px] text-brand-gold">EGP</span>
+                          {product.price.toLocaleString()} <span className="text-[10px] text-brand-gold">{isAr ? 'ج.م' : 'EGP'}</span>
                         </span>
                         {product.originalPrice && (
                           <span className="text-[10px] text-brand-cream/40 line-through ml-1.5 rtl:mr-1.5 rtl:ml-0">
-                            {product.originalPrice.toLocaleString()} EGP
+                            {product.originalPrice.toLocaleString()} {isAr ? 'ج.م' : 'EGP'}
                           </span>
                         )}
                       </div>
@@ -528,8 +532,8 @@ export default function AdminProductsPage() {
               <tr className="border-b border-brand-border/80 bg-brand-stone/30 text-[10px] uppercase font-mono tracking-widest text-brand-cream/60">
                 <th className="py-3 px-4">{isAr ? 'القطعة / الكتالوج' : 'Garment'}</th>
                 <th className="py-3 px-4">{isAr ? 'التصنيف' : 'Category'}</th>
-                <th className="py-3 px-4">{isAr ? 'مواصفة GSM' : 'GSM Spec'}</th>
-                <th className="py-3 px-4">{isAr ? 'السعر (EGP)' : 'Price (EGP)'}</th>
+                <th className="py-3 px-4">{isAr ? 'كثافة النسيج (جم/م²)' : 'GSM Spec'}</th>
+                <th className="py-3 px-4">{isAr ? 'السعر (ج.م)' : 'Price (EGP)'}</th>
                 <th className="py-3 px-4">{isAr ? 'المخزون' : 'Inventory'}</th>
                 <th className="py-3 px-4">{isAr ? 'الحالة' : 'Status'}</th>
                 <th className="py-3 px-4 text-center">{isAr ? 'الإجراءات' : 'Actions'}</th>
@@ -597,29 +601,29 @@ export default function AdminProductsPage() {
                     {/* Category */}
                     <td className="py-3 px-4 font-mono text-xs text-brand-cream/80 capitalize">
                       {product.category === 'hoodies' ? (
-                        <span className="text-brand-gold font-bold">500 GSM Hoodie</span>
+                        <span className="text-brand-gold font-bold">{isAr ? 'هودي ٥٠٠ جم/م²' : '500 GSM Hoodie'}</span>
                       ) : product.category === 'sweatshirts' ? (
-                        <span>Sweatshirt</span>
+                        <span>{isAr ? 'سويت شيرت' : 'Sweatshirt'}</span>
                       ) : (
-                        <span className="text-brand-cream/40">T-Shirt (Upcoming)</span>
+                        <span className="text-brand-cream/40">{isAr ? 'تي شيرت (قريباً)' : 'T-Shirt (Upcoming)'}</span>
                       )}
                     </td>
 
                     {/* GSM Spec */}
                     <td className="py-3 px-4 font-mono text-xs">
                       <span className="px-2 py-0.5 bg-brand-stone text-brand-ivory border border-brand-border/60 rounded-xs font-bold">
-                        {product.gsm || 500} GSM
+                        {product.gsm || 500} {isAr ? 'جم/م²' : 'GSM'}
                       </span>
                     </td>
 
                     {/* Price */}
                     <td className="py-3 px-4 font-mono text-xs">
                       <div className="font-bold text-brand-ivory">
-                        {product.price.toLocaleString()} <span className="text-[10px] text-brand-gold">EGP</span>
+                        {product.price.toLocaleString()} <span className="text-[10px] text-brand-gold">{isAr ? 'ج.م' : 'EGP'}</span>
                       </div>
                       {product.originalPrice && (
                         <div className="text-[10px] text-brand-cream/40 line-through">
-                          {product.originalPrice.toLocaleString()} EGP
+                          {product.originalPrice.toLocaleString()} {isAr ? 'ج.م' : 'EGP'}
                         </div>
                       )}
                     </td>
@@ -627,14 +631,14 @@ export default function AdminProductsPage() {
                     {/* Inventory */}
                     <td className="py-3 px-4 font-mono text-xs">
                       {product.isComingSoon ? (
-                        <span className="text-brand-cream/40 text-[10px]">Unreleased</span>
+                        <span className="text-brand-cream/40 text-[10px]">{isAr ? 'لم يُطرح بعد' : 'Unreleased'}</span>
                       ) : (product.inventory ?? 0) <= 15 ? (
                         <span className="text-amber-400 font-bold flex items-center space-x-1 rtl:space-x-reverse">
                           <AlertTriangle className="w-3 h-3" />
-                          <span>{product.inventory} (Low)</span>
+                          <span>{product.inventory} ({isAr ? 'منخفض' : 'Low'})</span>
                         </span>
                       ) : (
-                        <span className="text-emerald-400 font-bold">{product.inventory} in stock</span>
+                        <span className="text-emerald-400 font-bold">{product.inventory} {isAr ? 'متوفر' : 'in stock'}</span>
                       )}
                     </td>
 
@@ -995,7 +999,7 @@ export default function AdminProductsPage() {
                     value={formData.nameAr || ''}
                     onChange={(e) => setFormData({ ...formData, nameAr: e.target.value })}
                     className="w-full bg-brand-stone/40 border border-brand-border px-3 py-2 text-brand-ivory rounded-sm focus:border-brand-gold focus:outline-none text-right"
-                    placeholder="مثال: هودي أثير بوكسي الثقيل 500 GSM"
+                    placeholder="مثال: هودي أثير بوكسي الثقيل ٥٠٠ جم/م²"
                   />
                 </div>
               </div>
@@ -1029,15 +1033,15 @@ export default function AdminProductsPage() {
                     }}
                     className="w-full bg-brand-stone/40 border border-brand-border px-3 py-2 text-brand-ivory rounded-sm focus:border-brand-gold focus:outline-none"
                   >
-                    <option value="hoodies">Hoodies (Flagship 500 GSM)</option>
-                    <option value="sweatshirts">Sweatshirts</option>
-                    <option value="tshirts">T-Shirts (Upcoming Drop)</option>
+                    <option value="hoodies">{isAr ? 'الهوديز (الأساسي ٥٠٠ جم/م²)' : 'Hoodies (Flagship 500 GSM)'}</option>
+                    <option value="sweatshirts">{isAr ? 'سويت شيرتات الكرو نيك' : 'Sweatshirts'}</option>
+                    <option value="tshirts">{isAr ? 'تي شيرتات الصيف (قريباً)' : 'T-Shirts (Upcoming Drop)'}</option>
                   </select>
                 </div>
 
                 <div>
                   <label className="block text-brand-cream/80 mb-1">
-                    {isAr ? 'مواصفة GSM الثقل *' : 'GSM Density Spec *'}
+                    {isAr ? 'كثافة النسيج (جم/م²) *' : 'GSM Density Spec *'}
                   </label>
                   <input
                     type="number"
@@ -1048,12 +1052,12 @@ export default function AdminProductsPage() {
                     onChange={(e) => setFormData({ ...formData, gsm: Number(e.target.value) })}
                     className="w-full bg-brand-stone/40 border border-brand-border px-3 py-2 text-brand-ivory rounded-sm focus:border-brand-gold focus:outline-none"
                   />
-                  <p className="text-[10px] text-brand-cream/50 mt-1">ATHEER flagship standard: 500 GSM</p>
+                  <p className="text-[10px] text-brand-cream/50 mt-1">{isAr ? 'معيار دار أثير المعتمد: ٥٠٠ جم/م²' : 'ATHEER flagship standard: 500 GSM'}</p>
                 </div>
 
                 <div>
                   <label className="block text-brand-cream/80 mb-1">
-                    {isAr ? 'السعر بالجنيه المصري (EGP) *' : 'Price in EGP *'}
+                    {isAr ? 'السعر بالجنيه المصري (ج.م) *' : 'Price in EGP *'}
                   </label>
                   <input
                     type="number"
@@ -1070,7 +1074,7 @@ export default function AdminProductsPage() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-brand-cream/80 mb-1">
-                    {isAr ? 'السعر الأصلي / قبل الخصم (اختياري)' : 'Compare Price (Original EGP)'}
+                    {isAr ? 'السعر الأصلي قبل الخصم (ج.م)' : 'Compare Price (Original EGP)'}
                   </label>
                   <input
                     type="number"

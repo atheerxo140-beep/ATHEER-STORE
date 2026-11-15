@@ -290,7 +290,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </Link>
             <div className="flex items-center space-x-1.5 rtl:space-x-reverse text-[9px] uppercase tracking-widest text-brand-gold font-mono mt-1">
               <ShieldCheck className="w-3 h-3 text-brand-gold" />
-              <span>Admin Management Hub</span>
+              <span>{language === 'ar' ? 'منظومة إدارة المتجر' : 'Admin Management Hub'}</span>
             </div>
           </div>
 
@@ -321,7 +321,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   <div className="flex items-center space-x-1.5 rtl:space-x-reverse">
                     {item.badge && (
                       <span className="px-1.5 py-0.5 rounded-xs bg-brand-gold/25 text-brand-gold text-[8px] font-bold font-mono">
-                        {item.badge}
+                        {item.badge === 'NEW' ? (language === 'ar' ? 'جديد' : 'NEW') : item.badge}
                       </span>
                     )}
                     {item.href === '/admin/orders' && unreadCount > 0 && (
@@ -353,10 +353,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <Database className="w-3.5 h-3.5" />
               <span>
                 {supabaseStatus.connected
-                  ? 'Supabase: Connected'
+                  ? (language === 'ar' ? 'قاعدة البيانات: متصلة ونشطة' : 'Supabase: Connected')
                   : supabaseStatus.configured
-                  ? 'Supabase: Paused / Unreachable'
-                  : 'Supabase: Not Configured'}
+                  ? (language === 'ar' ? 'قاعدة البيانات: متوقفة مؤقتاً' : 'Supabase: Paused / Unreachable')
+                  : (language === 'ar' ? 'قاعدة البيانات: غير مهيأة' : 'Supabase: Not Configured')}
               </span>
             </span>
             <span className={`w-2 h-2 rounded-full animate-pulse ${
@@ -398,7 +398,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <Menu className="w-5 h-5" />
             </button>
             <span className="text-xs font-mono text-brand-gold hidden sm:inline uppercase">
-              ATHEER / أثير • Egypt Admin Console
+              {language === 'ar' ? 'أثير / ATHEER • لوحة إدارة المتجر بمصر' : 'ATHEER / أثير • Egypt Admin Console'}
             </span>
           </div>
 
@@ -524,9 +524,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <button
               onClick={() => setLanguage(language === 'en' ? 'ar' : 'en')}
               className="flex items-center space-x-1 rtl:space-x-reverse text-xs text-brand-ivory hover:text-brand-gold font-mono px-2.5 py-1 border border-brand-border rounded-sm"
+              title={language === 'en' ? 'التحويل للعربية' : 'Switch to English'}
             >
               <Globe className="w-3.5 h-3.5 opacity-70" />
-              <span>{language === 'en' ? 'عربي' : 'EN'}</span>
+              <span>{language === 'en' ? 'العربية' : 'الإنجليزية'}</span>
             </button>
 
             {/* Admin Badge */}
@@ -538,7 +539,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <button
               onClick={handleLogout}
               className="p-2 text-brand-cream/60 hover:text-rose-400 transition-colors"
-              title="Logout"
+              title={language === 'ar' ? 'تسجيل الخروج' : 'Logout'}
             >
               <LogOut className="w-4 h-4" />
             </button>
@@ -595,19 +596,19 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     <span className={`w-2.5 h-2.5 rounded-full ${supabaseStatus.connected ? 'bg-emerald-400' : supabaseStatus.configured ? 'bg-amber-400' : 'bg-rose-400'}`} />
                     <span className="font-bold text-brand-ivory text-sm">
                       {supabaseStatus.connected
-                        ? (isAr ? 'متصل بنجاح (PostgreSQL Live)' : 'Connected & Active (PostgreSQL Live)')
+                        ? (isAr ? 'متصل بنجاح بالسحابة' : 'Connected & Active (PostgreSQL Live)')
                         : supabaseStatus.configured
-                        ? (isAr ? 'المشروع متوقف مؤقتاً في Supabase (Paused Project)' : 'Project Paused / Inactive on Supabase')
-                        : (isAr ? 'المتغيرات غير مكتملة في Vercel' : 'Missing Environment Variables in Vercel')}
+                        ? (isAr ? 'المشروع متوقف مؤقتاً في السحابة' : 'Project Paused / Inactive on Supabase')
+                        : (isAr ? 'المتغيرات غير مكتملة في السيرفر' : 'Missing Environment Variables')}
                     </span>
                   </div>
                 </div>
 
                 <div className="p-3 bg-brand-stone/20 border border-brand-border/60 rounded-xs space-y-1 text-[11px] text-brand-cream/80">
-                  <div><strong>Project Host:</strong> {supabaseStatus.host || 'zdkpxfxvazwwzemimykc.supabase.co'}</div>
+                  <div><strong>{isAr ? 'مضيف المشروع:' : 'Project Host:'}</strong> {supabaseStatus.host || 'zdkpxfxvazwwzemimykc.supabase.co'}</div>
                   {supabaseStatus.error && (
                     <div className="text-rose-300 text-[10px] break-all">
-                      <strong>Diagnostics:</strong> {supabaseStatus.error}
+                      <strong>{isAr ? 'التشخيص الفني:' : 'Diagnostics:'}</strong> {supabaseStatus.error}
                     </div>
                   )}
                 </div>
@@ -616,12 +617,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   <div className="p-3 bg-amber-950/30 border border-amber-600/50 rounded-xs space-y-2 text-[11px] text-amber-200">
                     <p className="font-bold">
                       {isAr
-                        ? 'تنبيه الأمان وسلامة البيانات (Data Integrity Alert):'
+                        ? 'تنبيه الأمان وسلامة البيانات:'
                         : 'Data Integrity & Security Notice:'}
                     </p>
                     <p>
                       {isAr
-                        ? 'مشاريع Supabase المجانية تتوقف تلقائياً (Paused) بعد فترة من عدم الاستخدام ويسحب نطاق DNS. لاستعادة قاعدة البيانات وتفعيل استلام وحفظ الطلبات، اضغط على الرابط أدناه ثم اضغط "Restore Project" في لوحة تحكم Supabase.'
+                        ? 'قاعدة البيانات السحابية تتوقف تلقائياً بعد فترة من عدم الاستخدام. لاستعادة قاعدة البيانات وتفعيل استلام وحفظ الطلبات، اضغط على الرابط أدناه ثم اضغط "استعادة المشروع".'
                         : 'Free Supabase projects pause automatically after inactivity. To restore your database, click the button below and click "Restore Project" in Supabase.'}
                     </p>
                     <a
@@ -642,7 +643,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   onClick={() => setShowDbInfo(false)}
                   className="px-4 py-2 bg-brand-stone/60 text-brand-ivory hover:bg-brand-stone text-xs font-bold uppercase rounded-xs"
                 >
-                  Close
+                  {isAr ? 'إغلاق' : 'Close'}
                 </button>
               </div>
             </div>
@@ -783,7 +784,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                       <div className="flex items-center space-x-1.5 rtl:space-x-reverse">
                         {item.badge && (
                           <span className="px-1.5 py-0.5 rounded-xs bg-brand-gold/25 text-brand-gold text-[8px] font-bold font-mono">
-                            {item.badge}
+                            {item.badge === 'NEW' ? (language === 'ar' ? 'جديد' : 'NEW') : item.badge}
                           </span>
                         )}
                         {item.href === '/admin/orders' && unreadCount > 0 && (

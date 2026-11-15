@@ -119,7 +119,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView, 
             </span>
           )}
           <span className="inline-block bg-brand-charcoal/95 backdrop-blur-md text-brand-ivory text-[8px] xs:text-[9px] font-mono tracking-wider px-1.5 py-0.5 border border-brand-border">
-            {product.gsm} GSM
+            {product.gsm} {language === 'ar' ? 'جم/م²' : 'GSM'}
           </span>
         </div>
 

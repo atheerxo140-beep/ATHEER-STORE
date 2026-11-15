@@ -25,7 +25,7 @@ export const defaultThemeConfig: ThemeConfig = {
   headerShowCart: true,
   announcementEnabled: true,
   announcementTextEn: 'THE LAUNCH DROP: 500 GSM Heavyweight Hoodies & Sweatshirts | Fast Delivery Across Egypt',
-  announcementTextAr: 'إصدار الانطلاق: هوديز وسويت شيرتات ثقيلة 500 GSM | توصيل سريع ودفع عند الاستلام لكافة المحافظات',
+  announcementTextAr: 'إصدار الانطلاق: هوديز وسويت شيرتات ثقيلة ٥٠٠ جم/م² | توصيل سريع ودفع عند الاستلام لكافة المحافظات',
   announcementBg: '#C5A880',
   announcementColor: '#0A0A0A',
   announcementLink: '/#offers',

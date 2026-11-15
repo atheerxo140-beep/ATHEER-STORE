@@ -333,8 +333,8 @@ export default function CheckoutPage() {
               <Lock className="w-3.5 h-3.5" />
               <span>
                 {language === 'ar'
-                  ? 'دفع آمن نقدياً عند الاستلام في مصر (EGP)'
-                  : 'SECURE CASH ON DELIVERY IN EGYPT (EGP)'}
+                  ? 'دفع آمن نقدياً عند الاستلام في مصر'
+                  : 'SECURE CASH ON DELIVERY IN EGYPT'}
               </span>
             </div>
             <h1 className="font-sans font-black text-3xl sm:text-4xl uppercase tracking-tight">
@@ -583,17 +583,17 @@ export default function CheckoutPage() {
                                 </span>
                                 {method.type === 'cash_on_delivery' && (
                                   <span className="text-[10px] font-mono bg-brand-gold text-brand-black px-1.5 py-0.5 font-bold uppercase">
-                                    COD
+                                    {language === 'ar' ? 'الدفع عند الاستلام' : 'COD'}
                                   </span>
                                 )}
                                 {method.type === 'instapay' && (
                                   <span className="text-[10px] font-mono bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 px-1.5 py-0.5 font-bold">
-                                    InstaPay ⚡
+                                    {language === 'ar' ? 'إنستاباي ⚡' : 'InstaPay ⚡'}
                                   </span>
                                 )}
                                 {method.type === 'vodafone_cash' && (
                                   <span className="text-[10px] font-mono bg-rose-500/20 text-rose-400 border border-rose-500/40 px-1.5 py-0.5 font-bold">
-                                    Wallet 📱
+                                    {language === 'ar' ? 'محفظة ذكية 📱' : 'Smart Wallet 📱'}
                                   </span>
                                 )}
                               </div>
@@ -670,7 +670,7 @@ export default function CheckoutPage() {
             <div className="lg:col-span-5">
               <div className="p-4 sm:p-8 bg-brand-charcoal border border-brand-border sticky top-28 space-y-6">
                 <h3 className="font-sans font-bold text-base uppercase tracking-wider border-b border-brand-border pb-3">
-                  {language === 'ar' ? 'ملخص الفاتورة (EGP)' : 'Order Breakdown (EGP)'}
+                  {language === 'ar' ? 'ملخص الفاتورة (ج.م)' : 'Order Breakdown (EGP)'}
                 </h3>
 
                 {/* Items Preview */}
@@ -692,7 +692,7 @@ export default function CheckoutPage() {
                           <div>
                             <p className="font-bold text-brand-ivory line-clamp-1">{title}</p>
                             <p className="text-[11px] text-brand-cream/70 font-mono">
-                              {item.selectedSize} • {item.quantity}x • {item.product.gsm} GSM
+                              {item.selectedSize} • {item.quantity}x • {item.product.gsm} {language === 'ar' ? 'جم/م²' : 'GSM'}
                             </p>
                           </div>
                         </div>

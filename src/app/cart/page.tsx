@@ -51,7 +51,7 @@ export default function CartPage() {
             </h1>
             <p className="text-xs text-brand-cream/70 font-mono mt-1">
               {language === 'ar'
-                ? `لديك ${totalCount} قطع في حقيبتك (بالجنيه المصري EGP)`
+                ? `لديك ${totalCount} قطع في حقيبتك (بالجنيه المصري)`
                 : `${totalCount} streetwear pieces in your bag (EGP)`}
             </p>
           </div>
@@ -74,7 +74,7 @@ export default function CartPage() {
             </h2>
             <p className="text-xs sm:text-sm text-brand-cream/70 font-light leading-relaxed mb-8">
               {language === 'ar'
-                ? 'استكشف تشكيلة الهوديز الثقيلة بوزن 500 GSM والسويت شيرتات المصممة للشباب في مصر.'
+                ? 'استكشف تشكيلة الهوديز الثقيلة بوزن ٥٠٠ جم/م² والسويت شيرتات المصممة للشباب في مصر.'
                 : 'Explore our launch collection of 500 GSM heavyweight hoodies and stylish sweatshirts.'}
             </p>
             <Link
@@ -148,7 +148,7 @@ export default function CartPage() {
                               </>
                             )}
                             <span>•</span>
-                            <span className="text-brand-muted">{item.product.gsm} GSM</span>
+                            <span className="text-brand-muted">{item.product.gsm} {language === 'ar' ? 'جم/م²' : 'GSM'}</span>
                           </div>
                           <div className="font-mono text-sm font-bold text-brand-gold mt-2 sm:hidden">
                             {formatPrice(item.product.price * item.quantity)}
@@ -219,7 +219,7 @@ export default function CartPage() {
             <div className="lg:col-span-4">
               <div className="p-6 bg-brand-charcoal border border-brand-border sticky top-28 space-y-6">
                 <h3 className="font-sans font-bold text-base uppercase tracking-wider border-b border-brand-border pb-3">
-                  {language === 'ar' ? 'ملخص الفاتورة (EGP)' : 'Order Summary (EGP)'}
+                  {language === 'ar' ? 'ملخص الفاتورة (ج.م)' : 'Order Summary (EGP)'}
                 </h3>
 
                 {/* Egyptian Shipping Zone Selector */}
@@ -281,7 +281,7 @@ export default function CartPage() {
                 <div className="p-3 bg-brand-black border border-brand-border/80 text-[11px] text-brand-cream/80 space-y-1 font-sans">
                   <p className="text-brand-gold font-bold flex items-center">
                     <ShieldCheck className="w-3.5 h-3.5 mr-1.5 rtl:ml-1.5 rtl:mr-0 inline" />
-                    {language === 'ar' ? 'الدفع نقدياً عند الاستلام (COD)' : 'Cash on Delivery (COD)'}
+                    {language === 'ar' ? 'الدفع نقدياً عند الاستلام' : 'Cash on Delivery (COD)'}
                   </p>
                   <p className="text-[10px] text-brand-cream/70 leading-relaxed">
                     {language === 'ar'

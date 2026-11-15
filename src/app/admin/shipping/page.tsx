@@ -170,7 +170,7 @@ export default function AdminShippingPage() {
             {isAr ? 'حساب رسوم الشحن على الخادم: ' : 'Server-Authoritative Shipping: '}
           </span>
           {isAr
-            ? 'يتم حساب كافة مصاريف الشحن والتوصيل حصرياً داخل السيرفر لمنع أي تلاعب بالأسعار من المتصفح. الدفع متاح عبر الدفع عند الاستلام (Cash on Delivery) لجميع المحافظات النشطة أدناه.'
+            ? 'يتم حساب كافة مصاريف الشحن والتوصيل حصرياً داخل السيرفر لمنع أي تلاعب بالأسعار من المتصفح. الدفع متاح عبر الدفع عند الاستلام لجميع المحافظات النشطة أدناه.'
             : 'All shipping fees and free-shipping eligibility are verified server-side during checkout. Courier fees never rely on client-supplied values.'}
         </div>
       </div>
@@ -212,7 +212,7 @@ export default function AdminShippingPage() {
                       )}
                     </div>
                     <div className="text-[10px] font-mono text-brand-gold uppercase tracking-wider">
-                      Zone ID: {zone.id}
+                      {isAr ? 'رمز المنطقة:' : 'Zone ID:'} {zone.id}
                     </div>
                   </div>
 

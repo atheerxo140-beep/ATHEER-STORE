@@ -195,7 +195,7 @@ export default function AdminOverviewPage() {
           </h1>
           <p className="text-xs text-brand-cream/70 font-mono mt-1">
             {language === 'ar'
-              ? 'متابعة حية للمبيعات، الطلبات، المخزون، وحالات شحن المحافظات بالجنيه المصري EGP.'
+              ? 'متابعة حية للمبيعات، الطلبات، المخزون، وحالات شحن المحافظات بالجنيه المصري.'
               : 'Real-time sales, order tracking, inventory management, and governorate deliveries.'}
           </p>
         </div>
@@ -312,7 +312,14 @@ export default function AdminOverviewPage() {
                           : 'border-brand-gold/60 text-brand-gold bg-brand-gold/10'
                       }`}
                     >
-                      {ord.orderStatus}
+                      {language === 'ar' ? ({
+                        pending: 'قيد الانتظار',
+                        confirmed: 'تم التأكيد',
+                        processing: 'قيد التجهيز',
+                        shipped: 'تم الشحن',
+                        delivered: 'تم التوصيل',
+                        cancelled: 'ملغي'
+                      }[ord.orderStatus] || ord.orderStatus) : ord.orderStatus}
                     </span>
                   </div>
                 </div>
@@ -343,7 +350,7 @@ export default function AdminOverviewPage() {
                       {language === 'ar' ? item.nameAr : item.nameEn}
                     </p>
                     <p className="text-[10px] text-brand-cream/60 font-mono">
-                      {item.gsm} GSM • {item.category}
+                      {item.gsm} {language === 'ar' ? 'جم/م²' : 'GSM'} • {item.category === 'hoodies' ? (language === 'ar' ? 'هودي' : 'Hoodie') : item.category === 'sweatshirts' ? (language === 'ar' ? 'سويت شيرت' : 'Sweatshirt') : (language === 'ar' ? 'تي شيرت' : 'T-Shirt')}
                     </p>
                   </div>
                   <span className="font-mono font-bold text-brand-gold">{formatPrice(item.price)}</span>

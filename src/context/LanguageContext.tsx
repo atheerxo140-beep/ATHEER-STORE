@@ -19,7 +19,7 @@ export const translations: Translations = {
   // Announcement
   announcementText: {
     en: 'THE LAUNCH DROP: 500 GSM Heavyweight Hoodies & Sweatshirts | Fast Delivery Across Egypt',
-    ar: 'الإصدار الأول: هوديز وسويت شيرتات 500 GSM الفاخرة للشباب | شحن سريع لجميع محافظات مصر',
+    ar: 'الإصدار الأول: هوديز وسويت شيرتات ٥٠٠ جم/م² الفاخرة للشباب | شحن سريع لجميع محافظات مصر',
   },
 
   // Navigation
@@ -37,15 +37,15 @@ export const translations: Translations = {
   currencyLabel: { en: 'Currency: EGP', ar: 'العملة: جنيه مصري' },
 
   // Hero
-  heroBadge: { en: 'THE LAUNCH COLLECTION · 500 GSM HOODIES', ar: 'المجموعة الافتتاحية · هوديز 500 GSM' },
+  heroBadge: { en: 'THE LAUNCH COLLECTION · 500 GSM HOODIES', ar: 'المجموعة الافتتاحية · هوديز ٥٠٠ جم/م²' },
   heroTitle: { en: 'Engineered For The New Youth Standard', ar: 'معيار جديد لأزياء الستريتوير الشبابية' },
   heroSubtitle: {
     en: 'Ultra-dense 500 GSM specification French terry cotton. Sculpted drop-shoulder boxy silhouette. No drawstrings, pure structural volume.',
-    ar: 'قطن فرنش تيري كثيف بمواصفات 500 GSM. قصّة بوكسي عريضة وأكتاف ساقطة تمنح قواماً ثابتاً وفخامة مينيمالية خالية من التعقيد.',
+    ar: 'قطن فرنش تيري كثيف بمواصفات ٥٠٠ جم/م². قصّة بوكسي عريضة وأكتاف ساقطة تمنح قواماً ثابتاً وفخامة مينيمالية خالية من التعقيد.',
   },
   heroCtaPrimary: { en: 'Shop The Hoodies Drop', ar: 'تسوق تشكيلة الهوديز' },
   heroCtaSecondary: { en: 'Explore Sweatshirts', ar: 'استكشف السويت شيرتات' },
-  heroStat1Value: { en: '500 GSM', ar: '٥٠٠ GSM' },
+  heroStat1Value: { en: '500 GSM', ar: '٥٠٠ جم/م²' },
   heroStat1Label: { en: 'Heavyweight Spec', ar: 'مواصفات ثقيلة معتمدة' },
   heroStat2Value: { en: 'Boxy Fit', ar: 'قصّة بوكسي' },
   heroStat2Label: { en: 'Engineered Drop-Shoulder', ar: 'أكتاف منسدلة متوازنة' },
@@ -57,15 +57,15 @@ export const translations: Translations = {
   collectionsTitle: { en: 'The Heavyweight Youth Wardrobe', ar: 'خزانة الستريتوير الشبابية الفاخرة' },
   collectionsSubtitle: {
     en: 'Centred around our flagship 500 GSM hoodies and tailored crewnecks, engineered for daily wear and unmatched durability across Egypt.',
-    ar: 'محورها الرئيسي الهوديز فائقة الثقل 500 GSM والسويت شيرتات المتقنة، صُممت لتتحمل الارتداء اليومي في شوارع مصر.',
+    ar: 'محورها الرئيسي الهوديز فائقة الثقل ٥٠٠ جم/م² والسويت شيرتات المتقنة، صُممت لتتحمل الارتداء اليومي في شوارع مصر.',
   },
   catHoodiesTitle: { en: 'Heavyweight Boxy Hoodies', ar: 'الهوديز الثقيلة (المنتج الرئيسي)' },
-  catHoodiesDesc: { en: 'Our signature 480-500 GSM double-hood silhouettes in Onyx, Bone, and Washed Charcoal.', ar: 'القطعة الأساسية للدار بوزن 480 إلى 500 GSM بغطاء رأس مزدوج بدون حبال.' },
+  catHoodiesDesc: { en: 'Our signature 480-500 GSM double-hood silhouettes in Onyx, Bone, and Washed Charcoal.', ar: 'القطعة الأساسية للدار بوزن ٤٨٠ إلى ٥٠٠ جم/م² بغطاء رأس مزدوج بدون حبال.' },
   catSweatshirtsTitle: { en: 'Atelier Crewnecks & Sweatshirts', ar: 'سويت شيرتات الكرو نيك الراقية' },
-  catSweatshirtsDesc: { en: 'Minimalist 450 GSM crewneck pullovers and quarter-zip cuts with reinforced cuffs.', ar: 'تصاميم كرو نيك وهاف زيب بمواصفات 450 GSM مع أساور مقواة لا تتمدد.' },
+  catSweatshirtsDesc: { en: 'Minimalist 450 GSM crewneck pullovers and quarter-zip cuts with reinforced cuffs.', ar: 'تصاميم كرو نيك وهاف زيب بمواصفات ٤٥٠ جم/م² مع أساور مقواة لا تتمدد.' },
   catFabricLabTitle: { en: 'The Fabric & Fit Architecture', ar: 'هندسة القماش والقصّة' },
   catFabricLabDesc: { en: 'Custom milled loopback cotton blend, zero chemical softening, natural drape.', ar: 'مزيج قطن مريح ومتين، خالٍ من المعالجات الكيميائية الزائدة.' },
-  catTeesTeaserTitle: { en: 'Future Drop: 320 GSM Tees', ar: 'الإصدار القادم: تي شيرتات 320 GSM' },
+  catTeesTeaserTitle: { en: 'Future Drop: 320 GSM Tees', ar: 'الإصدار القادم: تي شيرتات ٣٢٠ جم/م²' },
   catTeesTeaserDesc: { en: 'Upcoming oversized youth tees currently in sampling. Launching in the next drop.', ar: 'تي شيرتات شبابية أوفرسايز فائقة الكثافة. يجري تجهيزها للإطلاق القادم.' },
   exploreCategory: { en: 'Explore', ar: 'استكشف' },
 
@@ -93,7 +93,7 @@ export const translations: Translations = {
   storyTitle: { en: 'Heavyweight Minimalism For Modern Youth', ar: 'المينيمالية الثقيلة لجيل الشباب المعاصر' },
   storyParagraph1: {
     en: 'ATHEER was born from a desire to elevate youth streetwear in Egypt and beyond. We build pieces with true substance: 500 GSM density specifications, an architectural boxy drape, and subtle matte gold accents that speak with quiet confidence.',
-    ar: 'انطلقت دار أثير من الرغبة في إرساء معايير جديدة للستريتوير الشبابي في مصر والمنطقة. نبتكر قطعاً ذات وزن حقيقي بمواصفات 500 GSM، وقصّة بوكسي معمارية تمنح هيبة وثقة، مع لمسات ذهبية مطفأة هادئة تعكس فخامة المحتوى.',
+    ar: 'انطلقت دار أثير من الرغبة في إرساء معايير جديدة للستريتوير الشبابي في مصر والمنطقة. نبتكر قطعاً ذات وزن حقيقي بمواصفات ٥٠٠ جم/م²، وقصّة بوكسي معمارية تمنح هيبة وثقة، مع لمسات ذهبية مطفأة هادئة تعكس فخامة المحتوى.',
   },
   storyParagraph2: {
     en: 'Every piece is engineered to retain its silhouette through relentless everyday wear. Our current focus is perfecting the hoodie and sweatshirt; upcoming drops will introduce our heavy boxy tees.',
@@ -101,7 +101,7 @@ export const translations: Translations = {
   },
 
   // Luxury / Streetwear Pillars
-  pillar1Title: { en: '500 GSM Heavyweight Spec', ar: 'مواصفات 500 GSM الثقيلة' },
+  pillar1Title: { en: '500 GSM Heavyweight Spec', ar: 'مواصفات ٥٠٠ جم/م² الثقيلة' },
   pillar1Desc: { en: 'Dense French terry cotton blend with unmatched warmth, structure, and zero drooping.', ar: 'نسيج قطن فرنش تيري مخصص فائق الكثافة يمنح قواماً ثابتاً دون أي ترهل.' },
   pillar2Title: { en: 'Engineered Boxy Cut', ar: 'قصّة بوكسي مريحة ومدروسة' },
   pillar2Desc: { en: 'Drop-shoulder proportions that drape cleanly over any body type without bunching.', ar: 'أبعاد أكتاف ساقطة تمنح انسيابية وأناقة عصرية مريحة لكافة الأجسام.' },
@@ -158,7 +158,7 @@ interface LanguageContextType {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [language, setLanguage] = useState<Language>('en');
+  const [language, setLanguage] = useState<Language>('ar');
   const currency: Currency = 'EGP'; // EGP is the default and only checkout currency
 
   useEffect(() => {

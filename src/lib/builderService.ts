@@ -12,7 +12,7 @@ const getDraftPath = () => getStoreFilePath('builder_draft.json');
 const getContentPath = () => getStoreFilePath('homepage_content.json');
 
 export const defaultSectionsOrder: BuilderSection[] = [
-  { id: 'hero', type: 'hero', nameEn: 'Heavyweight Hero Showcase', nameAr: 'شاشة البانر الرئيسية (الهوديز 500 GSM)', enabled: true, order: 1 },
+  { id: 'hero', type: 'hero', nameEn: 'Heavyweight Hero Showcase', nameAr: 'شاشة البانر الرئيسية (الهوديز ٥٠٠ جم/م²)', enabled: true, order: 1 },
   { id: 'offers', type: 'offers', nameEn: 'Caesar-Style Promotional Offers', nameAr: 'عروض وباندلات الشتاء (اختار عرضك)', enabled: false, order: 2 },
   { id: 'categories', type: 'categories', nameEn: 'Category Showcase & Garment Lab', nameAr: 'أقسام الكتالوج وتفاصيل الخامات', enabled: true, order: 3 },
   { id: 'products', type: 'products', nameEn: 'Heavyweight Product Grid', nameAr: 'شبكة المنتجات ومواصفات القطع', enabled: true, order: 4 },

@@ -251,7 +251,7 @@ function OrderSuccessContent() {
                       {language === 'ar' ? item.productNameAr : item.productNameEn}
                     </p>
                     <p className="text-[11px] text-brand-cream/70 font-mono">
-                      {item.selectedSize} • {item.quantity}x • {item.gsm} GSM • {item.selectedColor}
+                      {item.selectedSize} • {item.quantity}x • {item.gsm} {language === 'ar' ? 'جم/م²' : 'GSM'} • {item.selectedColor}
                     </p>
                   </div>
                 </div>
@@ -292,7 +292,7 @@ function OrderSuccessContent() {
           <div className="p-3 bg-brand-black border border-brand-border flex items-center justify-between text-xs font-mono">
             <div className="flex items-center space-x-2 rtl:space-x-reverse text-brand-gold">
               <Banknote className="w-4 h-4" />
-              <span>{language === 'ar' ? 'الدفع نقداً أو بالبطاقة عند الاستلام (COD)' : 'Cash on Delivery (Pending Courier Arrival)'}</span>
+              <span>{language === 'ar' ? 'الدفع نقداً أو بالبطاقة عند الاستلام' : 'Cash on Delivery (Pending Courier Arrival)'}</span>
             </div>
             <span className="text-[10px] uppercase text-emerald-400 font-bold">
               {order.paymentStatus}

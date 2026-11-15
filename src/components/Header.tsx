@@ -76,7 +76,7 @@ export const Header: React.FC = () => {
     : [];
 
   const popularSearches = isAr
-    ? ['هوديز 500 GSM', 'سويت شيرت', 'تي شيرت بوكسي', 'أوفرسايز', 'أونيكس أسود']
+    ? ['هوديز ٥٠٠ جم/م²', 'سويت شيرت', 'تي شيرت بوكسي', 'أوفرسايز', 'أونيكس أسود']
     : ['500 GSM Hoodies', 'Crewnecks', 'Boxy Tees', 'Oversized', 'Onyx Black'];
 
   const handleSelectProduct = (id: string) => {
@@ -120,7 +120,7 @@ export const Header: React.FC = () => {
     { label: t('navHoodies'), href: '/#products', highlight: true },
     { label: t('navSweatshirts'), href: '/#products' },
     { label: isAr ? 'عروض أيام أثير' : 'Special Offers', href: '/#offers' },
-    { label: isAr ? '💳 كارت الولاء VIP' : '💳 VIP Loyalty Pass', href: '/account/loyalty', highlight: true },
+    { label: isAr ? '💳 كارت الولاء' : '💳 Loyalty Pass', href: '/account/loyalty', highlight: true },
     { label: t('navTeesFuture'), href: '/#future-drop' },
     { label: isAr ? 'تتبع الشحنة' : 'Track Order', href: '/track-order' },
     { label: t('navBrand'), href: '/#about' },
@@ -148,7 +148,7 @@ export const Header: React.FC = () => {
             <div className="hidden md:flex items-center space-x-4 rtl:space-x-reverse text-[11px]">
               {/* Currency Indicator (EGP Only) */}
               <span className="font-mono text-brand-gold/90 font-bold px-2 py-0.5 bg-brand-charcoal border border-brand-border text-[10px]">
-                EGP | ج.م
+                {isAr ? 'الجنيه المصري (ج.م)' : 'Egyptian Pound (EGP)'}
               </span>
 
               <span className="text-brand-border">|</span>
@@ -182,7 +182,7 @@ export const Header: React.FC = () => {
                 title={language === 'en' ? 'التحويل للعربية' : 'Switch to English'}
               >
                 <Globe className="w-3 h-3 opacity-70" />
-                <span className="font-semibold text-xs">{language === 'en' ? 'العربية' : 'EN'}</span>
+                <span className="font-semibold text-xs">{language === 'en' ? 'العربية' : 'الإنجليزية'}</span>
               </button>
             </div>
           </div>
@@ -296,10 +296,10 @@ export const Header: React.FC = () => {
                 onClick={() => setLanguage(language === 'en' ? 'ar' : 'en')}
                 className="flex items-center space-x-1 rtl:space-x-reverse px-2 py-0.5 xs:px-2.5 xs:py-1 text-[11px] xs:text-xs text-brand-ivory font-mono font-medium border border-brand-border/80 hover:border-brand-gold hover:text-brand-gold transition-colors rounded-xs bg-brand-charcoal/50"
                 aria-label={language === 'en' ? 'التحويل للغة العربية' : 'Switch to English'}
-                title={language === 'en' ? 'التحويل للغة العربية (عربي)' : 'Switch to English (EN)'}
+                title={language === 'en' ? 'التحويل للغة العربية' : 'Switch to English'}
               >
                 <Globe className="w-3 h-3 xs:w-3.5 xs:h-3.5 text-brand-gold opacity-90" />
-                <span className="font-bold tracking-wider">{language === 'en' ? 'عربي' : 'EN'}</span>
+                <span className="font-bold tracking-wider">{language === 'en' ? 'عربي' : 'الإنجليزية'}</span>
               </button>
 
               {/* Wishlist Link with Live Badge (Tablet & Desktop) */}
@@ -321,10 +321,10 @@ export const Header: React.FC = () => {
               <Link
                 href="/account/loyalty"
                 className="hidden md:inline-flex items-center space-x-1.5 rtl:space-x-reverse px-2.5 py-1 rounded-xs bg-brand-gold/15 hover:bg-brand-gold/25 text-brand-gold border border-brand-gold/50 transition-colors font-mono text-[11px] font-bold shadow-sm"
-                title={isAr ? 'كارت ولاء أثير VIP والمكافآت' : 'ATHEER VIP Loyalty Pass'}
+                title={isAr ? 'كارت ولاء أثير والمكافآت' : 'ATHEER Loyalty Pass'}
               >
                 <Award className="w-3.5 h-3.5" />
-                <span>{isAr ? 'كارت الولاء' : 'VIP Pass'}</span>
+                <span>{isAr ? 'كارت الولاء' : 'Loyalty Pass'}</span>
               </Link>
 
               {/* Customer Account Button (Tablet & Desktop — on Mobile available in Bottom Nav & Drawer) */}
@@ -376,7 +376,7 @@ export const Header: React.FC = () => {
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder={
                     isAr
-                      ? 'ابحث عن هوديز، سويت شيرتات، تي شيرت، 500 GSM، أوفرسايز...'
+                      ? 'ابحث عن هوديز، سويت شيرتات، تي شيرت، ٥٠٠ جم/م²، أوفرسايز...'
                       : t('searchPlaceholder')
                   }
                   className="w-full bg-transparent text-brand-ivory placeholder-brand-muted text-sm sm:text-base focus:outline-none font-sans"
@@ -469,7 +469,7 @@ export const Header: React.FC = () => {
                               style={{ backgroundImage: `url('${prod.image}')` }}
                             />
                             <span className="absolute bottom-1 right-1 rtl:left-1 rtl:right-auto bg-brand-black/90 text-brand-gold font-mono text-[8px] px-1 font-bold">
-                              {prod.gsm}G
+                              {prod.gsm} {isAr ? 'جم/م²' : 'GSM'}
                             </span>
                           </div>
 
@@ -508,7 +508,7 @@ export const Header: React.FC = () => {
                       </p>
                       <p className="text-xs text-brand-muted font-sans">
                         {isAr
-                          ? 'جرب البحث بكلمات عامة مثل: هوديز، سويت شيرت، بوكسي، أو 500 GSM'
+                          ? 'جرب البحث بكلمات عامة مثل: هوديز، سويت شيرت، بوكسي، أو ٥٠٠ جم/م²'
                           : 'Try searching with generic terms like: hoodies, crewnecks, boxy, or 500 GSM'}
                       </p>
                       <div className="pt-2 flex flex-wrap justify-center gap-2">
@@ -594,9 +594,9 @@ export const Header: React.FC = () => {
                 >
                   <span className="flex items-center space-x-2 rtl:space-x-reverse">
                     <Award className="w-4 h-4 text-brand-gold" />
-                    <span>{isAr ? 'كارت الولاء VIP + 100 ج.م' : 'VIP Loyalty Pass + 100 EGP'}</span>
+                    <span>{isAr ? 'كارت ولاء أثير + ١٠٠ ج.م' : 'Loyalty Pass + 100 EGP'}</span>
                   </span>
-                  <span className="text-[10px] bg-brand-gold text-brand-black px-1.5 py-0.5 rounded-xs uppercase font-bold">VIP</span>
+                  <span className="text-[10px] bg-brand-gold text-brand-black px-1.5 py-0.5 rounded-xs uppercase font-bold">{isAr ? 'ذهبي' : 'GOLD'}</span>
                 </Link>
 
                 <div className="grid grid-cols-2 gap-2 pt-1">
@@ -623,17 +623,17 @@ export const Header: React.FC = () => {
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-brand-muted uppercase tracking-wider">{t('currencyLabel')}</span>
                   <span className="font-mono text-brand-gold font-bold px-2.5 py-1 bg-brand-charcoal border border-brand-border">
-                    EGP | ج.م
+                    {isAr ? 'الجنيه المصري (ج.م)' : 'Egyptian Pound (EGP)'}
                   </span>
                 </div>
 
                 <div className="flex items-center justify-between text-xs pt-2">
-                  <span className="text-brand-muted uppercase tracking-wider">Language / اللغة</span>
+                  <span className="text-brand-muted uppercase tracking-wider">{isAr ? 'اللغة' : 'Language'}</span>
                   <button
                     onClick={() => {
                       setLanguage(language === 'en' ? 'ar' : 'en');
                     }}
-                    className="px-3 py-1 text-xs border border-brand-gold text-brand-gold bg-brand-gold/10 font-medium"
+                    className="px-3 py-1 text-xs border border-brand-gold text-brand-gold bg-brand-gold/10 font-medium font-mono"
                   >
                     {language === 'en' ? 'العربية' : 'English'}
                   </button>

@@ -161,7 +161,7 @@ export const MobileBottomNav: React.FC = () => {
               <span className="absolute -top-1 -right-1 rtl:-left-1 rtl:right-auto w-2 h-2 rounded-full bg-brand-gold animate-pulse" />
             </div>
             <span className="text-[10px] font-sans font-bold text-brand-gold">
-              {isAr ? 'كارت VIP' : 'VIP Pass'}
+              {isAr ? 'كارت الولاء' : 'Loyalty Pass'}
             </span>
           </Link>
 
@@ -224,7 +224,7 @@ export const MobileBottomNav: React.FC = () => {
                   {customer ? customer.fullName : (isAr ? 'ضيف أثير المميز' : 'ATHEER Guest')}
                 </p>
                 <p className="text-[11px] text-brand-gold font-mono mt-0.5">
-                  {customer ? (customer.phone || customer.email) : (isAr ? 'سجل برقمك لكارت الولاء VIP' : 'Sign in with phone for VIP pass')}
+                  {customer ? (customer.phone || customer.email) : (isAr ? 'سجل برقمك لكارت الولاء الذهبي' : 'Sign in with phone for Gold Loyalty Pass')}
                 </p>
               </div>
               <Link
@@ -286,12 +286,19 @@ export const MobileBottomNav: React.FC = () => {
                           #{ord.orderNumber || ord.id}
                         </span>
                         <span className="text-[10px] px-2 py-0.5 rounded-full bg-brand-gold/15 text-brand-gold border border-brand-gold/40">
-                          {ord.status}
+                          {isAr ? ({
+                            pending: 'قيد الانتظار',
+                            confirmed: 'تم التأكيد',
+                            processing: 'قيد التجهيز',
+                            shipped: 'تم الشحن',
+                            delivered: 'تم التوصيل',
+                            cancelled: 'ملغي'
+                          }[String(ord.status).toLowerCase()] || ord.status) : ord.status}
                         </span>
                       </div>
                       <div className="flex items-center justify-between text-[11px] text-brand-cream/70 font-mono">
                         <span>{ord.shippingAddress?.fullName || ord.customerName}</span>
-                        <span className="text-brand-ivory font-bold">{ord.totalAmount} ج.م</span>
+                        <span className="text-brand-ivory font-bold">{ord.totalAmount} {isAr ? 'ج.م' : 'EGP'}</span>
                       </div>
                       <Link
                         href={`/track-order?ref=${ord.orderNumber || ord.id}`}

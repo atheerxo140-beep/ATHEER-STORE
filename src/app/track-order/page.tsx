@@ -245,7 +245,7 @@ function TrackOrderContent() {
                 </span>
                 <span className="text-brand-cream/60 text-[11px]">
                   {isAr
-                    ? 'يحق لك فتح الطرد مع المندوب والتأكد من المقاس وجودة القطن 500 GSM قبل دفع أي مبلغ.'
+                    ? 'يحق لك فتح الطرد مع المندوب والتأكد من المقاس وجودة القطن ٥٠٠ جم/م² قبل دفع أي مبلغ.'
                     : 'Check your 500 GSM fabric and fit with the courier before paying.'}
                 </span>
               </div>
@@ -275,7 +275,7 @@ function TrackOrderContent() {
               </div>
 
               <div className="pt-3 border-t border-brand-border/60 flex items-center justify-between text-sm font-mono font-black">
-                <span>{isAr ? 'إجمالي التحصيل عند الاستلام (COD):' : 'Total Payable on Delivery (COD):'}</span>
+                <span>{isAr ? 'إجمالي التحصيل عند الاستلام:' : 'Total Payable on Delivery (COD):'}</span>
                 <span className="text-brand-gold text-base">{formatPrice(order.totalAmount)}</span>
               </div>
             </div>

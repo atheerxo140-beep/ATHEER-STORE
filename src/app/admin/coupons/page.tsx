@@ -492,11 +492,11 @@ export default function AdminCouponsPage() {
                   <div>
                     {coupon.discountType === 'percentage' ? (
                       <span className="font-bold text-brand-ivory text-sm">
-                        {coupon.discountValue}% <span className="text-brand-gold text-xs">OFF</span>
+                        {coupon.discountValue}% <span className="text-brand-gold text-xs">{isAr ? 'خصم' : 'OFF'}</span>
                       </span>
                     ) : (
                       <span className="font-bold text-brand-ivory text-sm">
-                        {coupon.discountValue} <span className="text-brand-gold text-xs">EGP OFF</span>
+                        {coupon.discountValue} <span className="text-brand-gold text-xs">{isAr ? 'ج.م خصم' : 'EGP OFF'}</span>
                       </span>
                     )}
                   </div>
@@ -504,7 +504,7 @@ export default function AdminCouponsPage() {
                   <div className="text-[11px] text-brand-cream/70">
                     <span>{isAr ? 'الحد الأدنى: ' : 'Min: '}</span>
                     <span className="text-brand-ivory font-bold">
-                      {coupon.minOrderAmount ? `${coupon.minOrderAmount.toLocaleString()} EGP` : (isAr ? 'بدون حد' : 'None')}
+                      {coupon.minOrderAmount ? `${coupon.minOrderAmount.toLocaleString()} ${isAr ? 'ج.م' : 'EGP'}` : (isAr ? 'بدون حد' : 'None')}
                     </span>
                     <span className="text-brand-border mx-1">·</span>
                     <span>{coupon.timesUsed || 0} / {coupon.usageLimit || '∞'}</span>
@@ -587,19 +587,19 @@ export default function AdminCouponsPage() {
                       {coupon.discountType === 'percentage' ? (
                         <div className="flex items-center space-x-1.5 rtl:space-x-reverse font-bold text-brand-ivory text-sm">
                           <Percent className="w-3.5 h-3.5 text-brand-gold" />
-                          <span>{coupon.discountValue}% OFF</span>
+                          <span>{coupon.discountValue}% {isAr ? 'خصم' : 'OFF'}</span>
                         </div>
                       ) : (
                         <div className="flex items-center space-x-1.5 rtl:space-x-reverse font-bold text-brand-ivory text-sm">
                           <Banknote className="w-3.5 h-3.5 text-brand-gold" />
-                          <span>{coupon.discountValue} EGP OFF</span>
+                          <span>{coupon.discountValue} {isAr ? 'ج.م خصم' : 'EGP OFF'}</span>
                         </div>
                       )}
                     </td>
 
                     {/* Min Spend */}
                     <td className="py-3.5 px-4 text-brand-cream/80">
-                      {coupon.minOrderAmount ? `${coupon.minOrderAmount.toLocaleString()} EGP` : (isAr ? 'بدون حد أدنى' : 'No minimum')}
+                      {coupon.minOrderAmount ? `${coupon.minOrderAmount.toLocaleString()} ${isAr ? 'ج.م' : 'EGP'}` : (isAr ? 'بدون حد أدنى' : 'No minimum')}
                     </td>
 
                     {/* Usage */}
@@ -699,8 +699,8 @@ export default function AdminCouponsPage() {
                     onChange={(e) => setFormData({ ...formData, discountType: e.target.value as any })}
                     className="w-full bg-brand-stone/40 border border-brand-border px-3 py-2 text-brand-ivory rounded-xs focus:border-brand-gold focus:outline-none"
                   >
-                    <option value="percentage">Percentage (%)</option>
-                    <option value="fixed">Fixed Amount (EGP)</option>
+                    <option value="percentage">{isAr ? 'نسبة مئوية (%)' : 'Percentage (%)'}</option>
+                    <option value="fixed">{isAr ? 'مبلغ كاش ثابت (ج.م)' : 'Fixed Amount (EGP)'}</option>
                   </select>
                 </div>
 
@@ -708,7 +708,7 @@ export default function AdminCouponsPage() {
                   <label className="block text-brand-cream/80 mb-1">
                     {formData.discountType === 'percentage'
                       ? isAr ? 'نسبة الخصم (%) *' : 'Percentage (%) *'
-                      : isAr ? 'قيمة الخصم (EGP) *' : 'Amount (EGP) *'}
+                      : isAr ? 'قيمة الخصم (ج.م) *' : 'Amount (EGP) *'}
                   </label>
                   <input
                     type="number"
@@ -725,7 +725,7 @@ export default function AdminCouponsPage() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-brand-cream/80 mb-1">
-                    {isAr ? 'الحد الأدنى للطلب (EGP)' : 'Min Order (EGP)'}
+                    {isAr ? 'الحد الأدنى للطلب (ج.م)' : 'Min Order (EGP)'}
                   </label>
                   <input
                     type="number"

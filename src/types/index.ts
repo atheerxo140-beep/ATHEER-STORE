@@ -263,6 +263,12 @@ export interface HomepageContent {
   futureChip1?: string;
   futureChip2?: string;
   futureChip3?: string;
+  futureChip1Ar?: string;
+  futureChip2Ar?: string;
+  futureChip3Ar?: string;
+  futureChip1En?: string;
+  futureChip2En?: string;
+  futureChip3En?: string;
   futureBadgeBottomEn?: string;
   futureBadgeBottomAr?: string;
 

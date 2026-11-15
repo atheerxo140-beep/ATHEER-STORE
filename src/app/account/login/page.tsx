@@ -109,7 +109,7 @@ function CustomerLoginForm() {
               }`}
             >
               <Award className="w-3.5 h-3.5" />
-              <span>{isAr ? 'كارت الولاء (تسجيل سريع)' : 'VIP Loyalty Card (Fast Sign Up)'}</span>
+              <span>{isAr ? 'كارت الولاء (تسجيل سريع)' : 'Loyalty Card (Fast Sign Up)'}</span>
             </button>
             <button
               type="button"
@@ -135,12 +135,12 @@ function CustomerLoginForm() {
               </div>
               <div className="leading-tight">
                 <span className="font-bold block text-brand-ivory text-xs mb-0.5">
-                  {isAr ? '💳 كارت ولاء دار أثير الرقمي (VIP Pass)' : '💳 ATHEER VIP Digital Loyalty Pass'}
+                  {isAr ? '💳 كارت ولاء دار أثير الرقمي' : '💳 ATHEER Digital Loyalty Pass'}
                 </span>
                 <span className="text-[11px] text-brand-cream/80 font-sans block">
                   {isAr
                     ? 'سجل برقم هاتفك الآن لاستلام كارت الولاء فوراً مع 100 ج.م كاش هدية ترحيبية وأختام لكل طلب!'
-                    : 'Register your mobile number to unlock your instant VIP rewards card + 100 EGP welcome bonus!'}
+                    : 'Register your mobile number to unlock your instant rewards card + 100 EGP welcome bonus!'}
                 </span>
               </div>
             </div>
@@ -193,8 +193,8 @@ function CustomerLoginForm() {
                   <Sparkles className="w-3.5 h-3.5" />
                   <span>
                     {isAr
-                      ? 'إنشاء حساب جديد واستلام كارت الولاء VIP بضغطة زر'
-                      : 'Create New Account & Claim VIP Pass Now'}
+                      ? 'إنشاء حساب جديد واستلام كارت الولاء بضغطة زر'
+                      : 'Create New Account & Claim Loyalty Pass Now'}
                   </span>
                 </button>
               )}
@@ -321,7 +321,7 @@ function CustomerLoginForm() {
                   ? (isAr ? 'جاري المعالجة...' : 'Processing...')
                   : activeTab === 'login'
                   ? (isAr ? 'دخول الحساب' : 'Sign In')
-                  : (isAr ? '🎁 تسجيل واستلام كارت الولاء VIP' : '🎁 Claim VIP Loyalty Pass')}
+                  : (isAr ? '🎁 تسجيل واستلام كارت الولاء' : '🎁 Claim Loyalty Pass')}
               </span>
               <ArrowIcon className="w-4 h-4" />
             </button>
@@ -331,7 +331,7 @@ function CustomerLoginForm() {
           <div className="mt-8 pt-6 border-t border-brand-border/60 space-y-2">
             <div className="flex items-center space-x-2 rtl:space-x-reverse text-xs text-brand-cream/80">
               <Sparkles className="w-3.5 h-3.5 text-brand-gold flex-shrink-0" />
-              <span>{isAr ? 'أختام رقمية تلقائية مع كل طلب (ATHEER REWARDS)' : 'Earn digital stamps automatically on every order'}</span>
+              <span>{isAr ? 'أختام رقمية تلقائية مع كل طلب (مكافآت أثير)' : 'Earn digital stamps automatically on every order'}</span>
             </div>
             <div className="flex items-center space-x-2 rtl:space-x-reverse text-xs text-brand-cream/80">
               <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />

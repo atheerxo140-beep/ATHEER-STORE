@@ -116,7 +116,7 @@ export default function AdminLoginPage() {
             <h1 className="font-sans font-black text-2xl tracking-[0.25em] text-brand-ivory">ATHEER</h1>
             <p className="font-arabic font-bold text-lg text-brand-gold">أثير · إدارة المتجر</p>
             <p className="text-[11px] font-mono text-brand-cream/50 uppercase tracking-widest mt-1">
-              Authorized Personnel Portal
+              {isAr ? 'بوابة المسؤولين والمشرفين المعتمدة' : 'Authorized Personnel Portal'}
             </p>
           </div>
 
@@ -132,14 +132,14 @@ export default function AdminLoginPage() {
               <Database className="w-3.5 h-3.5 text-brand-gold" />
               <span>
                 {supabaseConfigured
-                  ? 'Supabase Cloud Authentication Active'
-                  : 'Local Development Environment Active'}
+                  ? (isAr ? 'المصادقة السحابية نشطة ومؤمنة' : 'Cloud Authentication Active')
+                  : (isAr ? 'بيئة التشغيل المحلي نشطة' : 'Local Development Environment Active')}
               </span>
             </div>
             <p className="text-[10px] text-brand-cream/60">
               {supabaseConfigured
                 ? isAr
-                  ? 'تم ربط مفاتيح Supabase السحابية بنجاح. التحقق من الصلاحيات يتم عبر خادم قاعدة البيانات.'
+                  ? 'تم ربط مفاتيح قاعدة البيانات السحابية بنجاح. التحقق من الصلاحيات يتم عبر خادم قاعدة البيانات.'
                   : 'Connected to Supabase Auth cloud instance.'
                 : isAr
                   ? 'المتجر يعمل حالياً بذاكرة التخزين المحلية المؤكدة. يمكنك تسجيل الدخول مباشرة بدون إدخال مفاتيح سحابية.'

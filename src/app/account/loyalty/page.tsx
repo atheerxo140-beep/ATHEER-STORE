@@ -79,7 +79,7 @@ export default function LoyaltyCardPage() {
             {isAr ? 'حسابي' : 'My Account'}
           </Link>
           <span>/</span>
-          <span className="text-brand-gold font-bold">ATHEER REWARDS</span>
+          <span className="text-brand-gold font-bold">{isAr ? 'مكافآت أثير' : 'ATHEER REWARDS'}</span>
         </div>
 
         {/* Master Digital Stamp Card Visual */}
@@ -93,11 +93,11 @@ export default function LoyaltyCardPage() {
               <div>
                 <div className="flex items-center space-x-2 rtl:space-x-reverse">
                   <span className="font-sans font-black text-2xl tracking-[0.2em] text-brand-ivory uppercase">
-                    ATHEER
+                    {isAr ? 'أثير' : 'ATHEER'}
                   </span>
                   <span className="text-brand-gold font-light">/</span>
                   <span className="text-xs font-mono font-bold text-brand-gold tracking-widest uppercase">
-                    REWARDS PASS
+                    {isAr ? 'كارت المكافآت' : 'REWARDS PASS'}
                   </span>
                 </div>
                 <p className="text-xs text-brand-cream/60 font-mono mt-1">
@@ -110,7 +110,9 @@ export default function LoyaltyCardPage() {
                   {isAr ? 'فئة العضوية' : 'Membership Tier'}
                 </span>
                 <span className="text-sm font-mono font-bold text-brand-gold uppercase">
-                  {account?.tier || 'Bronze'} Member
+                  {isAr
+                    ? (account?.tier === 'Gold' ? 'عضو ذهبي' : account?.tier === 'Silver' ? 'عضو فضي' : 'عضو برونزي')
+                    : `${account?.tier || 'Bronze'} Member`}
                 </span>
               </div>
             </div>

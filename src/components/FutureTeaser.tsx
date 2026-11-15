@@ -22,17 +22,17 @@ export const FutureTeaser: React.FC = () => {
     : content.futureBadgeEn || 'FUTURE DROP · IN SAMPLING';
 
   const title = isAr
-    ? content.futureTitleAr || 'تي شيرت أثير البوكسي الثقيل 320 GSM'
+    ? content.futureTitleAr || 'تي شيرت أثير البوكسي الثقيل ٣٢٠ جم/م²'
     : content.futureTitleEn || 'The Essential 320 GSM Heavy Boxy Youth Tee';
 
   const desc = isAr
-    ? content.futureDescAr || 'بينما نركز حالياً على إطلاق الهوديز والسويت شيرتات الثقيلة، نعمل في مختبر أثير على تجهيز التي شيرت الشبابي الأوفرسايز المثالي: قطن جيرسي 320 GSM فائق الكثافة، ياقة ضيقة متماسكة، وأكمام بوكسي واسعة.'
+    ? content.futureDescAr || 'بينما نركز حالياً على إطلاق الهوديز والسويت شيرتات الثقيلة، نعمل في مختبر أثير على تجهيز التي شيرت الشبابي الأوفرسايز المثالي: قطن جيرسي ٣٢٠ جم/م² فائق الكثافة، ياقة ضيقة متماسكة، وأكمام بوكسي واسعة.'
     : content.futureDescEn || 'While our launch collection is dedicated to 500 GSM heavyweight hoodies and sweatshirts, we are currently engineering the ultimate youth boxy tee: 320 GSM ultra-dense combed cotton, structured mock-neck ribbing, and relaxed elbow-length sleeves.';
 
   const img = content.futureImage || 'https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?q=80&w=1000&auto=format&fit=crop';
-  const chip1 = content.futureChip1 || '320 GSM Jersey';
-  const chip2 = content.futureChip2 || 'High-Neck Rib';
-  const chip3 = content.futureChip3 || 'Oversized Youth Cut';
+  const chip1 = isAr ? (content.futureChip1Ar || 'جيرسي ٣٢٠ جم/م²') : (content.futureChip1En || content.futureChip1 || '320 GSM Jersey');
+  const chip2 = isAr ? (content.futureChip2Ar || 'ياقة مرتفعة مضلعة') : (content.futureChip2En || content.futureChip2 || 'High-Neck Rib');
+  const chip3 = isAr ? (content.futureChip3Ar || 'قصّة شبابية أوفرسايز') : (content.futureChip3En || content.futureChip3 || 'Oversized Youth Cut');
   const bottomBadge = isAr
     ? content.futureBadgeBottomAr || 'مرحلة العينات · قريباً في الأسواق'
     : content.futureBadgeBottomEn || 'DEVELOPMENT LAB · COMING SOON';

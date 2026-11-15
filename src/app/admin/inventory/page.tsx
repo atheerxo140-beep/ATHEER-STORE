@@ -191,18 +191,18 @@ export default function AdminInventoryPage() {
           </div>
           <div className="text-2xl font-black font-serif text-brand-ivory">{totalUnits}</div>
           <p className="text-[11px] font-mono text-brand-gold mt-1">
-            Across {items.length} active streetwear drops
+            {isAr ? `عبر ${items.length} قطع معروضة بالمتجر` : `Across ${items.length} active streetwear drops`}
           </p>
         </div>
 
         <div className="bg-brand-charcoal border border-brand-border/80 p-5 rounded-sm">
           <div className="text-[10px] font-mono uppercase tracking-widest text-brand-cream/50 mb-1">
-            {isAr ? 'القيمة الإجمالية للمخزون (EGP)' : 'Total Inventory Valuation'}
+            {isAr ? 'القيمة الإجمالية للمخزون (ج.م)' : 'Total Inventory Valuation (EGP)'}
           </div>
           <div className="text-2xl font-black font-serif text-brand-gold">
-            {totalValue.toLocaleString()} <span className="text-xs font-mono">EGP</span>
+            {totalValue.toLocaleString()} <span className="text-xs font-mono">{isAr ? 'ج.م' : 'EGP'}</span>
           </div>
-          <p className="text-[11px] font-mono text-brand-cream/60 mt-1">Calculated at current store prices</p>
+          <p className="text-[11px] font-mono text-brand-cream/60 mt-1">{isAr ? 'محسوبة وفق الأسعار الحالية بالمتجر' : 'Calculated at current store prices'}</p>
         </div>
 
         <div className="bg-brand-charcoal border border-brand-border/80 p-5 rounded-sm">
@@ -217,7 +217,7 @@ export default function AdminInventoryPage() {
             {lowStockCount} {isAr ? 'قطع' : 'garments'}
           </div>
           <p className="text-[11px] font-mono text-brand-cream/60 mt-1">
-            {lowStockCount > 0 ? 'Action needed: re-stock suggested' : 'Healthy inventory levels'}
+            {lowStockCount > 0 ? (isAr ? 'يتطلب إجراء: يُوصى بإعادة التوريد' : 'Action needed: re-stock suggested') : (isAr ? 'مستويات المخزون ممتازة' : 'Healthy inventory levels')}
           </p>
         </div>
       </div>
@@ -308,7 +308,11 @@ export default function AdminInventoryPage() {
 
                     {/* Category */}
                     <td className="py-3.5 px-4 text-brand-cream/80 capitalize">
-                      {item.category === 'hoodies' ? '500 GSM Hoodie' : item.category}
+                      {item.category === 'hoodies'
+                        ? (isAr ? 'هودي ٥٠٠ جم/م²' : '500 GSM Hoodie')
+                        : item.category === 'sweatshirts'
+                        ? (isAr ? 'سويت شيرت' : 'Sweatshirt')
+                        : (isAr ? 'تي شيرت' : 'T-Shirt')}
                     </td>
 
                     {/* Sizes */}
@@ -327,7 +331,7 @@ export default function AdminInventoryPage() {
 
                     {/* Price */}
                     <td className="py-3.5 px-4 font-bold text-brand-ivory">
-                      {item.price.toLocaleString()} <span className="text-[10px] text-brand-gold">EGP</span>
+                      {item.price.toLocaleString()} <span className="text-[10px] text-brand-gold">{isAr ? 'ج.م' : 'EGP'}</span>
                     </td>
 
                     {/* Current Stock */}
@@ -335,18 +339,18 @@ export default function AdminInventoryPage() {
                       {item.isLowStock ? (
                         <div className="flex items-center space-x-1.5 rtl:space-x-reverse text-amber-400 font-bold">
                           <AlertTriangle className="w-3.5 h-3.5" />
-                          <span>{item.inventory} units (Low)</span>
+                          <span>{item.inventory} {isAr ? 'قطعة (منخفض)' : 'units (Low)'}</span>
                         </div>
                       ) : (
                         <div className="text-emerald-400 font-bold">
-                          {item.inventory} units
+                          {item.inventory} {isAr ? 'قطعة متوفرة' : 'units'}
                         </div>
                       )}
                     </td>
 
                     {/* Stock Value */}
                     <td className="py-3.5 px-4 text-brand-ivory font-semibold">
-                      {((item.inventory || 0) * item.price).toLocaleString()} EGP
+                      {((item.inventory || 0) * item.price).toLocaleString()} {isAr ? 'ج.م' : 'EGP'}
                     </td>
 
                     {/* Quick Adjust Buttons */}

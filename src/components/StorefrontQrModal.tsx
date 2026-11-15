@@ -56,7 +56,7 @@ export const StorefrontQrModal: React.FC = () => {
       try {
         await (navigator as any).share({
           title: 'ATHEER | أثير — أزياء الستريتوير الشبابية الفاخرة',
-          text: 'تسوق تشكيلة هوديز وسويت شيرتات أثير 500 GSM الفاخرة في مصر:',
+          text: 'تسوق تشكيلة هوديز وسويت شيرتات أثير ٥٠٠ جم/م² الفاخرة في مصر:',
           url: targetUrl,
         });
       } catch (err) {

@@ -102,7 +102,7 @@ export const ProductBottomSheet: React.FC<ProductBottomSheetProps> = ({
               style={{ backgroundImage: `url('${product.image}')` }}
             />
             <span className="absolute bottom-1 right-1 rtl:left-1 rtl:right-auto bg-brand-black/90 text-brand-gold font-mono text-[9px] px-1.5 py-0.5 font-bold">
-              {product.gsm} GSM
+              {product.gsm} {isAr ? 'جم/م²' : 'GSM'}
             </span>
           </div>
 

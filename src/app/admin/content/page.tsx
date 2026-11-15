@@ -554,7 +554,7 @@ export default function AdminContentPage() {
           }`}
         >
           <Clock className="w-3.5 h-3.5" />
-          <span>{isAr ? '6. الإصدار القادم (تي شيرت أثير 320 GSM وصورته)' : '6. Future Drop (320 GSM Tee)'}</span>
+          <span>{isAr ? '6. الإصدار القادم (تي شيرت أثير ٣٢٠ جم/م² وصورته)' : '6. Future Drop (320 GSM Tee)'}</span>
         </button>
 
         <button
@@ -804,7 +804,7 @@ export default function AdminContentPage() {
                   {isAr ? '5. قصة البراند وعن أثير (Brand Story)' : '5. Brand Story & Quality'}
                 </span>
                 <p className="text-[11px] text-brand-cream/60">
-                  {isAr ? 'صورة وفلسفة أثير، معايير الثقل 500 GSM، وخلو القماش من البوليستر' : 'Manifesto, 500 GSM loopback cotton specs, and atelier photo'}
+                  {isAr ? 'صورة وفلسفة أثير، معايير الثقل ٥٠٠ جم/م²، وخلو القماش من البوليستر' : 'Manifesto, 500 GSM loopback cotton specs, and atelier photo'}
                 </p>
               </div>
               <button
@@ -834,7 +834,7 @@ export default function AdminContentPage() {
                   {isAr ? '6. الإصدار القادم / التي شيرتات (Future Drop)' : '6. Future Drop Teaser'}
                 </span>
                 <p className="text-[11px] text-brand-cream/60">
-                  {isAr ? 'تشويق التي شيرتات القادمة 320 GSM مع نموذج إشعار الإطلاق' : 'Upcoming 320 GSM tees showcase with VIP email notification'}
+                  {isAr ? 'تشويق التي شيرتات القادمة ٣٢٠ جم/م² مع نموذج إشعار الإطلاق' : 'Upcoming 320 GSM tees showcase with VIP email notification'}
                 </p>
               </div>
               <button
@@ -1757,7 +1757,7 @@ export default function AdminContentPage() {
                   <span className="text-xs font-mono font-bold text-brand-gold block">{isAr ? 'الإحصائية 1' : 'Stat 1'}</span>
                   <input
                     type="text"
-                    placeholder="القيمة (مثال: 500 GSM)"
+                    placeholder={isAr ? "القيمة (مثال: ٥٠٠ جم/م²)" : "Value (e.g. 500 GSM)"}
                     value={content.heroStat1Value || ''}
                     onChange={(e) => setContent({ ...content, heroStat1Value: e.target.value })}
                     className="w-full bg-brand-charcoal border border-brand-border px-2 py-1.5 text-xs text-brand-ivory rounded-xs font-mono"
@@ -2095,7 +2095,7 @@ export default function AdminContentPage() {
               </div>
               <p className="text-brand-cream/80 leading-relaxed font-sans">
                 {isAr
-                  ? 'من هنا يمكنك رفع صورة الموديل أو تصوير الاستوديو، تعديل الشارة والعنوان والفقرتين، وتعديل بطاقة ميثاق دار أثير المعلقة والمقاييس الثلاثة (500 GSM و 0% و 100%).'
+                  ? 'من هنا يمكنك رفع صورة الموديل أو تصوير الاستوديو، تعديل الشارة والعنوان والفقرتين، وتعديل بطاقة ميثاق دار أثير المعلقة والمقاييس الثلاثة (٥٠٠ جم/م² و 0% و 100%).'
                   : 'Customize the model photograph, headlines, manifesto paragraphs, quote card, and technical specs.'}
               </p>
             </div>
@@ -2109,7 +2109,7 @@ export default function AdminContentPage() {
                 <span>{isAr ? 'قسم قصة دار أثير والجودة (Atelier Story & Quality)' : 'Brand Story & Quality Specs'}</span>
               </div>
               <p className="text-xs text-brand-cream/60 mt-1 font-mono">
-                {isAr ? 'القسم الذي يتحدث عن فلسفة دار أثير، ثقل النسيج 500 GSM، وخلوه من البوليستر.' : 'Editorial story section featuring brand manifesto, loopback cotton specs, and atelier photo.'}
+                {isAr ? 'القسم الذي يتحدث عن فلسفة دار أثير، ثقل النسيج ٥٠٠ جم/م²، وخلوه من البوليستر.' : 'Editorial story section featuring brand manifesto, loopback cotton specs, and atelier photo.'}
               </p>
             </div>
 
@@ -2373,11 +2373,11 @@ export default function AdminContentPage() {
             <Clock className="w-5 h-5 text-brand-gold flex-shrink-0 mt-0.5" />
             <div className="text-xs space-y-1">
               <div className="font-bold text-brand-gold">
-                {isAr ? 'التحكم في قسم (تي شيرت أثير البوكسي الثقيل GSM 320 - الإصدار القادم)' : 'Future Drop Teaser Control'}
+                {isAr ? 'التحكم في قسم (تي شيرت أثير البوكسي الثقيل ٣٢٠ جم/م² - الإصدار القادم)' : 'Future Drop Teaser Control'}
               </div>
               <p className="text-brand-cream/80 leading-relaxed font-sans">
                 {isAr
-                  ? 'من هنا يمكنك رفع صورة التي شيرت والموديل، تعديل الشارة والعنوان والوصف، وتعديل وسوم المواصفات (Oversized Cut, High-Neck Rib, GSM Jersey 320) وشارة الصورة المعلقة.'
+                  ? 'من هنا يمكنك رفع صورة التي شيرت والموديل، تعديل الشارة والعنوان والوصف، وتعديل وسوم المواصفات (قصة أوفرسايز، ياقة مرتفعة مضلعة، جيرسي ٣٢٠ جم/م²) وشارة الصورة المعلقة.'
                   : 'Customize the future drop teaser photo, headline, description, spec chips, and image overlay badge.'}
               </p>
             </div>
@@ -2391,7 +2391,7 @@ export default function AdminContentPage() {
                 <span>{isAr ? 'قسم الإصدار القادم / التي شيرتات (Future Drop Teaser)' : 'Future Drop Teaser Section'}</span>
               </div>
               <p className="text-xs text-brand-cream/60 mt-1 font-mono">
-                {isAr ? 'الصندوق الترويجي للتي شيرتات القادمة 320 GSM مع نموذج إشعارات الإطلاق للعملاء.' : 'Upcoming drop teaser card with VIP email signup form.'}
+                {isAr ? 'الصندوق الترويجي للتي شيرتات القادمة ٣٢٠ جم/م² مع نموذج إشعارات الإطلاق للعملاء.' : 'Upcoming drop teaser card with VIP email signup form.'}
               </p>
             </div>
 
@@ -2591,7 +2591,7 @@ export default function AdminContentPage() {
                 <span>{isAr ? 'قسم مميزات وضمانات المتجر (Store Guarantees & COD)' : 'Store Guarantees & COD Services'}</span>
               </div>
               <p className="text-xs text-brand-cream/60 mt-1 font-mono">
-                {isAr ? 'البطاقات الأربعة لخدمات التوصيل والمعاينة وضمان النسيج 500 GSM وخدمة العملاء.' : 'The 4 guarantee cards displayed near the footer of the customer storefront.'}
+                {isAr ? 'البطاقات الأربعة لخدمات التوصيل والمعاينة وضمان النسيج ٥٠٠ جم/م² وخدمة العملاء.' : 'The 4 guarantee cards displayed near the footer of the customer storefront.'}
               </p>
             </div>
 
@@ -2948,7 +2948,7 @@ export default function AdminContentPage() {
                     style={{ fontFamily: selectedFontAr }}
                     className="text-base sm:text-lg font-bold text-brand-ivory"
                   >
-                    هودي أثير بوكسي الثقيل 500 GSM (Onyx Black)
+                    {isAr ? 'هودي أثير بوكسي الثقيل ٥٠٠ جم/م² (أسود أونيكس)' : 'ATHEER Heavyweight 500 GSM Boxy Hoodie (Onyx Black)'}
                   </div>
                   <div
                     style={{ fontFamily: selectedFontEn }}

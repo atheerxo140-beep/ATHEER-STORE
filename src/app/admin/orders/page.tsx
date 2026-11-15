@@ -141,7 +141,7 @@ export default function AdminOrdersPage() {
       if (data.success) {
         setFeedbackMsg({
           type: 'success',
-          text: isAr ? 'تم تحديث حالة تحصيل الدفع عند الاستلام (COD)' : 'COD payment status updated',
+          text: isAr ? 'تم تحديث حالة تحصيل الدفع عند الاستلام' : 'COD payment status updated',
         });
         fetchOrders();
         setTimeout(() => setFeedbackMsg(null), 3000);
@@ -210,7 +210,7 @@ export default function AdminOrdersPage() {
         return (
           <span className="inline-flex items-center space-x-1 rtl:space-x-reverse px-2 py-0.5 bg-emerald-950/40 text-emerald-300 border border-emerald-500/40 rounded-xs text-[10px] font-mono font-bold">
             <CreditCard className="w-3 h-3" />
-            <span>{isAr ? 'تم تحصيل COD' : 'COD Collected'}</span>
+            <span>{isAr ? 'تم التحصيل' : 'COD Collected'}</span>
           </span>
         );
       case 'pending_cod':
@@ -250,7 +250,7 @@ export default function AdminOrdersPage() {
           </h1>
           <p className="text-xs text-brand-cream/60 mt-1">
             {isAr
-              ? 'تتبع طلبات الدفع عند الاستلام (COD)، تغيير حالات الشحن، وتوليد فواتير الشحن لشركات التوصيل في مصر'
+              ? 'تتبع طلبات الدفع عند الاستلام، تغيير حالات الشحن، وتوليد فواتير الشحن لشركات التوصيل في مصر'
               : 'Track Egyptian Cash on Delivery (COD) orders, manage status pipelines, and print invoices'}
           </p>
         </div>
@@ -312,12 +312,12 @@ export default function AdminOrdersPage() {
             className="w-full bg-brand-stone/40 border border-brand-border/60 text-brand-ivory text-xs px-3 py-2 rounded-sm focus:outline-none focus:border-brand-gold font-mono"
           >
             <option value="all">{isAr ? 'جميع الحالات' : 'All Order Statuses'}</option>
-            <option value="pending">{isAr ? 'قيد الانتظار (Pending)' : 'Pending'}</option>
-            <option value="confirmed">{isAr ? 'تم التأكيد (Confirmed)' : 'Confirmed'}</option>
-            <option value="processing">{isAr ? 'قيد التجهيز (Processing)' : 'Processing'}</option>
-            <option value="shipped">{isAr ? 'تم الشحن (Shipped)' : 'Shipped'}</option>
-            <option value="delivered">{isAr ? 'تم التوصيل (Delivered)' : 'Delivered'}</option>
-            <option value="cancelled">{isAr ? 'ملغي (Cancelled)' : 'Cancelled'}</option>
+            <option value="pending">{isAr ? 'قيد الانتظار' : 'Pending'}</option>
+            <option value="confirmed">{isAr ? 'تم التأكيد' : 'Confirmed'}</option>
+            <option value="processing">{isAr ? 'قيد التجهيز' : 'Processing'}</option>
+            <option value="shipped">{isAr ? 'تم الشحن' : 'Shipped'}</option>
+            <option value="delivered">{isAr ? 'تم التوصيل' : 'Delivered'}</option>
+            <option value="cancelled">{isAr ? 'ملغي' : 'Cancelled'}</option>
           </select>
         </div>
 
@@ -328,8 +328,8 @@ export default function AdminOrdersPage() {
             onChange={(e) => setPaymentFilter(e.target.value)}
             className="w-full bg-brand-stone/40 border border-brand-border/60 text-brand-ivory text-xs px-3 py-2 rounded-sm focus:outline-none focus:border-brand-gold font-mono"
           >
-            <option value="all">{isAr ? 'حالة تحصيل COD (الكل)' : 'All Payment States'}</option>
-            <option value="pending_cod">{isAr ? 'في انتظار تحصيل COD' : 'Pending COD'}</option>
+            <option value="all">{isAr ? 'حالة التحصيل (الكل)' : 'All Payment States'}</option>
+            <option value="pending_cod">{isAr ? 'في انتظار التحصيل' : 'Pending COD'}</option>
             <option value="paid_on_delivery">{isAr ? 'تم التحصيل نقداً' : 'Paid on Delivery'}</option>
             <option value="cancelled">{isAr ? 'تحصيل ملغي' : 'Payment Cancelled'}</option>
           </select>
@@ -387,7 +387,7 @@ export default function AdminOrdersPage() {
                     </div>
                     <div className="text-right rtl:text-left">
                       <span className="font-mono font-bold text-sm text-brand-ivory block">
-                        {order.totalAmount.toLocaleString()} <span className="text-[10px] text-brand-gold">EGP</span>
+                        {order.totalAmount.toLocaleString()} <span className="text-[10px] text-brand-gold">{isAr ? 'ج.م' : 'EGP'}</span>
                       </span>
                       <span className="text-[10px] text-brand-cream/60 block font-mono">
                         {totalItems} {isAr ? 'قطع' : 'pcs'}
@@ -459,9 +459,9 @@ export default function AdminOrdersPage() {
                 <th className="py-3 px-4">{isAr ? 'العميل' : 'Customer'}</th>
                 <th className="py-3 px-4">{isAr ? 'المحافظة / الوجهة' : 'Location / Zone'}</th>
                 <th className="py-3 px-4">{isAr ? 'القطع' : 'Items'}</th>
-                <th className="py-3 px-4">{isAr ? 'الإجمالي (EGP)' : 'Total (EGP)'}</th>
+                <th className="py-3 px-4">{isAr ? 'الإجمالي (ج.م)' : 'Total (EGP)'}</th>
                 <th className="py-3 px-4">{isAr ? 'حالة الطلب' : 'Status'}</th>
-                <th className="py-3 px-4">{isAr ? 'تحصيل COD' : 'COD Payment'}</th>
+                <th className="py-3 px-4">{isAr ? 'التحصيل' : 'Payment'}</th>
                 <th className="py-3 px-4 text-center">{isAr ? 'الإجراءات' : 'Actions'}</th>
               </tr>
             </thead>
@@ -531,7 +531,7 @@ export default function AdminOrdersPage() {
 
                       {/* Total */}
                       <td className="py-3.5 px-4 font-bold text-brand-ivory">
-                        {order.totalAmount.toLocaleString()} <span className="text-[10px] text-brand-gold">EGP</span>
+                        {order.totalAmount.toLocaleString()} <span className="text-[10px] text-brand-gold">{isAr ? 'ج.م' : 'EGP'}</span>
                       </td>
 
                       {/* Status */}
@@ -600,7 +600,7 @@ export default function AdminOrdersPage() {
                   </span>
                   <span>·</span>
                   <span className="text-emerald-400 font-bold">
-                    Storage: {selectedOrder.backendStorage}
+                    {isAr ? 'مستودع البيانات:' : 'Storage:'} {selectedOrder.backendStorage === 'supabase' ? (isAr ? 'السحابة' : 'Supabase') : (isAr ? 'محلي' : 'Local')}
                   </span>
                 </div>
               </div>
@@ -628,12 +628,12 @@ export default function AdminOrdersPage() {
               </div>
               <div className="flex flex-wrap gap-2">
                 {[
-                  { status: 'pending', label: 'Pending' },
-                  { status: 'confirmed', label: 'Confirmed' },
-                  { status: 'processing', label: 'Processing' },
-                  { status: 'shipped', label: 'Shipped' },
-                  { status: 'delivered', label: 'Delivered' },
-                  { status: 'cancelled', label: 'Cancelled' },
+                  { status: 'pending', label: isAr ? 'قيد الانتظار' : 'Pending' },
+                  { status: 'confirmed', label: isAr ? 'تم التأكيد' : 'Confirmed' },
+                  { status: 'processing', label: isAr ? 'قيد التجهيز' : 'Processing' },
+                  { status: 'shipped', label: isAr ? 'تم الشحن' : 'Shipped' },
+                  { status: 'delivered', label: isAr ? 'تم التوصيل' : 'Delivered' },
+                  { status: 'cancelled', label: isAr ? 'ملغي' : 'Cancelled' },
                 ].map((s) => {
                   const isCurrent = selectedOrder.orderStatus === s.status;
                   return (
@@ -656,7 +656,7 @@ export default function AdminOrdersPage() {
               {/* COD Toggle */}
               <div className="pt-2 border-t border-brand-border/40 flex items-center justify-between">
                 <span className="text-brand-cream/70">
-                  {isAr ? 'حالة تحصيل الدفع عند الاستلام (COD):' : 'Cash On Delivery Status:'}
+                  {isAr ? 'حالة تحصيل الدفع عند الاستلام:' : 'Cash On Delivery Status:'}
                 </span>
                 <div className="flex items-center space-x-2 rtl:space-x-reverse">
                   <button
@@ -776,22 +776,22 @@ export default function AdminOrdersPage() {
                           {isAr ? item.productNameAr : item.productNameEn}
                         </div>
                         <div className="text-[10px] text-brand-cream/60 flex items-center space-x-2 rtl:space-x-reverse mt-0.5">
-                          <span className="text-brand-gold font-bold">Size: {item.selectedSize}</span>
+                          <span className="text-brand-gold font-bold">{isAr ? 'المقاس:' : 'Size:'} {item.selectedSize}</span>
                           <span>·</span>
-                          <span>Color: {item.selectedColor}</span>
+                          <span>{isAr ? 'اللون:' : 'Color:'} {item.selectedColor}</span>
                           <span>·</span>
                           <span className="px-1.5 py-0.2 bg-brand-charcoal border border-brand-border/40 text-[9px]">
-                            {item.gsm} GSM
+                            {item.gsm} {isAr ? 'جم/م²' : 'GSM'}
                           </span>
                         </div>
                       </div>
                     </div>
                     <div className="text-right rtl:text-left">
                       <div className="font-bold text-brand-ivory">
-                        {item.totalPrice.toLocaleString()} <span className="text-brand-gold text-[10px]">EGP</span>
+                        {item.totalPrice.toLocaleString()} <span className="text-brand-gold text-[10px]">{isAr ? 'ج.م' : 'EGP'}</span>
                       </div>
                       <div className="text-[10px] text-brand-cream/50">
-                        {item.quantity} × {item.unitPrice.toLocaleString()} EGP
+                        {item.quantity} × {item.unitPrice.toLocaleString()} {isAr ? 'ج.م' : 'EGP'}
                       </div>
                     </div>
                   </div>
@@ -803,7 +803,7 @@ export default function AdminOrdersPage() {
             <div className="bg-brand-stone/40 p-4 border border-brand-border/60 rounded-sm space-y-2">
               <div className="flex justify-between text-brand-cream/80">
                 <span>{isAr ? 'المجموع الفرعي:' : 'Subtotal:'}</span>
-                <span>{selectedOrder.subtotal.toLocaleString()} EGP</span>
+                <span>{selectedOrder.subtotal.toLocaleString()} {isAr ? 'ج.م' : 'EGP'}</span>
               </div>
               <div className="flex justify-between text-brand-cream/80">
                 <span>
@@ -813,18 +813,18 @@ export default function AdminOrdersPage() {
                 <span>
                   {selectedOrder.shippingFee === 0
                     ? isAr ? 'شحن مجاني' : 'FREE'
-                    : `${selectedOrder.shippingFee.toLocaleString()} EGP`}
+                    : `${selectedOrder.shippingFee.toLocaleString()} ${isAr ? 'ج.م' : 'EGP'}`}
                 </span>
               </div>
               {selectedOrder.discountAmount ? (
                 <div className="flex justify-between text-emerald-400">
                   <span>{isAr ? 'الخصم المطبق:' : 'Coupon Discount:'} ({selectedOrder.couponCode})</span>
-                  <span>-{selectedOrder.discountAmount.toLocaleString()} EGP</span>
+                  <span>-{selectedOrder.discountAmount.toLocaleString()} {isAr ? 'ج.م' : 'EGP'}</span>
                 </div>
               ) : null}
               <div className="flex justify-between text-base font-bold text-brand-gold pt-2 border-t border-brand-border/80">
-                <span>{isAr ? 'الإجمالي المطلوب عند الاستلام (COD):' : 'Total COD Amount Due:'}</span>
-                <span>{selectedOrder.totalAmount.toLocaleString()} EGP</span>
+                <span>{isAr ? 'الإجمالي المطلوب عند الاستلام:' : 'Total COD Amount Due:'}</span>
+                <span>{selectedOrder.totalAmount.toLocaleString()} {isAr ? 'ج.م' : 'EGP'}</span>
               </div>
             </div>
 
@@ -847,7 +847,7 @@ export default function AdminOrdersPage() {
           <div className="bg-white text-black w-full max-w-2xl rounded-sm p-8 shadow-2xl space-y-6 my-6 print:m-0 print:p-0 print:w-full print:shadow-none">
             {/* Action Bar (hidden when printed) */}
             <div className="flex items-center justify-between pb-4 border-b border-gray-200 print:hidden font-mono text-xs">
-              <span className="font-bold text-gray-700">ATHEER Commercial COD Invoice Slip</span>
+              <span className="font-bold text-gray-700">{isAr ? 'فاتورة شحن وتوصيل دار أثير الرسمية' : 'ATHEER Commercial COD Invoice Slip'}</span>
               <div className="flex items-center space-x-2 rtl:space-x-reverse">
                 <a
                   href={getAdminToCustomerWhatsAppUrl(selectedOrder, isAr ? 'ar' : 'en')}
@@ -881,22 +881,22 @@ export default function AdminOrdersPage() {
                 <div>
                   <h2 className="text-3xl font-black tracking-widest uppercase">ATHEER</h2>
                   <p className="text-xs tracking-wider text-gray-600 mt-0.5">
-                    أثير · PREMIUM YOUTH STREETWEAR
+                    {isAr ? 'أثير · أزياء الشارع الراقية للشباب' : 'أثير · PREMIUM YOUTH STREETWEAR'}
                   </p>
                   <p className="text-[11px] text-gray-500 mt-2">
-                    Cairo, Egypt · Commercial Registration & Tax ID: Pending Official Filing (قيد التسجيل الرسمي)
+                    {isAr ? 'القاهرة، مصر · السجل التجاري والبطاقة الضريبية: قيد التسجيل الرسمي' : 'Cairo, Egypt · Commercial Registration & Tax ID: Pending Official Filing'}
                   </p>
                   <p className="text-[11px] text-gray-500">
-                    Concierge Support: concierge@atheer.store
+                    {isAr ? 'خدمة العملاء: concierge@atheer.store' : 'Concierge Support: concierge@atheer.store'}
                   </p>
                 </div>
                 <div className="text-right rtl:text-left font-mono">
                   <div className="text-xl font-bold">{selectedOrder.orderReference}</div>
                   <div className="text-xs text-gray-500 mt-1">
-                    Date: {new Date(selectedOrder.createdAt).toLocaleDateString('en-GB')}
+                    {isAr ? 'التاريخ:' : 'Date:'} {new Date(selectedOrder.createdAt).toLocaleDateString(isAr ? 'ar-EG' : 'en-GB')}
                   </div>
                   <div className="mt-2 inline-block px-2.5 py-1 bg-gray-100 text-gray-900 border border-gray-300 text-xs font-bold uppercase">
-                    CASH ON DELIVERY (COD)
+                    {isAr ? 'الدفع عند الاستلام' : 'CASH ON DELIVERY (COD)'}
                   </div>
                 </div>
               </div>
@@ -905,11 +905,11 @@ export default function AdminOrdersPage() {
               <div className="grid grid-cols-2 gap-6 bg-gray-50 p-4 border border-gray-200">
                 <div>
                   <div className="text-[10px] font-mono uppercase tracking-wider text-gray-500 font-bold mb-1">
-                    Recipient Customer:
+                    {isAr ? 'بيانات العميل المستلم:' : 'Recipient Customer:'}
                   </div>
                   <div className="font-bold text-gray-900 text-base">{selectedOrder.customerName}</div>
                   <div className="font-mono text-xs text-gray-700 mt-1 font-semibold">
-                    Phone: {selectedOrder.customerPhone}
+                    {isAr ? 'الهاتف:' : 'Phone:'} {selectedOrder.customerPhone}
                   </div>
                   {selectedOrder.customerEmail && (
                     <div className="text-xs text-gray-600">{selectedOrder.customerEmail}</div>
@@ -918,10 +918,10 @@ export default function AdminOrdersPage() {
 
                 <div>
                   <div className="text-[10px] font-mono uppercase tracking-wider text-gray-500 font-bold mb-1">
-                    Delivery Address (Egypt):
+                    {isAr ? 'عنوان التوصيل في مصر:' : 'Delivery Address (Egypt):'}
                   </div>
                   <div className="font-bold text-gray-900 text-sm">
-                    {selectedOrder.shippingCity} ({selectedOrder.governorate || 'Cairo'} Governorate)
+                    {selectedOrder.shippingCity} ({selectedOrder.governorate || (isAr ? 'القاهرة' : 'Cairo')})
                   </div>
                   <div className="text-xs text-gray-700 mt-1 leading-relaxed">
                     {selectedOrder.shippingAddress}
@@ -929,7 +929,7 @@ export default function AdminOrdersPage() {
                   </div>
                   {selectedOrder.notes && (
                     <div className="text-[11px] text-gray-600 italic mt-1">
-                      Note: {selectedOrder.notes}
+                      {isAr ? 'ملاحظات:' : 'Note:'} {selectedOrder.notes}
                     </div>
                   )}
                 </div>
@@ -939,20 +939,20 @@ export default function AdminOrdersPage() {
               <table className="w-full text-left rtl:text-right border-collapse">
                 <thead>
                   <tr className="border-b-2 border-black text-xs font-mono uppercase text-gray-600">
-                    <th className="py-2">Item Description</th>
-                    <th className="py-2">Size / Color</th>
-                    <th className="py-2 text-center">GSM</th>
-                    <th className="py-2 text-center">Qty</th>
-                    <th className="py-2 text-right rtl:text-left">Unit (EGP)</th>
-                    <th className="py-2 text-right rtl:text-left">Total (EGP)</th>
+                    <th className="py-2">{isAr ? 'بيان القطعة' : 'Item Description'}</th>
+                    <th className="py-2">{isAr ? 'المقاس / اللون' : 'Size / Color'}</th>
+                    <th className="py-2 text-center">{isAr ? 'جم/م²' : 'GSM'}</th>
+                    <th className="py-2 text-center">{isAr ? 'الكمية' : 'Qty'}</th>
+                    <th className="py-2 text-right rtl:text-left">{isAr ? 'سعر الوحدة (ج.م)' : 'Unit (EGP)'}</th>
+                    <th className="py-2 text-right rtl:text-left">{isAr ? 'الإجمالي (ج.م)' : 'Total (EGP)'}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 text-xs">
                   {selectedOrder.items.map((it, idx) => (
                     <tr key={idx} className="py-2">
                       <td className="py-3 font-semibold text-gray-900">
-                        {it.productNameEn}
-                        <div className="text-[11px] text-gray-500 font-normal">{it.productNameAr}</div>
+                        {isAr ? (it.productNameAr || it.productNameEn) : it.productNameEn}
+                        <div className="text-[11px] text-gray-500 font-normal">{isAr ? it.productNameEn : it.productNameAr}</div>
                       </td>
                       <td className="py-3 font-mono">{it.selectedSize} / {it.selectedColor}</td>
                       <td className="py-3 font-mono text-center">{it.gsm}</td>
@@ -968,31 +968,33 @@ export default function AdminOrdersPage() {
               <div className="flex justify-end pt-4 border-t-2 border-black">
                 <div className="w-64 space-y-1.5 font-mono text-xs">
                   <div className="flex justify-between text-gray-600">
-                    <span>Subtotal:</span>
-                    <span>{selectedOrder.subtotal.toLocaleString()} EGP</span>
+                    <span>{isAr ? 'المجموع الفرعي:' : 'Subtotal:'}</span>
+                    <span>{selectedOrder.subtotal.toLocaleString()} {isAr ? 'ج.م' : 'EGP'}</span>
                   </div>
                   <div className="flex justify-between text-gray-600">
-                    <span>Shipping Fee:</span>
+                    <span>{isAr ? 'رسوم الشحن:' : 'Shipping Fee:'}</span>
                     <span>
-                      {selectedOrder.shippingFee === 0 ? 'FREE' : `${selectedOrder.shippingFee.toLocaleString()} EGP`}
+                      {selectedOrder.shippingFee === 0 ? (isAr ? 'مجاني' : 'FREE') : `${selectedOrder.shippingFee.toLocaleString()} ${isAr ? 'ج.م' : 'EGP'}`}
                     </span>
                   </div>
                   {selectedOrder.discountAmount ? (
                     <div className="flex justify-between text-gray-600">
-                      <span>Discount:</span>
-                      <span>-{selectedOrder.discountAmount.toLocaleString()} EGP</span>
+                      <span>{isAr ? 'الخصم:' : 'Discount:'}</span>
+                      <span>-{selectedOrder.discountAmount.toLocaleString()} {isAr ? 'ج.م' : 'EGP'}</span>
                     </div>
                   ) : null}
                   <div className="flex justify-between text-base font-bold text-black pt-2 border-t border-gray-300">
-                    <span>TOTAL COD DUE:</span>
-                    <span>{selectedOrder.totalAmount.toLocaleString()} EGP</span>
+                    <span>{isAr ? 'الإجمالي المطلوب سداده:' : 'TOTAL COD DUE:'}</span>
+                    <span>{selectedOrder.totalAmount.toLocaleString()} {isAr ? 'ج.م' : 'EGP'}</span>
                   </div>
                 </div>
               </div>
 
               {/* Delivery Courier Notice */}
               <div className="pt-6 border-t border-gray-200 text-[11px] text-gray-500 leading-relaxed text-center font-mono">
-                Thank you for choosing ATHEER | أثير. Please inspect garment packaging before accepting COD delivery.
+                {isAr
+                  ? 'شكراً لاختياركم أثير. يحق لكم فحص ومعاينة الطرد مع المندوب قبل الاستلام وسداد القيمة.'
+                  : 'Thank you for choosing ATHEER | أثير. Please inspect garment packaging before accepting COD delivery.'}
                 For inquiries or customer support, reach our Cairo concierge at concierge@atheer.store.
               </div>
             </div>

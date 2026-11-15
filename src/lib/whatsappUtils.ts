@@ -52,7 +52,7 @@ export function formatOrderWhatsAppMessage(order: StoredOrder, language: 'ar' | 
   const itemsList = order.items
     .map((item, idx) => {
       const name = isAr ? item.productNameAr : item.productNameEn;
-      const sizeColor = `${isAr ? 'المقاس' : 'Size'}: ${item.selectedSize} | ${isAr ? 'اللون' : 'Color'}: ${item.selectedColor}${item.gsm ? ` | ${item.gsm} GSM` : ''}`;
+      const sizeColor = `${isAr ? 'المقاس' : 'Size'}: ${item.selectedSize} | ${isAr ? 'اللون' : 'Color'}: ${item.selectedColor}${item.gsm ? ` | ${item.gsm} ${isAr ? 'جم/م²' : 'GSM'}` : ''}`;
       const qtyPrice = `${isAr ? 'الكمية' : 'Qty'}: ${item.quantity} × ${item.unitPrice.toLocaleString()} ${isAr ? 'ج.م' : 'EGP'}`;
       return `▪️ *${idx + 1}. ${name}*\n   ▫️ ${sizeColor}\n   ▫️ ${qtyPrice} (الإجمالي: ${item.totalPrice.toLocaleString()} ${isAr ? 'ج.م' : 'EGP'})`;
     })

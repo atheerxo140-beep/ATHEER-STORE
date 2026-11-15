@@ -173,7 +173,7 @@ export const Footer: React.FC = () => {
             <ul className="space-y-3 text-xs text-brand-cream/70 font-light">
               <li>
                 <a href="/#products" className="hover:text-brand-gold transition-colors font-medium text-brand-ivory">
-                  {language === 'ar' ? 'الهوديز الثقيلة 500 GSM (الأساسي)' : 'Core 500 GSM Hoodies'}
+                  {language === 'ar' ? 'الهوديز الثقيلة ٥٠٠ جم/م² (الأساسي)' : 'Core 500 GSM Hoodies'}
                 </a>
               </li>
               <li>
@@ -188,7 +188,7 @@ export const Footer: React.FC = () => {
               </li>
               <li>
                 <a href="/#future-drop" className="hover:text-brand-gold transition-colors text-brand-gold/90 font-mono">
-                  {language === 'ar' ? 'تي شيرتات 320 GSM (قريباً)' : '320 GSM Tees (Coming Soon)'}
+                  {language === 'ar' ? 'تي شيرتات ٣٢٠ جم/م² (قريباً)' : '320 GSM Tees (Coming Soon)'}
                 </a>
               </li>
             </ul>
@@ -382,7 +382,7 @@ export const Footer: React.FC = () => {
 
           <div className="flex items-center space-x-2.5 rtl:space-x-reverse text-[11px] sm:text-xs font-mono uppercase tracking-[0.25em] text-brand-gold font-bold">
             <span className="w-1.5 h-1.5 rounded-full bg-brand-gold/80 inline-block animate-pulse" />
-            <span>WE APPRECIATE YOUR TRUST</span>
+            <span>{language === 'ar' ? 'نُقدّر ثقتكم بنا' : 'WE APPRECIATE YOUR TRUST'}</span>
           </div>
         </div>
       </div>

@@ -197,7 +197,7 @@ export default function AdminAnalyticsPage() {
         {/* Average Order Value (AOV) */}
         <div className="bg-brand-charcoal border border-brand-border/80 rounded-sm p-5 space-y-2 shadow-xl">
           <div className="flex items-center justify-between text-brand-cream/60 text-xs font-mono">
-            <span>{isAr ? 'متوسط قيمة السلة (AOV)' : 'Average Order Value'}</span>
+            <span>{isAr ? 'متوسط قيمة الطلب' : 'Average Order Value (AOV)'}</span>
             <Award className="w-4 h-4 text-brand-gold" />
           </div>
           <p className="text-2xl font-black font-serif text-brand-gold">
