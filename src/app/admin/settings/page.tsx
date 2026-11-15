@@ -895,22 +895,22 @@ export default function AdminSettingsPage() {
 
                   <div className="flex flex-col sm:flex-row gap-2 flex-shrink-0 w-full sm:w-auto">
                     <a
-                      href={`https://wa.me/34621062163?text=${encodeURIComponent('I allow callmebot to send me messages')}`}
+                      href={`https://wa.me/34698288973?text=${encodeURIComponent('I allow callmebot to send me messages')}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xs text-xs font-bold flex items-center justify-center space-x-1.5 rtl:space-x-reverse transition-colors shadow-sm"
                     >
                       <MessageCircle className="w-4 h-4" />
-                      <span>{isAr ? 'اضغط هنا لمراسلة البوت الأساسي' : 'Message Primary Bot'}</span>
+                      <span>{isAr ? 'اضغط هنا لمراسلة البوت الرسمي (+34 698 28 89 73)' : 'Message Official Bot (+34 698 28 89 73)'}</span>
                     </a>
                     <a
-                      href={`https://wa.me/34698288973?text=${encodeURIComponent('I allow callmebot to send me messages')}`}
+                      href={`https://wa.me/34621062163?text=${encodeURIComponent('I allow callmebot to send me messages')}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="px-3 py-2 bg-brand-stone/60 hover:bg-brand-stone text-brand-cream border border-brand-border/60 rounded-xs text-[11px] flex items-center justify-center space-x-1 rtl:space-x-reverse transition-colors"
                       title={isAr ? 'سيرفر بديل في حال كان السيرفر الأول مشغولاً' : 'Alternative bot if primary is busy'}
                     >
-                      <span>{isAr ? 'بوت بديل 2' : 'Backup Bot 2'}</span>
+                      <span>{isAr ? 'بوت بديل (+34 621 06 21 63)' : 'Alternative Bot (+34 621 06 21 63)'}</span>
                     </a>
                   </div>
                 </div>
