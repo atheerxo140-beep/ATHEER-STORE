@@ -129,22 +129,33 @@ export function generateThemeCss(theme: ThemeConfig): string {
       --brand-cream-rgb: ${hexToRgb(cream)};
     }
 
-    [dir="rtl"], [dir="rtl"] body {
+    .font-english {
+      font-family: var(--font-family-en) !important;
+    }
+
+    .font-arabic {
       font-family: var(--font-family-ar) !important;
     }
 
-    [dir="rtl"] h1, [dir="rtl"] h2, [dir="rtl"] h3, [dir="rtl"] h4, [dir="rtl"] h5, [dir="rtl"] h6,
+    /* Dual Language Harmony — Latin glyphs use English font, Arabic glyphs use Arabic font */
+    [dir="rtl"], [dir="rtl"] body {
+      font-family: var(--font-family-en), var(--font-family-ar), system-ui, sans-serif !important;
+    }
+
+    [dir="rtl"] h1:not(.font-arabic), [dir="rtl"] h2:not(.font-arabic), [dir="rtl"] h3:not(.font-arabic),
+    [dir="rtl"] h4:not(.font-arabic), [dir="rtl"] h5:not(.font-arabic), [dir="rtl"] h6:not(.font-arabic),
     [dir="rtl"] .font-serif, [dir="rtl"] .font-sans {
-      font-family: var(--font-family-ar) !important;
+      font-family: var(--font-family-en), var(--font-family-ar), system-ui, sans-serif !important;
     }
 
     [dir="ltr"], [dir="ltr"] body {
-      font-family: var(--font-family-en) !important;
+      font-family: var(--font-family-en), var(--font-family-ar), system-ui, sans-serif !important;
     }
 
-    [dir="ltr"] h1, [dir="ltr"] h2, [dir="ltr"] h3, [dir="ltr"] h4, [dir="ltr"] h5, [dir="ltr"] h6,
+    [dir="ltr"] h1:not(.font-arabic), [dir="ltr"] h2:not(.font-arabic), [dir="ltr"] h3:not(.font-arabic),
+    [dir="ltr"] h4:not(.font-arabic), [dir="ltr"] h5:not(.font-arabic), [dir="ltr"] h6:not(.font-arabic),
     [dir="ltr"] .font-serif, [dir="ltr"] .font-sans {
-      font-family: var(--font-family-en) !important;
+      font-family: var(--font-family-en), var(--font-family-ar), system-ui, sans-serif !important;
     }
 
     html, body {

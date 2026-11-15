@@ -122,11 +122,23 @@ export const Footer: React.FC = () => {
           {/* Brand Column (Span 2) */}
           <div className="lg:col-span-2 space-y-5">
             <div className="flex items-center space-x-2 rtl:space-x-reverse">
-              <span className="font-sans font-black text-2xl tracking-[0.2em] text-brand-ivory uppercase">
-                {t('brandName')}
-              </span>
-              <span className="text-brand-gold text-xl font-light">/</span>
-              <span className="font-arabic font-bold text-2xl text-brand-gold">أثير</span>
+              {language === 'ar' ? (
+                <>
+                  <span className="font-arabic font-bold text-2xl text-brand-ivory">أثير</span>
+                  <span className="text-brand-gold text-xl font-light">/</span>
+                  <span className="font-english font-black text-2xl tracking-[0.2em] text-brand-gold uppercase">
+                    ATHEER
+                  </span>
+                </>
+              ) : (
+                <>
+                  <span className="font-english font-black text-2xl tracking-[0.2em] text-brand-ivory uppercase">
+                    ATHEER
+                  </span>
+                  <span className="text-brand-gold text-xl font-light">/</span>
+                  <span className="font-arabic font-bold text-2xl text-brand-gold">أثير</span>
+                </>
+              )}
             </div>
 
             <p className="text-xs text-brand-cream/70 font-light leading-relaxed max-w-sm">

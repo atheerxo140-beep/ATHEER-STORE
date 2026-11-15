@@ -1597,10 +1597,20 @@ export default function VisualBuilderPage() {
               >
                 {/* Simulated Header */}
                 <div className="p-3 bg-brand-charcoal border-b border-brand-border flex items-center justify-between text-xs">
-                  <div className="flex items-center space-x-2 rtl:space-x-reverse font-serif font-black text-brand-ivory">
-                    <span>ATHEER</span>
-                    <span className="text-brand-gold">/</span>
-                    <span className="text-brand-gold font-arabic font-bold">أثير</span>
+                  <div className="flex items-center space-x-2 rtl:space-x-reverse font-black">
+                    {isAr ? (
+                      <>
+                        <span className="font-arabic font-bold text-brand-ivory">أثير</span>
+                        <span className="text-brand-gold">/</span>
+                        <span className="font-english text-brand-gold tracking-wider">ATHEER</span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="font-english text-brand-ivory tracking-wider">ATHEER</span>
+                        <span className="text-brand-gold">/</span>
+                        <span className="font-arabic font-bold text-brand-gold">أثير</span>
+                      </>
+                    )}
                   </div>
                   <div className="text-[10px] font-mono text-brand-gold bg-brand-stone px-2 py-0.5 rounded-xs">
                     {previewDevice === 'mobile' ? 'Mobile App View' : 'Web Storefront'}

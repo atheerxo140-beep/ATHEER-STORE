@@ -270,9 +270,19 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           {/* Brand Header */}
           <div className="pb-6 border-b border-brand-border/60 mb-6">
             <Link href="/admin" className="flex items-center space-x-2.5 rtl:space-x-reverse">
-              <span className="font-sans font-black text-xl tracking-[0.2em] text-brand-ivory">ATHEER</span>
-              <span className="text-brand-gold text-lg">/</span>
-              <span className="font-arabic font-bold text-xl text-brand-gold">أثير</span>
+              {isAr ? (
+                <>
+                  <span className="font-arabic font-bold text-xl text-brand-ivory">أثير</span>
+                  <span className="text-brand-gold text-lg">/</span>
+                  <span className="font-english font-black text-xl tracking-[0.2em] text-brand-gold">ATHEER</span>
+                </>
+              ) : (
+                <>
+                  <span className="font-english font-black text-xl tracking-[0.2em] text-brand-ivory">ATHEER</span>
+                  <span className="text-brand-gold text-lg">/</span>
+                  <span className="font-arabic font-bold text-xl text-brand-gold">أثير</span>
+                </>
+              )}
             </Link>
             <div className="flex items-center space-x-1.5 rtl:space-x-reverse text-[9px] uppercase tracking-widest text-brand-gold font-mono mt-1">
               <ShieldCheck className="w-3 h-3 text-brand-gold" />
@@ -630,9 +640,19 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <div>
               <div className="flex items-center justify-between pb-4 border-b border-brand-border/60 mb-6">
                 <div className="flex items-center space-x-2 rtl:space-x-reverse">
-                  <span className="font-bold text-lg text-brand-ivory">ATHEER</span>
-                  <span className="text-brand-gold">/</span>
-                  <span className="font-arabic font-bold text-lg text-brand-gold">أثير</span>
+                  {isAr ? (
+                    <>
+                      <span className="font-arabic font-bold text-lg text-brand-ivory">أثير</span>
+                      <span className="text-brand-gold">/</span>
+                      <span className="font-english font-bold text-lg text-brand-gold">ATHEER</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="font-english font-bold text-lg text-brand-ivory">ATHEER</span>
+                      <span className="text-brand-gold">/</span>
+                      <span className="font-arabic font-bold text-lg text-brand-gold">أثير</span>
+                    </>
+                  )}
                 </div>
                 <button
                   onClick={() => setMobileSidebarOpen(false)}

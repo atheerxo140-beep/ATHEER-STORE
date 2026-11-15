@@ -101,11 +101,23 @@ export const StorefrontQrModal: React.FC = () => {
             {/* Header */}
             <div>
               <div className="flex items-center justify-center space-x-2 rtl:space-x-reverse mb-1">
-                <span className="font-sans font-black text-xl tracking-[0.2em] text-brand-ivory uppercase">
-                  ATHEER
-                </span>
-                <span className="text-brand-gold text-lg font-light">/</span>
-                <span className="font-bold text-xl text-brand-gold">أثير</span>
+                {isAr ? (
+                  <>
+                    <span className="font-arabic font-bold text-xl text-brand-ivory">أثير</span>
+                    <span className="text-brand-gold text-lg font-light">/</span>
+                    <span className="font-english font-black text-xl tracking-[0.2em] text-brand-gold uppercase">
+                      ATHEER
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <span className="font-english font-black text-xl tracking-[0.2em] text-brand-ivory uppercase">
+                      ATHEER
+                    </span>
+                    <span className="text-brand-gold text-lg font-light">/</span>
+                    <span className="font-arabic font-bold text-xl text-brand-gold">أثير</span>
+                  </>
+                )}
               </div>
               <p className="text-[10px] uppercase font-mono tracking-widest text-brand-gold">
                 {isAr ? 'رمز الاستجابة السريع الدائم' : 'Permanent Mobile Store QR'}

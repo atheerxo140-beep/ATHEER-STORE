@@ -207,13 +207,27 @@ export const Header: React.FC = () => {
             <div className="text-center flex-1 lg:flex-none">
               <Link href="/" className="inline-block group">
                 <div className="flex items-center justify-center space-x-2.5 rtl:space-x-reverse">
-                  <span className="font-sans font-black text-2xl sm:text-3xl tracking-[0.2em] text-brand-ivory uppercase group-hover:text-brand-gold transition-colors">
-                    {t('brandName')}
-                  </span>
-                  <span className="text-brand-gold text-xl sm:text-2xl font-light">/</span>
-                  <span className="font-arabic font-bold text-2xl sm:text-3xl text-brand-gold">
-                    أثير
-                  </span>
+                  {isAr ? (
+                    <>
+                      <span className="font-arabic font-bold text-2xl sm:text-3xl text-brand-ivory group-hover:text-brand-gold transition-colors">
+                        أثير
+                      </span>
+                      <span className="text-brand-gold text-xl sm:text-2xl font-light">/</span>
+                      <span className="font-english font-black text-2xl sm:text-3xl tracking-[0.2em] text-brand-gold uppercase">
+                        ATHEER
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="font-english font-black text-2xl sm:text-3xl tracking-[0.2em] text-brand-ivory uppercase group-hover:text-brand-gold transition-colors">
+                        ATHEER
+                      </span>
+                      <span className="text-brand-gold text-xl sm:text-2xl font-light">/</span>
+                      <span className="font-arabic font-bold text-2xl sm:text-3xl text-brand-gold">
+                        أثير
+                      </span>
+                    </>
+                  )}
                 </div>
                 <p className="text-[9px] sm:text-[10px] tracking-[0.3em] uppercase text-brand-cream/70 font-sans font-medium mt-0.5">
                   {t('brandTagline')}
@@ -476,9 +490,19 @@ export const Header: React.FC = () => {
             <div>
               <div className="flex items-center justify-between pb-6 border-b border-brand-border">
                 <div className="flex items-center space-x-2 rtl:space-x-reverse">
-                  <span className="font-sans font-black text-xl tracking-wider text-brand-ivory">ATHEER</span>
-                  <span className="text-brand-gold">/</span>
-                  <span className="font-arabic font-bold text-xl text-brand-gold">أثير</span>
+                  {isAr ? (
+                    <>
+                      <span className="font-arabic font-bold text-xl text-brand-ivory">أثير</span>
+                      <span className="text-brand-gold">/</span>
+                      <span className="font-english font-black text-xl tracking-wider text-brand-gold">ATHEER</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="font-english font-black text-xl tracking-wider text-brand-ivory">ATHEER</span>
+                      <span className="text-brand-gold">/</span>
+                      <span className="font-arabic font-bold text-xl text-brand-gold">أثير</span>
+                    </>
+                  )}
                 </div>
                 <button
                   onClick={() => setMobileMenuOpen(false)}

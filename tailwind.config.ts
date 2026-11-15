@@ -31,7 +31,8 @@ const config: Config = {
       fontFamily: {
         serif: ["var(--font-cormorant)", "Georgia", "serif"],
         sans: ["var(--font-inter)", "system-ui", "sans-serif"],
-        arabic: ["var(--font-tajawal)", "sans-serif"],
+        arabic: ["var(--font-family-ar)", "var(--font-tajawal)", "sans-serif"],
+        english: ["var(--font-family-en)", "var(--font-inter)", "system-ui", "sans-serif"],
         "arabic-serif": ["var(--font-amiri)", "serif"],
       },
       letterSpacing: {
