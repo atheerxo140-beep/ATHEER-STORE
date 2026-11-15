@@ -101,21 +101,39 @@ export function updateLoyaltyConfig(updates: Partial<LoyaltyConfig>): LoyaltyCon
   return store.config;
 }
 
-export function getLoyaltyAccount(customerEmail: string): LoyaltyAccount {
+export function getLoyaltyAccount(customerEmail: string, customerName?: string): LoyaltyAccount {
   const cleanEmail = customerEmail.trim().toLowerCase();
   const store = readStore();
   let acc = store.accounts.find((a) => a.customerEmail.toLowerCase() === cleanEmail);
 
   if (!acc) {
+    const welcomeVoucherCode = `ATH-VIP-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+    const oneYearLater = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
     acc = {
       id: `loyalty-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
       customerEmail: cleanEmail,
-      stampsCount: 0,
-      totalStampsEarned: 0,
+      customerName: customerName || cleanEmail.split('@')[0],
+      stampsCount: 1,
+      totalStampsEarned: 1,
       stampsRedeemed: 0,
       tier: 'Bronze',
-      activeVouchers: [],
-      history: [],
+      activeVouchers: [
+        {
+          code: welcomeVoucherCode,
+          discountAmount: 100,
+          isUsed: false,
+          expiresAt: oneYearLater,
+        },
+      ],
+      history: [
+        {
+          id: `hist-welcome-${Date.now()}`,
+          type: 'earn',
+          stamps: 1,
+          date: new Date().toISOString(),
+          notes: 'ختم ترحيبي مجاني + قسيمة 100 ج.م كاش بمناسبة استلام كارت الولاء VIP',
+        },
+      ],
     };
     store.accounts.push(acc);
     writeStore(store);

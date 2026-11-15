@@ -28,27 +28,42 @@ function getCustomers(): any[] {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const email = body.email;
+    const rawInput = (body.email || body.phone || body.identifier || '').trim();
     const password = body.password || body.pass;
 
-    if (!email || !password) {
+    if (!rawInput) {
       return NextResponse.json(
-        { success: false, error: 'يرجى إدخال البريد الإلكتروني وكلمة المرور' },
+        { success: false, error: 'يرجى إدخال رقم الهاتف أو البريد الإلكتروني' },
         { status: 400 }
       );
     }
 
-    const cleanEmail = email.trim().toLowerCase();
+    const cleanDigits = rawInput.replace(/[^0-9]/g, '');
+    const isPhoneNumber = cleanDigits.length >= 8 && /^(\+?20|0)?1[0125]/.test(rawInput);
+    const cleanEmail = rawInput.toLowerCase();
+
     const customers = getCustomers();
-    let customer = customers.find((c) => c.email.toLowerCase() === cleanEmail);
+    let customer = customers.find((c) => {
+      if (isPhoneNumber && c.phone && c.phone.replace(/[^0-9]/g, '').endsWith(cleanDigits.slice(-10))) {
+        return true;
+      }
+      if (c.email && c.email.toLowerCase() === cleanEmail) {
+        return true;
+      }
+      return false;
+    });
 
     if (!customer) {
-      // Auto-register or guest-to-customer conversion on first login
+      // Auto-register customer on first phone or email login
+      const generatedEmail = isPhoneNumber
+        ? `${cleanDigits}@customer.atheer.store`
+        : cleanEmail;
+
       customer = {
         id: `cust-${Date.now()}`,
-        email: cleanEmail,
-        fullName: cleanEmail.split('@')[0],
-        phone: '',
+        email: generatedEmail,
+        fullName: isPhoneNumber ? `عميل أثير (${cleanDigits.slice(-4)})` : cleanEmail.split('@')[0],
+        phone: isPhoneNumber ? cleanDigits : '',
         preferredLanguage: 'ar',
         tier: 'Bronze',
         addresses: [],
@@ -63,7 +78,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       success: true,
       customer,
-      message: 'تم تسجيل الدخول بنجاح',
+      message: 'تم تسجيل الدخول وتفعيل كارت الولاء بنجاح',
     });
   } catch (err: any) {
     return NextResponse.json(

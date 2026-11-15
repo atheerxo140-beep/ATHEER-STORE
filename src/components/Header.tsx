@@ -28,6 +28,8 @@ import {
   Truck,
   Sun,
   Moon,
+  Award,
+  Gift,
 } from 'lucide-react';
 
 export const Header: React.FC = () => {
@@ -118,6 +120,7 @@ export const Header: React.FC = () => {
     { label: t('navHoodies'), href: '/#products', highlight: true },
     { label: t('navSweatshirts'), href: '/#products' },
     { label: isAr ? 'عروض أيام أثير' : 'Special Offers', href: '/#offers' },
+    { label: isAr ? '💳 كارت الولاء VIP' : '💳 VIP Loyalty Pass', href: '/account/loyalty', highlight: true },
     { label: t('navTeesFuture'), href: '/#future-drop' },
     { label: isAr ? 'تتبع الشحنة' : 'Track Order', href: '/track-order' },
     { label: t('navBrand'), href: '/#about' },
@@ -312,6 +315,16 @@ export const Header: React.FC = () => {
                     {wishlistCount}
                   </span>
                 )}
+              </Link>
+
+              {/* VIP Loyalty Card Button */}
+              <Link
+                href="/account/loyalty"
+                className="hidden md:inline-flex items-center space-x-1.5 rtl:space-x-reverse px-2.5 py-1 rounded-xs bg-brand-gold/15 hover:bg-brand-gold/25 text-brand-gold border border-brand-gold/50 transition-colors font-mono text-[11px] font-bold shadow-sm"
+                title={isAr ? 'كارت ولاء أثير VIP والمكافآت' : 'ATHEER VIP Loyalty Pass'}
+              >
+                <Award className="w-3.5 h-3.5" />
+                <span>{isAr ? 'كارت الولاء' : 'VIP Pass'}</span>
               </Link>
 
               {/* Customer Account Button (Tablet & Desktop — on Mobile available in Bottom Nav & Drawer) */}

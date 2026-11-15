@@ -33,6 +33,7 @@ import {
   AlertCircle,
   QrCode,
   Bell,
+  Palette,
 } from 'lucide-react';
 import { PermanentQrCard } from '@/components/PermanentQrCard';
 
@@ -58,6 +59,111 @@ export default function AdminSettingsPage() {
   const [waSaving, setWaSaving] = useState(false);
   const [waTesting, setWaTesting] = useState(false);
   const [waMsg, setWaMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  // Website Theme & Colors State
+  const [themeConfig, setThemeConfig] = useState<any>({
+    brandGold: '#C5A880',
+    brandBlack: '#0A0A0A',
+    brandCharcoal: '#141414',
+    brandStone: '#1F1F1F',
+    brandBorder: '#282828',
+    brandIvory: '#FAF9F6',
+    brandCream: '#F0EAE1',
+  });
+  const [themeSaving, setThemeSaving] = useState(false);
+  const [themeMsg, setThemeMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  const COLOR_PRESETS = [
+    {
+      id: 'classic-gold',
+      nameAr: 'الذهب الملكي الكلاسيكي',
+      nameEn: 'Atheer Classic Gold',
+      gold: '#C5A880',
+      black: '#0A0A0A',
+      charcoal: '#141414',
+      border: '#282828',
+      accentLabel: 'Gold on Jet Black',
+    },
+    {
+      id: 'cyber-gold',
+      nameAr: 'ذهب نيون ستريتوير',
+      nameEn: 'Cyber Street Gold',
+      gold: '#E5C378',
+      black: '#0D0E12',
+      charcoal: '#161922',
+      border: '#2D3240',
+      accentLabel: 'Vibrant Neon Gold',
+    },
+    {
+      id: 'platinum-silver',
+      nameAr: 'الفضة الماتينج الراقية',
+      nameEn: 'Platinum & Onyx',
+      gold: '#E0E0E0',
+      black: '#0E0E0E',
+      charcoal: '#1A1A1A',
+      border: '#333333',
+      accentLabel: 'Matte Platinum Silver',
+    },
+    {
+      id: 'imperial-burgundy',
+      nameAr: 'الخمري والذهب الإمبراطوري',
+      nameEn: 'Imperial Burgundy & Gold',
+      gold: '#D4AF37',
+      black: '#12080B',
+      charcoal: '#1E1015',
+      border: '#3D1B26',
+      accentLabel: 'Deep Imperial Burgundy',
+    },
+    {
+      id: 'emerald-luxe',
+      nameAr: 'الزمرد الملكي الفاخر',
+      nameEn: 'Emerald Luxe',
+      gold: '#50C878',
+      black: '#070F0A',
+      charcoal: '#0F1A13',
+      border: '#1E3827',
+      accentLabel: 'Luxe Emerald Green',
+    },
+  ];
+
+  const handleApplyPreset = (preset: typeof COLOR_PRESETS[0]) => {
+    const updated = {
+      ...themeConfig,
+      brandGold: preset.gold,
+      brandBlack: preset.black,
+      brandCharcoal: preset.charcoal,
+      brandBorder: preset.border,
+    };
+    setThemeConfig(updated);
+  };
+
+  const handleSaveTheme = async (themeToSave?: any) => {
+    const target = themeToSave || themeConfig;
+    setThemeSaving(true);
+    setThemeMsg(null);
+    try {
+      const res = await adminFetch('/api/admin/theme', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(target),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setThemeConfig(data.theme);
+        setThemeMsg({
+          type: 'success',
+          text: isAr ? 'تم حفظ وتطبيق ألوان وهوية الموقع بنجاح على المتجر بالكامل!' : 'Website colors saved and applied successfully!',
+        });
+        setTimeout(() => setThemeMsg(null), 4000);
+      } else {
+        setThemeMsg({ type: 'error', text: data.error || 'فشل حفظ الألوان' });
+      }
+    } catch (e: any) {
+      setThemeMsg({ type: 'error', text: e.message || 'خطأ في الاتصال' });
+    } finally {
+      setThemeSaving(false);
+    }
+  };
 
   // Payment Methods State
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethodConfig[]>([]);
@@ -98,6 +204,13 @@ export default function AdminSettingsPage() {
         .then((r) => r.json())
         .then((d) => {
           if (d.success && d.config) setWaGateway(d.config);
+        })
+        .catch(() => {});
+
+      adminFetch('/api/admin/theme')
+        .then((r) => r.json())
+        .then((d) => {
+          if (d.success && d.theme) setThemeConfig(d.theme);
         })
         .catch(() => {});
     } catch (err) {
@@ -976,6 +1089,237 @@ export default function AdminSettingsPage() {
                 <span>{waSaving ? (isAr ? 'جاري الحفظ...' : 'Saving...') : (isAr ? 'حفظ إعدادات البوابة' : 'Save Gateway')}</span>
               </button>
             </div>
+          </div>
+        </div>
+
+        {/* Website Colors & Visual Identity Control */}
+        <div className="bg-brand-charcoal border border-brand-border/80 rounded-sm p-6 space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-brand-border/60 pb-4">
+            <div className="flex items-center space-x-2 rtl:space-x-reverse text-sm font-serif font-black text-brand-ivory">
+              <Palette className="w-4 h-4 text-brand-gold" />
+              <span>{isAr ? 'التحكم في ألوان وهوية المتجر (Website Colors & Visual Identity)' : 'Website Colors & Visual Identity'}</span>
+            </div>
+            <span className="text-[11px] font-mono text-brand-cream/60">
+              {isAr ? 'تحديث فوري لجميع صفحات المتجر عبر CSS Variables' : 'Instant live update via CSS variables'}
+            </span>
+          </div>
+
+          {themeMsg && (
+            <div
+              className={`p-3 text-xs font-mono rounded-xs flex items-center space-x-2 rtl:space-x-reverse ${
+                themeMsg.type === 'success'
+                  ? 'bg-emerald-950/60 border border-emerald-500/80 text-emerald-300'
+                  : 'bg-rose-950/60 border border-rose-500/80 text-rose-300'
+              }`}
+            >
+              {themeMsg.type === 'success' ? <CheckCircle2 className="w-4 h-4 flex-shrink-0" /> : <AlertCircle className="w-4 h-4 flex-shrink-0" />}
+              <span>{themeMsg.text}</span>
+            </div>
+          )}
+
+          {/* 1-Click Color Presets */}
+          <div>
+            <label className="block text-xs font-bold text-brand-ivory mb-2 font-mono">
+              {isAr ? '🎨 باقات ألوان ستريتوير فاخرة جاهزة بضغطة واحدة:' : '🎨 1-Click Luxury Streetwear Color Presets:'}
+            </label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+              {COLOR_PRESETS.map((preset) => {
+                const isActive = themeConfig.brandGold === preset.gold && themeConfig.brandBlack === preset.black;
+                return (
+                  <button
+                    key={preset.id}
+                    type="button"
+                    onClick={() => handleApplyPreset(preset)}
+                    className={`p-3 text-start rtl:text-right border rounded-xs transition-all flex items-center justify-between ${
+                      isActive
+                        ? 'border-brand-gold bg-brand-gold/15 shadow-gold ring-1 ring-brand-gold'
+                        : 'border-brand-border/80 bg-brand-stone/20 hover:border-brand-gold/60'
+                    }`}
+                  >
+                    <div>
+                      <span className="font-bold text-xs text-brand-ivory block font-sans">
+                        {isAr ? preset.nameAr : preset.nameEn}
+                      </span>
+                      <span className="text-[10px] text-brand-cream/60 font-mono block mt-0.5">
+                        {preset.accentLabel}
+                      </span>
+                    </div>
+                    <div className="flex items-center space-x-1.5 rtl:space-x-reverse flex-shrink-0 ml-2 rtl:mr-2">
+                      <span className="w-4 h-4 rounded-full border border-white/20 shadow-sm" style={{ backgroundColor: preset.black }} title="Background" />
+                      <span className="w-4 h-4 rounded-full border border-white/20 shadow-sm" style={{ backgroundColor: preset.charcoal }} title="Surface" />
+                      <span className="w-4 h-4 rounded-full border border-white/20 shadow-sm" style={{ backgroundColor: preset.gold }} title="Accent Gold" />
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Custom Color Pickers */}
+          <div className="pt-2">
+            <label className="block text-xs font-bold text-brand-ivory mb-3 font-mono">
+              {isAr ? '⚙️ تخصيص الألوان بدقة (Color Pickers & Hex Codes):' : '⚙️ Custom Color Palette:'}
+            </label>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {/* Brand Gold / Accent */}
+              <div className="p-3 bg-brand-stone/30 border border-brand-border/80 rounded-xs space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-brand-ivory font-mono">
+                    {isAr ? '1. لون الذهب واللمسات (Accent):' : '1. Accent / Gold Color:'}
+                  </span>
+                  <input
+                    type="color"
+                    value={themeConfig.brandGold || '#C5A880'}
+                    onChange={(e) => setThemeConfig({ ...themeConfig, brandGold: e.target.value })}
+                    className="w-7 h-7 rounded-xs border border-brand-border cursor-pointer bg-transparent"
+                  />
+                </div>
+                <input
+                  type="text"
+                  value={themeConfig.brandGold || ''}
+                  onChange={(e) => setThemeConfig({ ...themeConfig, brandGold: e.target.value })}
+                  placeholder="#C5A880"
+                  className="w-full bg-brand-charcoal border border-brand-border px-3 py-1.5 text-xs text-brand-gold font-mono font-bold rounded-xs focus:border-brand-gold focus:outline-none"
+                />
+                <span className="text-[10px] text-brand-cream/60 block">
+                  {isAr ? 'يحدد ألوان الأزرار الرئيسية، والأختام، والأسعار' : 'Powers primary buttons, badges, prices'}
+                </span>
+              </div>
+
+              {/* Brand Black / Main Background */}
+              <div className="p-3 bg-brand-stone/30 border border-brand-border/80 rounded-xs space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-brand-ivory font-mono">
+                    {isAr ? '2. لون الخلفية الأساسية (Main BG):' : '2. Main Background:'}
+                  </span>
+                  <input
+                    type="color"
+                    value={themeConfig.brandBlack || '#0A0A0A'}
+                    onChange={(e) => setThemeConfig({ ...themeConfig, brandBlack: e.target.value })}
+                    className="w-7 h-7 rounded-xs border border-brand-border cursor-pointer bg-transparent"
+                  />
+                </div>
+                <input
+                  type="text"
+                  value={themeConfig.brandBlack || ''}
+                  onChange={(e) => setThemeConfig({ ...themeConfig, brandBlack: e.target.value })}
+                  placeholder="#0A0A0A"
+                  className="w-full bg-brand-charcoal border border-brand-border px-3 py-1.5 text-xs text-brand-ivory font-mono font-bold rounded-xs focus:border-brand-gold focus:outline-none"
+                />
+                <span className="text-[10px] text-brand-cream/60 block">
+                  {isAr ? 'خلفية المتجر الرئيسية بالوضع الداكن' : 'Main background for dark theme'}
+                </span>
+              </div>
+
+              {/* Brand Charcoal / Surface Cards */}
+              <div className="p-3 bg-brand-stone/30 border border-brand-border/80 rounded-xs space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-brand-ivory font-mono">
+                    {isAr ? '3. لون البطاقات والحاويات (Cards):' : '3. Card & Surface BG:'}
+                  </span>
+                  <input
+                    type="color"
+                    value={themeConfig.brandCharcoal || '#141414'}
+                    onChange={(e) => setThemeConfig({ ...themeConfig, brandCharcoal: e.target.value })}
+                    className="w-7 h-7 rounded-xs border border-brand-border cursor-pointer bg-transparent"
+                  />
+                </div>
+                <input
+                  type="text"
+                  value={themeConfig.brandCharcoal || ''}
+                  onChange={(e) => setThemeConfig({ ...themeConfig, brandCharcoal: e.target.value })}
+                  placeholder="#141414"
+                  className="w-full bg-brand-charcoal border border-brand-border px-3 py-1.5 text-xs text-brand-ivory font-mono font-bold rounded-xs focus:border-brand-gold focus:outline-none"
+                />
+                <span className="text-[10px] text-brand-cream/60 block">
+                  {isAr ? 'خلفيات بطاقات المنتجات والنوافذ' : 'Surfaces of product cards & modals'}
+                </span>
+              </div>
+
+              {/* Brand Border */}
+              <div className="p-3 bg-brand-stone/30 border border-brand-border/80 rounded-xs space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-brand-ivory font-mono">
+                    {isAr ? '4. لون الإطارات والحواف (Borders):' : '4. Borders & Dividers:'}
+                  </span>
+                  <input
+                    type="color"
+                    value={themeConfig.brandBorder || '#282828'}
+                    onChange={(e) => setThemeConfig({ ...themeConfig, brandBorder: e.target.value })}
+                    className="w-7 h-7 rounded-xs border border-brand-border cursor-pointer bg-transparent"
+                  />
+                </div>
+                <input
+                  type="text"
+                  value={themeConfig.brandBorder || ''}
+                  onChange={(e) => setThemeConfig({ ...themeConfig, brandBorder: e.target.value })}
+                  placeholder="#282828"
+                  className="w-full bg-brand-charcoal border border-brand-border px-3 py-1.5 text-xs text-brand-ivory font-mono font-bold rounded-xs focus:border-brand-gold focus:outline-none"
+                />
+                <span className="text-[10px] text-brand-cream/60 block">
+                  {isAr ? 'خطوط التقسيم وحواف العناصر' : 'Border lines and dividers'}
+                </span>
+              </div>
+
+              {/* Brand Ivory / Text */}
+              <div className="p-3 bg-brand-stone/30 border border-brand-border/80 rounded-xs space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-brand-ivory font-mono">
+                    {isAr ? '5. لون العناوين والنصوص (Text):' : '5. Headings & Text:'}
+                  </span>
+                  <input
+                    type="color"
+                    value={themeConfig.brandIvory || '#FAF9F6'}
+                    onChange={(e) => setThemeConfig({ ...themeConfig, brandIvory: e.target.value })}
+                    className="w-7 h-7 rounded-xs border border-brand-border cursor-pointer bg-transparent"
+                  />
+                </div>
+                <input
+                  type="text"
+                  value={themeConfig.brandIvory || ''}
+                  onChange={(e) => setThemeConfig({ ...themeConfig, brandIvory: e.target.value })}
+                  placeholder="#FAF9F6"
+                  className="w-full bg-brand-charcoal border border-brand-border px-3 py-1.5 text-xs text-brand-ivory font-mono font-bold rounded-xs focus:border-brand-gold focus:outline-none"
+                />
+                <span className="text-[10px] text-brand-cream/60 block">
+                  {isAr ? 'لون الخط الرئيسي للعناوين' : 'Primary text and heading color'}
+                </span>
+              </div>
+
+              {/* Live Preview Box */}
+              <div className="p-3 border rounded-xs flex flex-col justify-between" style={{ backgroundColor: themeConfig.brandBlack || '#0A0A0A', borderColor: themeConfig.brandBorder || '#282828' }}>
+                <span className="text-[10px] font-mono text-brand-cream/60 uppercase block mb-1">
+                  {isAr ? '👁️ معاينة حية للمظهر:' : '👁️ Live Visual Preview:'}
+                </span>
+                <div className="p-3 border rounded-xs space-y-2" style={{ backgroundColor: themeConfig.brandCharcoal || '#141414', borderColor: themeConfig.brandBorder || '#282828' }}>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold" style={{ color: themeConfig.brandIvory || '#FAF9F6' }}>
+                      هودي أثير 500 GSM
+                    </span>
+                    <span className="text-xs font-bold font-mono" style={{ color: themeConfig.brandGold || '#C5A880' }}>
+                      1,850 ج.م
+                    </span>
+                  </div>
+                  <div className="py-1 px-2 text-center text-[10px] font-bold uppercase rounded-xs" style={{ backgroundColor: themeConfig.brandGold || '#C5A880', color: themeConfig.brandBlack || '#0A0A0A' }}>
+                    شراء فوري (الدفع عند الاستلام)
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Save Theme Button */}
+          <div className="flex justify-end pt-3 border-t border-brand-border/60">
+            <button
+              type="button"
+              disabled={themeSaving}
+              onClick={() => handleSaveTheme()}
+              className="px-6 py-2.5 bg-brand-gold hover:bg-brand-gold-hover text-brand-black font-bold font-mono text-xs uppercase tracking-wider rounded-xs transition-colors flex items-center space-x-1.5 rtl:space-x-reverse shadow-gold disabled:opacity-50"
+            >
+              <Save className="w-3.5 h-3.5" />
+              <span>{themeSaving ? (isAr ? 'جاري تطبيق الألوان...' : 'Applying Colors...') : (isAr ? 'حفظ وتطبيق ألوان المتجر فوراً' : 'Save & Apply Live Colors')}</span>
+            </button>
           </div>
         </div>
 

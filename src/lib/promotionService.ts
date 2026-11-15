@@ -101,10 +101,15 @@ export function updatePromotion(id: string, updates: Partial<PromotionRule>): Pr
   return promos[idx];
 }
 
-export function deletePromotion(id: string): boolean {
+export function deletePromotion(idOrCode: string): boolean {
   const promos = readPromotions();
-  const target = promos.find((p) => p.id === id);
-  const filtered = promos.filter((p) => p.id !== id);
+  const clean = idOrCode.trim();
+  const target = promos.find(
+    (p) => p.id === clean || (p.code && p.code.toUpperCase() === clean.toUpperCase())
+  );
+  const filtered = promos.filter(
+    (p) => p.id !== clean && (!p.code || p.code.toUpperCase() !== clean.toUpperCase())
+  );
   if (filtered.length !== promos.length) {
     writePromotions(filtered);
 

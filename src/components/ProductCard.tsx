@@ -2,11 +2,12 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Product } from '@/types';
 import { useLanguage } from '@/context/LanguageContext';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
-import { Heart, ShoppingBag, Eye, Check, Flame, Clock } from 'lucide-react';
+import { Heart, ShoppingBag, Eye, Check, Flame, Clock, Zap } from 'lucide-react';
 
 interface ProductCardProps {
   product: Product;
@@ -15,6 +16,7 @@ interface ProductCardProps {
 }
 
 export const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView, index = 0 }) => {
+  const router = useRouter();
   const { language, t, formatPrice } = useLanguage();
   const { addItem } = useCart();
   const { isInWishlist, toggleWishlist } = useWishlist();
@@ -32,6 +34,17 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView, 
     product.originalPrice && product.originalPrice > product.price
       ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
       : null;
+
+  const handleDirectBuy = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (product.isComingSoon) {
+      handleAddToCart(e);
+      return;
+    }
+    addItem(product, 1, selectedSize, product.colors[0] || '', false);
+    router.push('/checkout');
+  };
 
   const handleQuickAction = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -183,34 +196,37 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView, 
             </div>
           )}
 
-          <button
-            type="button"
-            onClick={handleQuickAction}
-            className={`w-full py-2.5 px-3 flex items-center justify-center space-x-2 rtl:space-x-reverse text-xs uppercase tracking-widest font-bold transition-all duration-300 ${
-              product.isComingSoon
-                ? 'bg-brand-charcoal text-brand-gold border border-brand-gold/40 hover:bg-brand-gold hover:text-brand-black'
-                : addedAnimation
-                ? 'bg-emerald-800 text-white'
-                : 'bg-brand-gold text-brand-black hover:bg-brand-gold-hover'
-            }`}
-          >
-            {product.isComingSoon ? (
-              <>
-                <Clock className="w-3.5 h-3.5" />
-                <span>{language === 'ar' ? 'إشعار عند الإطلاق' : 'Get Drop Alert'}</span>
-              </>
-            ) : addedAnimation ? (
-              <>
+          <div className="flex gap-1.5 w-full">
+            <button
+              type="button"
+              onClick={handleDirectBuy}
+              disabled={product.isComingSoon}
+              className="flex-1 py-2 px-2 bg-brand-gold hover:bg-brand-gold-hover text-brand-black text-[10px] uppercase font-bold tracking-wider rounded-xs transition-colors flex items-center justify-center space-x-1 rtl:space-x-reverse shadow-gold disabled:opacity-40"
+              title={language === 'ar' ? 'شراء فوري ومباشر والدفع عند الاستلام' : 'Buy Now directly'}
+            >
+              <Zap className="w-3 h-3 fill-brand-black text-brand-black" />
+              <span>{language === 'ar' ? 'شراء فوري' : 'Buy Now'}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleAddToCart}
+              className={`py-2 px-2.5 border rounded-xs transition-all flex items-center justify-center ${
+                product.isComingSoon
+                  ? 'border-brand-border text-brand-gold/60'
+                  : addedAnimation
+                  ? 'bg-emerald-800 border-emerald-600 text-white'
+                  : 'border-brand-border bg-brand-charcoal text-brand-gold hover:border-brand-gold'
+              }`}
+              title={language === 'ar' ? 'إضافة للحقيبة' : 'Add to Bag'}
+            >
+              {addedAnimation ? (
                 <Check className="w-3.5 h-3.5 stroke-[2.5]" />
-                <span>{language === 'ar' ? 'تمت الإضافة للحقيبة' : 'Added to Bag'}</span>
-              </>
-            ) : (
-              <>
+              ) : (
                 <ShoppingBag className="w-3.5 h-3.5" />
-                <span>{t('addToBag')}</span>
-              </>
-            )}
-          </button>
+              )}
+            </button>
+          </div>
         </div>
       </div>
 

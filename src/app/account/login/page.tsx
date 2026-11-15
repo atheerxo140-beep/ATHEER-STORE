@@ -5,19 +5,20 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useCustomerAuth } from '@/context/CustomerAuthContext';
 import { useLanguage } from '@/context/LanguageContext';
-import { ShieldCheck, User, Lock, Mail, Phone, ArrowRight, ArrowLeft, Sparkles, CheckCircle2 } from 'lucide-react';
+import { ShieldCheck, User, Lock, Mail, Phone, ArrowRight, ArrowLeft, Sparkles, CheckCircle2, Award, Gift } from 'lucide-react';
 
 function CustomerLoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectUrl = searchParams.get('redirect') || '/account';
+  const explicitRedirect = searchParams.get('redirect');
 
   const { login, register, isAuthenticated } = useCustomerAuth();
   const { language, isRtl } = useLanguage();
   const isAr = language === 'ar';
   const ArrowIcon = isRtl ? ArrowLeft : ArrowRight;
 
-  const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
+  const [activeTab, setActiveTab] = useState<'login' | 'register'>('register');
+  const [identifier, setIdentifier] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
@@ -25,12 +26,14 @@ function CustomerLoginForm() {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
+  const redirectUrl = explicitRedirect || (activeTab === 'register' ? '/account/loyalty' : '/account');
+
   // If already authenticated, redirect
   React.useEffect(() => {
     if (isAuthenticated) {
-      router.push(redirectUrl);
+      router.push(explicitRedirect || '/account');
     }
-  }, [isAuthenticated, redirectUrl, router]);
+  }, [isAuthenticated, explicitRedirect, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,14 +42,19 @@ function CustomerLoginForm() {
 
     try {
       if (activeTab === 'login') {
-        const res = await login(email, password);
+        const res = await login(identifier || email, password);
         if (res.success) {
           router.push(redirectUrl);
         } else {
-          setErrorMsg(res.error || (isAr ? 'البريد أو كلمة المرور غير صحيحة' : 'Invalid email or password'));
+          setErrorMsg(res.error || (isAr ? 'بيانات الدخول غير صحيحة' : 'Invalid login credentials'));
         }
       } else {
-        const res = await register({ email, pass: password, fullName, phone });
+        if (!phone && !email) {
+          setErrorMsg(isAr ? 'يرجى إدخال رقم هاتفك لتفعيل كارت الولاء' : 'Please enter your phone number');
+          setLoading(false);
+          return;
+        }
+        const res = await register({ email, pass: password || '123456', fullName, phone });
         if (res.success) {
           router.push(redirectUrl);
         } else {
@@ -87,6 +95,21 @@ function CustomerLoginForm() {
             <button
               type="button"
               onClick={() => {
+                setActiveTab('register');
+                setErrorMsg(null);
+              }}
+              className={`py-3 text-center font-bold border-b-2 transition-colors flex items-center justify-center space-x-1.5 rtl:space-x-reverse ${
+                activeTab === 'register'
+                  ? 'border-brand-gold text-brand-gold bg-brand-stone/30'
+                  : 'border-transparent text-brand-cream/60 hover:text-brand-ivory'
+              }`}
+            >
+              <Award className="w-3.5 h-3.5" />
+              <span>{isAr ? 'كارت الولاء (تسجيل سريع)' : 'VIP Loyalty Card (Fast Sign Up)'}</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
                 setActiveTab('login');
                 setErrorMsg(null);
               }}
@@ -98,21 +121,26 @@ function CustomerLoginForm() {
             >
               {isAr ? 'تسجيل الدخول' : 'Sign In'}
             </button>
-            <button
-              type="button"
-              onClick={() => {
-                setActiveTab('register');
-                setErrorMsg(null);
-              }}
-              className={`py-3 text-center font-bold border-b-2 transition-colors ${
-                activeTab === 'register'
-                  ? 'border-brand-gold text-brand-gold bg-brand-stone/30'
-                  : 'border-transparent text-brand-cream/60 hover:text-brand-ivory'
-              }`}
-            >
-              {isAr ? 'حساب جديد' : 'New Account'}
-            </button>
           </div>
+
+          {/* Loyalty VIP Banner */}
+          {activeTab === 'register' && (
+            <div className="p-3.5 bg-gradient-to-r from-brand-gold/20 via-brand-gold/10 to-transparent border border-brand-gold/60 rounded-xs mb-5 text-xs font-mono text-brand-gold flex items-center space-x-3 rtl:space-x-reverse shadow-sm">
+              <div className="w-9 h-9 rounded-full bg-brand-gold/20 border border-brand-gold flex items-center justify-center flex-shrink-0 text-brand-gold">
+                <Gift className="w-4 h-4" />
+              </div>
+              <div className="leading-tight">
+                <span className="font-bold block text-brand-ivory text-xs mb-0.5">
+                  {isAr ? '💳 كارت ولاء دار أثير الرقمي (VIP Pass)' : '💳 ATHEER VIP Digital Loyalty Pass'}
+                </span>
+                <span className="text-[11px] text-brand-cream/80 font-sans block">
+                  {isAr
+                    ? 'سجل برقم هاتفك الآن لاستلام كارت الولاء فوراً مع 100 ج.م كاش هدية ترحيبية وأختام لكل طلب!'
+                    : 'Register your mobile number to unlock your instant VIP rewards card + 100 EGP welcome bonus!'}
+                </span>
+              </div>
+            </div>
+          )}
 
           {errorMsg && (
             <div className="p-3 mb-4 bg-rose-950/40 border border-rose-500/50 text-rose-400 text-xs font-mono rounded-xs">
@@ -121,11 +149,11 @@ function CustomerLoginForm() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            {activeTab === 'register' && (
+            {activeTab === 'register' ? (
               <>
                 <div>
                   <label className="block text-xs font-mono text-brand-cream/80 mb-1">
-                    {isAr ? 'الاسم بالكامل' : 'Full Name'}
+                    {isAr ? 'الاسم بالكامل' : 'Full Name'} <span className="text-brand-gold">*</span>
                   </label>
                   <div className="relative">
                     <User className="w-4 h-4 absolute top-1/2 -translate-y-1/2 left-3 rtl:left-auto rtl:right-3 text-brand-cream/40" />
@@ -134,7 +162,7 @@ function CustomerLoginForm() {
                       required
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
-                      placeholder={isAr ? 'مثال: كريم أحمد' : 'e.g. Karim Ahmed'}
+                      placeholder={isAr ? 'مثال: أحمد محمود' : 'e.g. Ahmed Mahmoud'}
                       className="w-full bg-brand-stone/40 border border-brand-border/80 text-brand-ivory text-xs px-9 py-2.5 rounded-xs focus:outline-none focus:border-brand-gold font-sans"
                     />
                   </div>
@@ -142,15 +170,87 @@ function CustomerLoginForm() {
 
                 <div>
                   <label className="block text-xs font-mono text-brand-cream/80 mb-1">
-                    {isAr ? 'رقم الهاتف' : 'Phone Number'}
+                    {isAr ? 'رقم الهاتف المحمول (لتفعيل كارت الولاء)' : 'Mobile Phone (for Loyalty Pass)'} <span className="text-brand-gold">*</span>
                   </label>
                   <div className="relative">
-                    <Phone className="w-4 h-4 absolute top-1/2 -translate-y-1/2 left-3 rtl:left-auto rtl:right-3 text-brand-cream/40" />
+                    <Phone className="w-4 h-4 absolute top-1/2 -translate-y-1/2 left-3 rtl:left-auto rtl:right-3 text-brand-gold" />
                     <input
                       type="tel"
+                      required
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       placeholder="010xxxxxxxx"
+                      className="w-full bg-brand-stone/40 border border-brand-gold/60 text-brand-gold text-xs px-9 py-2.5 rounded-xs focus:outline-none focus:border-brand-gold font-mono font-bold"
+                    />
+                  </div>
+                  <p className="text-[10px] text-brand-cream/60 mt-1 font-mono">
+                    {isAr ? 'يتم ربط كارت الولاء وأختام المكافآت برقم هاتفك تلقائياً' : 'Your rewards card will be tied to this phone number'}
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-mono text-brand-cream/80 mb-1">
+                    {isAr ? 'البريد الإلكتروني (اختياري)' : 'Email Address (Optional)'}
+                  </label>
+                  <div className="relative">
+                    <Mail className="w-4 h-4 absolute top-1/2 -translate-y-1/2 left-3 rtl:left-auto rtl:right-3 text-brand-cream/40" />
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="name@example.com"
+                      className="w-full bg-brand-stone/40 border border-brand-border/80 text-brand-ivory text-xs px-9 py-2.5 rounded-xs focus:outline-none focus:border-brand-gold font-mono"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-mono text-brand-cream/80 mb-1">
+                    {isAr ? 'كلمة المرور أو رمز PIN' : 'Password or PIN'}
+                  </label>
+                  <div className="relative">
+                    <Lock className="w-4 h-4 absolute top-1/2 -translate-y-1/2 left-3 rtl:left-auto rtl:right-3 text-brand-cream/40" />
+                    <input
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="••••••••"
+                      className="w-full bg-brand-stone/40 border border-brand-border/80 text-brand-ivory text-xs px-9 py-2.5 rounded-xs focus:outline-none focus:border-brand-gold font-mono"
+                    />
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                <div>
+                  <label className="block text-xs font-mono text-brand-cream/80 mb-1">
+                    {isAr ? 'رقم الهاتف أو البريد الإلكتروني' : 'Phone Number or Email'}
+                  </label>
+                  <div className="relative">
+                    <User className="w-4 h-4 absolute top-1/2 -translate-y-1/2 left-3 rtl:left-auto rtl:right-3 text-brand-cream/40" />
+                    <input
+                      type="text"
+                      required
+                      value={identifier}
+                      onChange={(e) => setIdentifier(e.target.value)}
+                      placeholder={isAr ? '010xxxxxxxx أو البريد' : '010xxxxxxxx or Email'}
+                      className="w-full bg-brand-stone/40 border border-brand-border/80 text-brand-ivory text-xs px-9 py-2.5 rounded-xs focus:outline-none focus:border-brand-gold font-mono"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-mono text-brand-cream/80 mb-1">
+                    {isAr ? 'كلمة المرور' : 'Password'}
+                  </label>
+                  <div className="relative">
+                    <Lock className="w-4 h-4 absolute top-1/2 -translate-y-1/2 left-3 rtl:left-auto rtl:right-3 text-brand-cream/40" />
+                    <input
+                      type="password"
+                      required
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="••••••••"
                       className="w-full bg-brand-stone/40 border border-brand-border/80 text-brand-ivory text-xs px-9 py-2.5 rounded-xs focus:outline-none focus:border-brand-gold font-mono"
                     />
                   </div>
@@ -158,46 +258,18 @@ function CustomerLoginForm() {
               </>
             )}
 
-            <div>
-              <label className="block text-xs font-mono text-brand-cream/80 mb-1">
-                {isAr ? 'البريد الإلكتروني' : 'Email Address'}
-              </label>
-              <div className="relative">
-                <Mail className="w-4 h-4 absolute top-1/2 -translate-y-1/2 left-3 rtl:left-auto rtl:right-3 text-brand-cream/40" />
-                <input
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="your.name@example.com"
-                  className="w-full bg-brand-stone/40 border border-brand-border/80 text-brand-ivory text-xs px-9 py-2.5 rounded-xs focus:outline-none focus:border-brand-gold font-mono"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-mono text-brand-cream/80 mb-1">
-                {isAr ? 'كلمة المرور' : 'Password'}
-              </label>
-              <div className="relative">
-                <Lock className="w-4 h-4 absolute top-1/2 -translate-y-1/2 left-3 rtl:left-auto rtl:right-3 text-brand-cream/40" />
-                <input
-                  type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="w-full bg-brand-stone/40 border border-brand-border/80 text-brand-ivory text-xs px-9 py-2.5 rounded-xs focus:outline-none focus:border-brand-gold font-mono"
-                />
-              </div>
-            </div>
-
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 px-4 bg-brand-gold hover:bg-brand-gold-hover text-brand-black font-sans text-xs uppercase tracking-wider font-bold rounded-xs transition-all duration-200 shadow-gold flex items-center justify-center space-x-2 rtl:space-x-reverse disabled:opacity-50 mt-6"
+              className="w-full py-3.5 px-4 bg-brand-gold hover:bg-brand-gold-hover text-brand-black font-sans text-xs uppercase tracking-wider font-bold rounded-xs transition-all duration-200 shadow-gold flex items-center justify-center space-x-2 rtl:space-x-reverse disabled:opacity-50 mt-6"
             >
-              <span>{loading ? (isAr ? 'جاري المعالجة...' : 'Processing...') : activeTab === 'login' ? (isAr ? 'دخول الحساب' : 'Sign In') : (isAr ? 'تأكيد التسجيل' : 'Create Account')}</span>
+              <span>
+                {loading
+                  ? (isAr ? 'جاري المعالجة...' : 'Processing...')
+                  : activeTab === 'login'
+                  ? (isAr ? 'دخول الحساب' : 'Sign In')
+                  : (isAr ? '🎁 تسجيل واستلام كارت الولاء VIP' : '🎁 Claim VIP Loyalty Pass')}
+              </span>
               <ArrowIcon className="w-4 h-4" />
             </button>
           </form>

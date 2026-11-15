@@ -28,32 +28,49 @@ function getCustomers(): any[] {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const email = body.email;
-    const password = body.password || body.pass;
-    const fullName = body.fullName;
-    const phone = body.phone;
+    let email = (body.email || '').trim().toLowerCase();
+    const password = body.password || body.pass || '123456';
+    const fullName = (body.fullName || '').trim();
+    let phone = (body.phone || '').trim().replace(/[^0-9]/g, '');
 
-    if (!email || !fullName) {
+    // Allow phone-based registration if email is not provided
+    if (!fullName) {
       return NextResponse.json(
-        { success: false, error: 'يرجى إدخال الاسم والبريد الإلكتروني' },
+        { success: false, error: 'يرجى إدخال اسمك بالكامل' },
         { status: 400 }
       );
     }
 
-    const cleanEmail = email.trim().toLowerCase();
+    if (!email && !phone) {
+      return NextResponse.json(
+        { success: false, error: 'يرجى إدخال رقم هاتفك المحمول أو بريدك الإلكتروني' },
+        { status: 400 }
+      );
+    }
+
+    // Auto-generate clean synthetic email if registered via phone
+    if (!email && phone) {
+      email = `${phone}@customer.atheer.store`;
+    }
+
     const customers = getCustomers();
 
-    let customer = customers.find((c) => c.email.toLowerCase() === cleanEmail);
+    // Check if customer exists by email or phone
+    let customer = customers.find((c) => {
+      if (email && c.email && c.email.toLowerCase() === email) return true;
+      if (phone && c.phone && c.phone.replace(/[^0-9]/g, '') === phone) return true;
+      return false;
+    });
 
     if (customer) {
-      customer.fullName = fullName.trim();
-      if (phone) customer.phone = phone.trim();
+      customer.fullName = fullName;
+      if (phone) customer.phone = phone;
     } else {
       customer = {
         id: `cust-${Date.now()}`,
-        email: cleanEmail,
-        fullName: fullName.trim(),
-        phone: phone ? phone.trim() : '',
+        email,
+        fullName,
+        phone: phone || '',
         preferredLanguage: 'ar',
         tier: 'Bronze',
         addresses: [],
@@ -66,10 +83,18 @@ export async function POST(req: NextRequest) {
       fs.writeFileSync(getCustomersStorePath(), JSON.stringify(customers, null, 2), 'utf8');
     } catch (e) {}
 
+    // Initialize loyalty account with welcome perks
+    try {
+      const { getLoyaltyAccount } = await import('@/lib/loyaltyService');
+      getLoyaltyAccount(email, fullName);
+    } catch (loyaltyErr) {
+      console.warn('Loyalty initialization error:', loyaltyErr);
+    }
+
     return NextResponse.json({
       success: true,
       customer,
-      message: 'تم إنشاء الحساب بنجاح',
+      message: 'تم إنشاء الحساب وتفعيل كارت الولاء بنجاح',
     });
   } catch (err: any) {
     return NextResponse.json(

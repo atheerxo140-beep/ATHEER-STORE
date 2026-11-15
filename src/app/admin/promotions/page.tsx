@@ -27,6 +27,8 @@ export default function AdminPromotionsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editingPromo, setEditingPromo] = useState<any | null>(null);
+  const [deletingPromo, setDeletingPromo] = useState<{ id: string; title: string } | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [feedbackMsg, setFeedbackMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   // Form State
@@ -182,20 +184,22 @@ export default function AdminPromotionsPage() {
     }
   };
 
-  const handleDeletePromo = async (id: string, promoTitle: string) => {
-    const confirmed = window.confirm(
-      isAr
-        ? `هل تريد بالتأكيد حذف العرض "${promoTitle}" نهائياً؟ لن يتمكن العملاء من استخدامه بعد الآن.`
-        : `Are you sure you want to delete promotion "${promoTitle}"?`
-    );
-    if (!confirmed) return;
+  const handleDeletePromo = (id: string, promoTitle: string) => {
+    setDeletingPromo({ id, title: promoTitle });
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deletingPromo) return;
+    const { id, title: promoTitle } = deletingPromo;
+    setIsDeleting(true);
 
     // 1. Instant optimistic UI deletion
     const previousPromos = [...promotions];
     setPromotions((prev) => prev.filter((p) => p.id !== id));
+    setDeletingPromo(null);
 
     try {
-      const res = await adminFetch(`/api/admin/promotions?id=${id}&_t=${Date.now()}`, {
+      const res = await adminFetch(`/api/admin/promotions?id=${encodeURIComponent(id)}&_t=${Date.now()}`, {
         method: 'DELETE',
       });
       const data = await res.json();
@@ -213,6 +217,8 @@ export default function AdminPromotionsPage() {
     } catch (e: any) {
       setPromotions(previousPromos);
       setFeedbackMsg({ type: 'error', text: e.message || (isAr ? 'حدث خطأ في الاتصال' : 'Connection error') });
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -530,6 +536,56 @@ export default function AdminPromotionsPage() {
               </button>
             </div>
           </form>
+        </div>
+      )}
+      {/* Delete Confirmation Modal - In-app modal that cannot be blocked by browsers */}
+      {deletingPromo && (
+        <div className="fixed inset-0 z-50 bg-brand-black/85 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-brand-charcoal border-2 border-rose-500/60 rounded-xs p-6 max-w-md w-full space-y-4 shadow-2xl animate-scale-in text-center sm:text-right rtl:sm:text-right">
+            <div className="flex items-center space-x-3 rtl:space-x-reverse text-rose-400">
+              <div className="p-2.5 rounded-full bg-rose-500/10 border border-rose-500/30">
+                <Trash2 className="w-6 h-6 text-rose-500" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-brand-ivory font-serif">
+                  {isAr ? 'تأكيد حذف العرض نهائياً' : 'Confirm Promotion Deletion'}
+                </h3>
+                <p className="text-xs text-brand-cream/70 font-sans mt-0.5">
+                  {isAr ? 'هذا الإجراء سيقوم بحذف العرض من المتجر فوراً' : 'This action will immediately remove the promotion'}
+                </p>
+              </div>
+            </div>
+
+            <div className="p-3 bg-brand-stone/40 border border-brand-border/60 rounded-xs text-xs text-brand-ivory font-mono">
+              {deletingPromo.title}
+            </div>
+
+            <p className="text-xs text-rose-300/80 leading-relaxed">
+              {isAr
+                ? 'هل تريد بالتأكيد حذف هذا العرض الترويجي؟ لن يتمكن العملاء من استخدامه بعد الآن.'
+                : 'Are you sure you want to delete this promotion? Customers will no longer be able to use it.'}
+            </p>
+
+            <div className="flex items-center justify-end space-x-3 rtl:space-x-reverse pt-2 border-t border-brand-border/40">
+              <button
+                type="button"
+                disabled={isDeleting}
+                onClick={() => setDeletingPromo(null)}
+                className="px-4 py-2 border border-brand-border text-brand-cream/80 hover:text-brand-ivory text-xs font-mono rounded-xs transition-colors"
+              >
+                {isAr ? 'إلغاء' : 'Cancel'}
+              </button>
+              <button
+                type="button"
+                disabled={isDeleting}
+                onClick={handleConfirmDelete}
+                className="px-5 py-2 bg-rose-600 hover:bg-rose-500 text-white font-mono text-xs font-bold uppercase rounded-xs transition-colors flex items-center space-x-1.5 rtl:space-x-reverse shadow-lg"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>{isDeleting ? (isAr ? 'جارٍ الحذف...' : 'Deleting...') : (isAr ? 'نعم، احذف العرض' : 'Yes, Delete')}</span>
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
