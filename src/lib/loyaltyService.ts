@@ -33,6 +33,7 @@ export interface LoyaltyAccount {
   id: string;
   customerEmail: string;
   customerName?: string;
+  customerPhone?: string;
   stampsCount: number;
   totalStampsEarned: number;
   stampsRedeemed: number;
@@ -323,4 +324,231 @@ export function consumeLoyaltyVoucher(voucherCode: string, orderRef: string): bo
     writeStore(store);
   }
   return consumed;
+}
+
+/**
+ * Admin: Adjust customer stamps (+ or - or direct override)
+ */
+export function adjustCustomerStamps(
+  accountIdOrEmail: string,
+  adjustment: number,
+  notes?: string
+): { success: boolean; account?: LoyaltyAccount; error?: string } {
+  const store = readStore();
+  const clean = accountIdOrEmail.trim().toLowerCase();
+  const acc = store.accounts.find(
+    (a) => a.id.toLowerCase() === clean || a.customerEmail.toLowerCase() === clean
+  );
+
+  if (!acc) {
+    return { success: false, error: 'Loyalty account not found' };
+  }
+
+  const previousCount = acc.stampsCount;
+  acc.stampsCount = Math.max(0, acc.stampsCount + adjustment);
+
+  if (adjustment > 0) {
+    acc.totalStampsEarned += adjustment;
+  }
+
+  // Auto tier calculation
+  if (acc.totalStampsEarned >= 15) acc.tier = 'Black_Edition';
+  else if (acc.totalStampsEarned >= 10) acc.tier = 'Gold';
+  else if (acc.totalStampsEarned >= 5) acc.tier = 'Silver';
+
+  acc.history.unshift({
+    id: `admin-adj-${Date.now()}`,
+    type: 'manual_adjustment',
+    stamps: adjustment,
+    date: new Date().toISOString(),
+    notes: notes || `تعديل يدوي من إدارة المتجر (${adjustment > 0 ? `+${adjustment}` : adjustment} أختام)`,
+  });
+
+  writeStore(store);
+  return { success: true, account: acc };
+}
+
+/**
+ * Admin: Directly grant a reward voucher to a customer
+ */
+export function grantCustomerVoucher(
+  accountIdOrEmail: string,
+  discountAmount: number,
+  customCode?: string,
+  expiryDays: number = 90,
+  notes?: string
+): { success: boolean; voucher?: LoyaltyVoucher; account?: LoyaltyAccount; error?: string } {
+  const store = readStore();
+  const clean = accountIdOrEmail.trim().toLowerCase();
+  const acc = store.accounts.find(
+    (a) => a.id.toLowerCase() === clean || a.customerEmail.toLowerCase() === clean
+  );
+
+  if (!acc) {
+    return { success: false, error: 'Loyalty account not found' };
+  }
+
+  const code = (
+    customCode?.trim() || `ATH-VIP-${Math.random().toString(36).substring(2, 7).toUpperCase()}`
+  ).toUpperCase();
+
+  const expiresAt = new Date(Date.now() + expiryDays * 24 * 60 * 60 * 1000).toISOString();
+
+  const voucher: LoyaltyVoucher = {
+    code,
+    discountAmount: Math.max(10, discountAmount),
+    isUsed: false,
+    expiresAt,
+  };
+
+  acc.activeVouchers.unshift(voucher);
+
+  acc.history.unshift({
+    id: `admin-vouch-${Date.now()}`,
+    type: 'manual_adjustment',
+    stamps: 0,
+    date: new Date().toISOString(),
+    notes: notes || `منح قسيمة مكافأة إدارية بقيمة ${discountAmount} ج.م (الكود: ${code})`,
+  });
+
+  writeStore(store);
+  return { success: true, voucher, account: acc };
+}
+
+/**
+ * Admin: Update customer tier directly
+ */
+export function updateCustomerTier(
+  accountIdOrEmail: string,
+  newTier: 'Bronze' | 'Silver' | 'Gold' | 'Black_Edition',
+  notes?: string
+): { success: boolean; account?: LoyaltyAccount; error?: string } {
+  const store = readStore();
+  const clean = accountIdOrEmail.trim().toLowerCase();
+  const acc = store.accounts.find(
+    (a) => a.id.toLowerCase() === clean || a.customerEmail.toLowerCase() === clean
+  );
+
+  if (!acc) {
+    return { success: false, error: 'Loyalty account not found' };
+  }
+
+  const oldTier = acc.tier;
+  acc.tier = newTier;
+
+  acc.history.unshift({
+    id: `admin-tier-${Date.now()}`,
+    type: 'manual_adjustment',
+    stamps: 0,
+    date: new Date().toISOString(),
+    notes: notes || `ترقية/تعديل فئة العضوية من ${oldTier} إلى ${newTier}`,
+  });
+
+  writeStore(store);
+  return { success: true, account: acc };
+}
+
+/**
+ * Admin: Manually issue a new loyalty card
+ */
+export function createManualLoyaltyAccount(data: {
+  customerEmail: string;
+  customerName?: string;
+  customerPhone?: string;
+  initialStamps?: number;
+  tier?: 'Bronze' | 'Silver' | 'Gold' | 'Black_Edition';
+  welcomeVoucherAmount?: number;
+}): { success: boolean; account?: LoyaltyAccount; error?: string } {
+  const store = readStore();
+  const cleanEmail = data.customerEmail.trim().toLowerCase();
+
+  const existing = store.accounts.find((a) => a.customerEmail.toLowerCase() === cleanEmail);
+  if (existing) {
+    return { success: false, error: 'A loyalty pass already exists for this email.' };
+  }
+
+  const initialStamps = Math.max(0, data.initialStamps || 1);
+  const welcomeAmount = data.welcomeVoucherAmount || 100;
+  const voucherCode = `ATH-VIP-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
+  const oneYearExpiry = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
+
+  const newAcc: LoyaltyAccount = {
+    id: `loyalty-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+    customerEmail: cleanEmail,
+    customerName: data.customerName || cleanEmail.split('@')[0],
+    customerPhone: data.customerPhone,
+    stampsCount: initialStamps,
+    totalStampsEarned: initialStamps,
+    stampsRedeemed: 0,
+    tier: data.tier || 'Bronze',
+    activeVouchers: [
+      {
+        code: voucherCode,
+        discountAmount: welcomeAmount,
+        isUsed: false,
+        expiresAt: oneYearExpiry,
+      },
+    ],
+    history: [
+      {
+        id: `hist-create-${Date.now()}`,
+        type: 'earn',
+        stamps: initialStamps,
+        date: new Date().toISOString(),
+        notes: `إصدار كارت ولاء يدوي من الإدارة برصيد ${initialStamps} أختام وقسيمة ترحيبية ${welcomeAmount} ج.م`,
+      },
+    ],
+  };
+
+  store.accounts.unshift(newAcc);
+  writeStore(store);
+  return { success: true, account: newAcc };
+}
+
+/**
+ * Admin: Delete customer loyalty account
+ */
+export function deleteLoyaltyAccount(accountIdOrEmail: string): boolean {
+  const store = readStore();
+  const clean = accountIdOrEmail.trim().toLowerCase();
+  const prevLen = store.accounts.length;
+  store.accounts = store.accounts.filter(
+    (a) => a.id.toLowerCase() !== clean && a.customerEmail.toLowerCase() !== clean
+  );
+
+  if (store.accounts.length !== prevLen) {
+    writeStore(store);
+    return true;
+  }
+  return false;
+}
+
+/**
+ * Admin: Reset customer stamps count to 0
+ */
+export function resetCustomerStamps(
+  accountIdOrEmail: string,
+  notes?: string
+): { success: boolean; account?: LoyaltyAccount; error?: string } {
+  const store = readStore();
+  const clean = accountIdOrEmail.trim().toLowerCase();
+  const acc = store.accounts.find(
+    (a) => a.id.toLowerCase() === clean || a.customerEmail.toLowerCase() === clean
+  );
+
+  if (!acc) {
+    return { success: false, error: 'Loyalty account not found' };
+  }
+
+  acc.stampsCount = 0;
+  acc.history.unshift({
+    id: `admin-reset-${Date.now()}`,
+    type: 'manual_adjustment',
+    stamps: 0,
+    date: new Date().toISOString(),
+    notes: notes || 'تصفير رصيد الأختام الحالية من قبل إدارة المتجر',
+  });
+
+  writeStore(store);
+  return { success: true, account: acc };
 }
