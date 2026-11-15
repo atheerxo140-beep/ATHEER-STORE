@@ -117,14 +117,24 @@ export const getLocalOrderByIdOrRef = (idOrRef: string): StoredOrder | undefined
 };
 
 export const getAllLocalOrders = (): StoredOrder[] => {
-  // If in-memory is empty, reload from disk just in case
-  if (localOrdersStore.length === 0) {
-    const fromDisk = loadOrdersFromDisk();
-    if (fromDisk.length > 0) {
-      localOrdersStore.push(...fromDisk);
-    }
-  }
   return localOrdersStore;
+};
+
+export const clearAllLocalOrders = (): void => {
+  localOrdersStore.length = 0;
+  persistOrdersToDisk([]);
+};
+
+export const deleteLocalOrder = (idOrRef: string): boolean => {
+  const idx = localOrdersStore.findIndex(
+    (o) => o.id === idOrRef || o.orderReference.toLowerCase() === idOrRef.toLowerCase()
+  );
+  if (idx >= 0) {
+    localOrdersStore.splice(idx, 1);
+    persistOrdersToDisk(localOrdersStore);
+    return true;
+  }
+  return false;
 };
 
 // Safe status transition validator

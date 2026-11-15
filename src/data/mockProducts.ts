@@ -490,6 +490,13 @@ export const deleteProduct = async (id: string): Promise<boolean> => {
   if (isSupabaseConfigured()) {
     const supabase = getSupabaseServer();
     if (supabase) {
+      try {
+        // Delete child variants first to avoid FK constraint failure
+        await supabase.from('product_variants').delete().eq('product_id', id);
+      } catch (vErr) {
+        // Ignore if variants table or constraint behaves differently
+      }
+
       // 1. First attempt to hard delete the product
       const { error } = await supabase.from('products').delete().eq('id', id);
       if (error) {
@@ -499,7 +506,8 @@ export const deleteProduct = async (id: string): Promise<boolean> => {
         if (
           error.code === '23503' ||
           error.message?.includes('foreign key constraint') ||
-          error.message?.includes('order_items')
+          error.message?.includes('order_items') ||
+          error.message?.includes('violates foreign key')
         ) {
           const { error: archiveErr } = await supabase
             .from('products')

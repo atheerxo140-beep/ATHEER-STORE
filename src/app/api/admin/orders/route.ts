@@ -7,6 +7,8 @@ import {
   OrderStatus,
   PaymentStatus,
   StoredOrder,
+  clearAllLocalOrders,
+  deleteLocalOrder,
 } from '@/data/localOrdersStore';
 import { verifyAdminRequest } from '@/lib/adminAuth';
 import { getSupabaseServer, isSupabaseConfigured } from '@/lib/supabaseServer';
@@ -28,6 +30,7 @@ export async function GET(req: NextRequest) {
 
     // Query Supabase directly if configured
     let orders: StoredOrder[] = [];
+    let isFromSupabase = false;
     if (isSupabaseConfigured()) {
       const supabase = getSupabaseServer();
       if (supabase) {
@@ -37,7 +40,8 @@ export async function GET(req: NextRequest) {
             .select('*, order_items(*)')
             .order('created_at', { ascending: false });
 
-          if (!error && Array.isArray(data) && data.length > 0) {
+          if (!error && Array.isArray(data)) {
+            isFromSupabase = true;
             orders = data.map((o: any) => ({
               id: o.id,
               orderReference: o.order_reference,
@@ -83,8 +87,8 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    // If no orders from Supabase (or not yet migrated/offline), use local orders
-    if (orders.length === 0) {
+    // Only if Supabase was NOT configured or failed, use local orders
+    if (!isFromSupabase) {
       orders = getAllLocalOrders();
     }
 
@@ -212,6 +216,68 @@ export async function PUT(req: NextRequest) {
     return NextResponse.json({
       success: true,
       order,
+    });
+  } catch (err: any) {
+    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+  }
+}
+
+export async function DELETE(req: NextRequest) {
+  const auth = await verifyAdminRequest(req);
+  if (!auth.authorized) {
+    return NextResponse.json({ success: false, error: auth.error }, { status: auth.statusCode });
+  }
+
+  try {
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get('id');
+    const clearAll = searchParams.get('all') === 'true';
+
+    if (clearAll) {
+      // 1. Delete all order items & orders in Supabase
+      if (isSupabaseConfigured()) {
+        const supabase = getSupabaseServer();
+        if (supabase) {
+          try {
+            await supabase.from('order_items').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+            await supabase.from('orders').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+          } catch (dbErr) {
+            console.error('[AdminOrders] Error clearing Supabase orders:', dbErr);
+          }
+        }
+      }
+
+      // 2. Clear local orders in memory and disk
+      clearAllLocalOrders();
+
+      return NextResponse.json({
+        success: true,
+        message: 'All test orders and sales metrics have been completely reset to zero.',
+      });
+    }
+
+    if (!id) {
+      return NextResponse.json({ success: false, error: 'Order ID or all=true is required.' }, { status: 400 });
+    }
+
+    // Single order deletion
+    if (isSupabaseConfigured()) {
+      const supabase = getSupabaseServer();
+      if (supabase) {
+        try {
+          await supabase.from('order_items').delete().eq('order_id', id);
+          await supabase.from('orders').delete().or(`id.eq.${id},order_reference.eq.${id}`);
+        } catch (dbErr) {
+          console.error('[AdminOrders] Error deleting order from Supabase:', dbErr);
+        }
+      }
+    }
+
+    deleteLocalOrder(id);
+
+    return NextResponse.json({
+      success: true,
+      message: `Order ${id} deleted successfully.`,
     });
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });

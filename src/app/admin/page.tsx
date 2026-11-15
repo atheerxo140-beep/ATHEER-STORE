@@ -18,6 +18,9 @@ import {
   ArrowRight,
   ArrowLeft,
   Package,
+  RotateCcw,
+  Trash2,
+  Loader2,
 } from 'lucide-react';
 import { adminFetch } from '@/lib/adminAuthClient';
 import { PermanentQrCard } from '@/components/PermanentQrCard';
@@ -31,6 +34,43 @@ export default function AdminOverviewPage() {
   const [orders, setOrders] = useState<StoredOrder[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
+  const [resetting, setResetting] = useState(false);
+  const [resetFeedback, setResetFeedback] = useState<string | null>(null);
+
+  const handleResetData = async () => {
+    const isAr = language === 'ar';
+    const confirmed = window.confirm(
+      isAr
+        ? 'هل أنت متأكد من تصفير كافة المبيعات والطلبات التجريبية لتصبح 0 ج.م؟ هذا الإجراء سيجعل المتجر جاهزاً للبيانات الحقيقية بالكامل.'
+        : 'Are you sure you want to reset all test sales and orders to zero EGP for live launch?'
+    );
+    if (!confirmed) return;
+
+    setResetting(true);
+    try {
+      const res = await adminFetch('/api/admin/reset-data', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ target: 'all' }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setOrders([]);
+        setResetFeedback(
+          isAr
+            ? 'تم تصفير جميع البيانات والطلبات التجريبية بنجاح! المتجر جاهز الآن للبيانات الحقيقية (0 ج.م).'
+            : 'All test orders and sales metrics zeroed out successfully (0 EGP)!'
+        );
+        setTimeout(() => setResetFeedback(null), 6000);
+      } else {
+        alert(data.error || 'Failed to reset data');
+      }
+    } catch (err: any) {
+      alert(err.message || 'Error resetting data');
+    } finally {
+      setResetting(false);
+    }
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -160,7 +200,22 @@ export default function AdminOverviewPage() {
           </p>
         </div>
 
-        <div className="flex items-center space-x-3 rtl:space-x-reverse">
+        <div className="flex flex-wrap items-center gap-2.5">
+          <button
+            type="button"
+            onClick={handleResetData}
+            disabled={resetting || orders.length === 0}
+            className="px-3 py-2 border border-rose-500/50 hover:border-rose-400 bg-rose-950/20 hover:bg-rose-950/40 text-rose-400 text-xs font-mono font-bold rounded-xs transition-colors flex items-center space-x-1.5 rtl:space-x-reverse disabled:opacity-40"
+            title={language === 'ar' ? 'تصفير المبيعات والطلبات التجريبية لتصبح 0 ج.م' : 'Reset test data to zero'}
+          >
+            {resetting ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            ) : (
+              <RotateCcw className="w-3.5 h-3.5" />
+            )}
+            <span>{language === 'ar' ? 'تصفير البيانات التجريبية' : 'Reset Test Data'}</span>
+          </button>
+
           <Link
             href="/admin/orders"
             className="px-4 py-2 bg-brand-gold text-brand-black text-xs font-mono font-bold uppercase tracking-wider hover:bg-brand-gold-hover transition-colors shadow-gold"
@@ -175,6 +230,14 @@ export default function AdminOverviewPage() {
           </Link>
         </div>
       </div>
+
+      {/* Reset Feedback Notification */}
+      {resetFeedback && (
+        <div className="p-4 bg-emerald-950/40 border border-emerald-500/50 text-emerald-400 text-xs font-mono rounded-xs flex items-center space-x-2 rtl:space-x-reverse animate-fade-in">
+          <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
+          <span>{resetFeedback}</span>
+        </div>
+      )}
 
       {/* KPI Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
