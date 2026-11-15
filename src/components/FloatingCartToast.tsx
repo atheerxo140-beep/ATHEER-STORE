@@ -21,7 +21,7 @@ export const FloatingCartToast: React.FC = () => {
   };
 
   return (
-    <div className="fixed top-4 inset-x-3 sm:inset-x-auto sm:left-1/2 sm:-translate-x-1/2 z-50 max-w-lg w-auto min-w-[320px] bg-emerald-950/95 border border-emerald-500/70 shadow-2xl backdrop-blur-md rounded-xs p-3 text-white flex items-center justify-between gap-3 animate-slide-down font-sans select-none">
+    <div className="fixed top-4 inset-x-3 sm:inset-x-auto sm:left-1/2 sm:-translate-x-1/2 z-50 max-w-lg w-auto min-w-0 sm:min-w-[320px] bg-emerald-950/95 border border-emerald-500/70 shadow-2xl backdrop-blur-md rounded-xs p-3 text-white flex items-center justify-between gap-3 animate-slide-down font-sans select-none">
       {/* Icon & Message */}
       <div className="flex items-center space-x-2.5 rtl:space-x-reverse min-w-0">
         <div className="w-8 h-8 rounded-full bg-emerald-500/20 border border-emerald-400/50 flex items-center justify-center text-emerald-400 shrink-0">

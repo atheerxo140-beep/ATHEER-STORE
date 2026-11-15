@@ -51,8 +51,8 @@ export const WhatsAppButton: React.FC = () => {
   return (
     <>
       <div
-        className={`fixed bottom-6 ${
-          isRtl ? 'left-6' : 'right-6'
+        className={`fixed bottom-20 sm:bottom-6 ${
+          isRtl ? 'left-4 sm:left-6' : 'right-4 sm:right-6'
         } z-40 flex items-center group`}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}

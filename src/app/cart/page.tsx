@@ -43,7 +43,7 @@ export default function CartPage() {
     <div className="min-h-screen bg-brand-black text-brand-ivory flex flex-col">
       <Header />
 
-      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16 w-full">
+      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-16 w-full pb-28 sm:pb-16">
         <div className="flex items-center justify-between pb-6 border-b border-brand-border/60 mb-8">
           <div>
             <h1 className="font-sans font-black text-3xl sm:text-4xl uppercase tracking-tight">

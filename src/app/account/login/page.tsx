@@ -89,7 +89,7 @@ function CustomerLoginForm() {
         </div>
 
         {/* Auth Box */}
-        <div className="bg-brand-charcoal border border-brand-border/80 rounded-xs shadow-luxury-dark p-6 sm:p-8">
+        <div className="bg-brand-charcoal border border-brand-border/80 rounded-xs shadow-luxury-dark p-4 sm:p-8">
           {/* Tab Switcher */}
           <div className="grid grid-cols-2 border-b border-brand-border/60 mb-6 font-mono text-xs">
             <button

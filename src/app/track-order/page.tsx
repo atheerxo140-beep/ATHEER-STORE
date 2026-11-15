@@ -89,7 +89,7 @@ function TrackOrderContent() {
   const stepIndex = order ? getStepIndex(order.orderStatus) : 0;
 
   return (
-    <div className="min-h-screen bg-brand-black text-brand-ivory py-16 px-4 sm:px-6 lg:px-8 selection:bg-brand-gold selection:text-brand-black">
+    <div className="min-h-screen bg-brand-black text-brand-ivory py-10 sm:py-16 px-3 sm:px-6 lg:px-8 pb-28 sm:pb-16 selection:bg-brand-gold selection:text-brand-black">
       <div className="max-w-3xl mx-auto space-y-8">
         {/* Page Header */}
         <div className="text-center space-y-2">

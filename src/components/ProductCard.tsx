@@ -265,6 +265,37 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView, 
             {language === 'ar' ? 'عرض القطعة' : 'View Piece'}
           </Link>
         </div>
+
+        {/* Mobile Quick Action Bar (Direct 1-tap Buy & Add to Bag on all phones) */}
+        <div className="sm:hidden flex items-center gap-1.5 mt-2.5 pt-2 border-t border-brand-border/40">
+          <button
+            type="button"
+            onClick={handleDirectBuy}
+            disabled={product.isComingSoon}
+            className="flex-1 py-2 px-2 bg-brand-gold active:bg-brand-gold-hover text-brand-black text-[11px] uppercase font-bold tracking-wider rounded-xs transition-transform active:scale-95 flex items-center justify-center space-x-1 rtl:space-x-reverse shadow-gold disabled:opacity-40 font-mono"
+            title={language === 'ar' ? 'شراء فوري مباشر' : 'Buy Now'}
+          >
+            <Zap className="w-3 h-3 fill-brand-black text-brand-black" />
+            <span>{language === 'ar' ? 'شراء فوري' : 'Buy Now'}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleAddToCart}
+            className={`py-2 px-2.5 rounded-xs border transition-all flex items-center justify-center active:scale-95 ${
+              addedAnimation
+                ? 'bg-emerald-900 border-emerald-500 text-white'
+                : 'border-brand-border bg-brand-charcoal text-brand-gold hover:border-brand-gold'
+            }`}
+            title={language === 'ar' ? 'إضافة للسلة' : 'Add to Bag'}
+          >
+            {addedAnimation ? (
+              <Check className="w-3.5 h-3.5 stroke-[2.5]" />
+            ) : (
+              <ShoppingBag className="w-3.5 h-3.5" />
+            )}
+          </button>
+        </div>
       </div>
     </div>
   );

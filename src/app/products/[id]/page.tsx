@@ -251,7 +251,7 @@ export default function ProductDetailPage() {
     <div className="min-h-screen bg-brand-black text-brand-ivory flex flex-col">
       <Header />
 
-      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-14 w-full">
+      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-14 w-full pb-28 sm:pb-14">
         {/* Breadcrumb Navigation */}
         <nav className="flex items-center space-x-2 rtl:space-x-reverse text-xs text-brand-cream/60 mb-8 font-mono">
           <Link href="/" className="hover:text-brand-gold transition-colors">
@@ -612,6 +612,47 @@ export default function ProductDetailPage() {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* Mobile Sticky Quick Buy Bar (One-Hand Ergonomic Checkout on All Mobile Phones) */}
+        <div
+          className="sm:hidden fixed bottom-0 inset-x-0 z-40 bg-brand-black/95 backdrop-blur-xl border-t border-brand-gold/40 px-3 py-2.5 shadow-2xl flex items-center justify-between gap-2.5 select-none animate-slide-up-sheet"
+          style={{ paddingBottom: 'max(0.6rem, env(safe-area-inset-bottom, 0.6rem))' }}
+        >
+          <div className="flex flex-col min-w-0">
+            <div className="text-[10px] text-brand-cream/70 font-mono flex items-center space-x-1 rtl:space-x-reverse truncate">
+              <span className="font-bold text-brand-gold bg-brand-gold/15 px-1.5 py-0.5 rounded-xs border border-brand-gold/40">{selectedSize}</span>
+              <span className="truncate">{isAr ? (SIZE_WEIGHT_SPECS[selectedSize.toUpperCase()]?.weightRangeAr || '') : (SIZE_WEIGHT_SPECS[selectedSize.toUpperCase()]?.weightRangeEn || '')}</span>
+            </div>
+            <div className="font-mono text-base font-black text-brand-gold mt-0.5">
+              {formatPrice(product.price)}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-1.5 shrink-0">
+            <button
+              type="button"
+              onClick={handleAddToCart}
+              className={`p-2.5 rounded-xs border transition-all flex items-center justify-center active:scale-95 ${
+                addedSuccess
+                  ? 'bg-emerald-900 border-emerald-500 text-white'
+                  : 'bg-brand-charcoal border-brand-border text-brand-gold hover:border-brand-gold'
+              }`}
+              aria-label="Add to bag"
+              title={isAr ? 'أضف للسلة' : 'Add to bag'}
+            >
+              {addedSuccess ? <Check className="w-4 h-4" /> : <ShoppingBag className="w-4 h-4" />}
+            </button>
+            <button
+              type="button"
+              onClick={handleBuyNow}
+              disabled={product.isComingSoon}
+              className="py-2.5 px-3.5 bg-brand-gold active:bg-brand-gold-hover text-brand-black text-xs font-bold uppercase tracking-wider rounded-xs shadow-gold flex items-center justify-center space-x-1 rtl:space-x-reverse font-sans active:scale-95 transition-transform disabled:opacity-50"
+            >
+              <Zap className="w-3.5 h-3.5 fill-brand-black text-brand-black" />
+              <span className="whitespace-nowrap">{isAr ? 'شراء فوري ⚡' : 'Buy Now ⚡'}</span>
+            </button>
           </div>
         </div>
       </main>

@@ -363,7 +363,7 @@ export default function CheckoutPage() {
             {/* Left Column: Delivery Form (7 cols) */}
             <div className="lg:col-span-7 space-y-8">
               {/* Step 1: Customer Contact Info */}
-              <div className="p-6 sm:p-8 bg-brand-charcoal border border-brand-border space-y-5">
+              <div className="p-4 sm:p-8 bg-brand-charcoal border border-brand-border space-y-5">
                 <div className="flex items-center space-x-2 rtl:space-x-reverse border-b border-brand-border/60 pb-3">
                   <span className="w-6 h-6 rounded-full bg-brand-gold text-brand-black text-xs font-mono font-bold flex items-center justify-center">
                     1
@@ -424,7 +424,7 @@ export default function CheckoutPage() {
               </div>
 
               {/* Step 2: Egyptian Governorate & Address */}
-              <div className="p-6 sm:p-8 bg-brand-charcoal border border-brand-border space-y-5">
+              <div className="p-4 sm:p-8 bg-brand-charcoal border border-brand-border space-y-5">
                 <div className="flex items-center space-x-2 rtl:space-x-reverse border-b border-brand-border/60 pb-3">
                   <span className="w-6 h-6 rounded-full bg-brand-gold text-brand-black text-xs font-mono font-bold flex items-center justify-center">
                     2
@@ -533,7 +533,7 @@ export default function CheckoutPage() {
               </div>
 
               {/* Step 3: Payment Method (Dynamic Egyptian Payment Rails) */}
-              <div className="p-6 sm:p-8 bg-brand-charcoal border border-brand-border space-y-4">
+              <div className="p-4 sm:p-8 bg-brand-charcoal border border-brand-border space-y-4">
                 <div className="flex items-center space-x-2 rtl:space-x-reverse border-b border-brand-border/60 pb-3">
                   <span className="w-6 h-6 rounded-full bg-brand-gold text-brand-black text-xs font-mono font-bold flex items-center justify-center">
                     3
@@ -668,7 +668,7 @@ export default function CheckoutPage() {
 
             {/* Right Column: Order Summary in EGP (5 cols) */}
             <div className="lg:col-span-5">
-              <div className="p-6 sm:p-8 bg-brand-charcoal border border-brand-border sticky top-28 space-y-6">
+              <div className="p-4 sm:p-8 bg-brand-charcoal border border-brand-border sticky top-28 space-y-6">
                 <h3 className="font-sans font-bold text-base uppercase tracking-wider border-b border-brand-border pb-3">
                   {language === 'ar' ? 'ملخص الفاتورة (EGP)' : 'Order Breakdown (EGP)'}
                 </h3>

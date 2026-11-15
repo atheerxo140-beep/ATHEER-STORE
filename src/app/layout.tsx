@@ -6,6 +6,7 @@ import { CartProvider } from '@/context/CartContext';
 import { WishlistProvider } from '@/context/WishlistContext';
 import { CustomerAuthProvider } from '@/context/CustomerAuthContext';
 import { getThemeConfig, generateThemeCss } from '@/lib/themeService';
+import { MobileBottomNav } from '@/components/MobileBottomNav';
 
 export const metadata: Metadata = {
   title: 'ATHEER | أثير — Premium Egyptian Streetwear · 500 GSM Heavyweight Drops',
@@ -64,6 +65,7 @@ export default function RootLayout({
               <CartProvider>
                 <WishlistProvider>
                   {children}
+                  <MobileBottomNav />
                 </WishlistProvider>
               </CartProvider>
             </CustomerAuthProvider>

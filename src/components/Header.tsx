@@ -544,6 +544,7 @@ export const Header: React.FC = () => {
             className={`fixed inset-y-0 ${
               isRtl ? 'right-0' : 'left-0'
             } max-w-xs w-full bg-brand-black border-r rtl:border-l rtl:border-r-0 border-brand-border shadow-2xl p-6 flex flex-col justify-between overflow-y-auto animate-fade-in`}
+            style={{ paddingBottom: 'max(1.5rem, env(safe-area-inset-bottom, 1.5rem))' }}
           >
             <div>
               <div className="flex items-center justify-between pb-6 border-b border-brand-border">
@@ -577,7 +578,7 @@ export const Header: React.FC = () => {
                     key={idx}
                     href={link.href}
                     onClick={() => setMobileMenuOpen(false)}
-                    className={`block text-sm uppercase tracking-widest py-2 border-b border-brand-border/30 transition-colors ${
+                    className={`block text-sm uppercase tracking-widest py-2.5 border-b border-brand-border/30 transition-colors ${
                       link.highlight ? 'text-brand-gold font-bold' : 'text-brand-ivory/90 hover:text-brand-gold'
                     }`}
                   >
@@ -585,7 +586,37 @@ export const Header: React.FC = () => {
                   </Link>
                 ))}
 
+                {/* Mobile Drawer Direct Quick Shortcuts */}
+                <Link
+                  href="/account/loyalty"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center justify-between text-xs font-mono font-bold py-2.5 px-3 bg-brand-gold/15 text-brand-gold border border-brand-gold/40 rounded-xs transition-colors"
+                >
+                  <span className="flex items-center space-x-2 rtl:space-x-reverse">
+                    <Award className="w-4 h-4 text-brand-gold" />
+                    <span>{isAr ? 'كارت الولاء VIP + 100 ج.م' : 'VIP Loyalty Pass + 100 EGP'}</span>
+                  </span>
+                  <span className="text-[10px] bg-brand-gold text-brand-black px-1.5 py-0.5 rounded-xs uppercase font-bold">VIP</span>
+                </Link>
 
+                <div className="grid grid-cols-2 gap-2 pt-1">
+                  <Link
+                    href="/account/wishlist"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center justify-center space-x-1.5 rtl:space-x-reverse py-2 px-2 bg-brand-charcoal border border-brand-border text-xs text-brand-ivory/80 hover:text-brand-gold rounded-xs transition-colors"
+                  >
+                    <Heart className="w-3.5 h-3.5 text-brand-gold" />
+                    <span>{isAr ? 'المفضلة' : 'Wishlist'}</span>
+                  </Link>
+                  <Link
+                    href={customer ? '/account' : '/account/login'}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center justify-center space-x-1.5 rtl:space-x-reverse py-2 px-2 bg-brand-charcoal border border-brand-border text-xs text-brand-ivory/80 hover:text-brand-gold rounded-xs transition-colors"
+                  >
+                    <User className="w-3.5 h-3.5 text-brand-gold" />
+                    <span>{customer ? (isAr ? 'حسابي' : 'Account') : (isAr ? 'تسجيل بالهاتف' : 'Login')}</span>
+                  </Link>
+                </div>
               </div>
 
               <div className="pt-4 border-t border-brand-border space-y-4">

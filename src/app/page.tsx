@@ -111,9 +111,6 @@ export default function HomePage() {
       {/* Sleek Floating Cart Notification Toast (Video Replica) */}
       <FloatingCartToast />
 
-      {/* Native App-Style Mobile Bottom Navigation Bar (Video Replica) */}
-      <MobileBottomNav />
-
       {/* JSON-LD Structured Data for Search Engines */}
       <script
         type="application/ld+json"

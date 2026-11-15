@@ -71,8 +71,8 @@ export default function LoyaltyCardPage() {
   };
 
   return (
-    <div className="min-h-screen bg-brand-black text-brand-ivory py-12 px-4 sm:px-6 lg:px-8 selection:bg-brand-gold selection:text-brand-black">
-      <div className="max-w-4xl mx-auto space-y-8">
+    <div className="min-h-screen bg-brand-black text-brand-ivory py-8 sm:py-12 px-3 sm:px-6 lg:px-8 selection:bg-brand-gold selection:text-brand-black pb-28 sm:pb-12">
+      <div className="max-w-4xl mx-auto space-y-6 sm:space-y-8">
         {/* Navigation Breadcrumb */}
         <div className="flex items-center space-x-2 rtl:space-x-reverse text-xs font-mono text-brand-cream/60">
           <Link href="/account" className="hover:text-brand-gold transition-colors">
@@ -83,7 +83,7 @@ export default function LoyaltyCardPage() {
         </div>
 
         {/* Master Digital Stamp Card Visual */}
-        <div className="relative rounded-xs border-2 border-brand-gold bg-gradient-to-br from-brand-charcoal via-brand-stone/40 to-brand-black p-6 sm:p-10 shadow-gold overflow-hidden">
+        <div className="relative rounded-xs border-2 border-brand-gold bg-gradient-to-br from-brand-charcoal via-brand-stone/40 to-brand-black p-4 sm:p-10 shadow-gold overflow-hidden">
           {/* Subtle Ambient Gold Watermark */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-brand-gold/10 rounded-full blur-3xl pointer-events-none" />
 
@@ -135,7 +135,7 @@ export default function LoyaltyCardPage() {
               </div>
 
               {/* 5 Physical Stamp Circles */}
-              <div className="grid grid-cols-5 gap-3 sm:gap-6 pt-4">
+              <div className="grid grid-cols-5 gap-1.5 xs:gap-3 sm:gap-6 pt-4">
                 {Array.from({ length: stampsRequired }).map((_, index) => {
                   const isEarned = index < stampsCount;
                   const isLastSlot = index === stampsRequired - 1;

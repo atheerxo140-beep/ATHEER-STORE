@@ -70,7 +70,7 @@ export default function CustomerDashboardPage() {
   const tier = customer.tier || loyaltyData?.account?.tier || 'Bronze';
 
   return (
-    <div className="min-h-screen bg-brand-black text-brand-ivory py-12 px-4 sm:px-6 lg:px-8 selection:bg-brand-gold selection:text-brand-black">
+    <div className="min-h-screen bg-brand-black text-brand-ivory py-8 sm:py-12 px-3 sm:px-6 lg:px-8 selection:bg-brand-gold selection:text-brand-black pb-28 sm:pb-12">
       <div className="max-w-6xl mx-auto space-y-8">
         {/* Top Header Card */}
         <div className="bg-brand-charcoal border border-brand-border/80 rounded-xs p-6 sm:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-luxury-dark">
