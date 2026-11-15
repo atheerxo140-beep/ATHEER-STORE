@@ -292,10 +292,7 @@ export const createOrder = async (input: CreateOrderInput): Promise<OrderCreatio
     currency: 'EGP',
     paymentMethod: input.paymentMethod || 'cash_on_delivery',
     paymentReference: input.paymentReference?.trim(),
-    paymentStatus:
-      input.paymentMethod && input.paymentMethod !== 'cash_on_delivery'
-        ? 'pending_verification'
-        : 'pending_cod',
+    paymentStatus: 'pending_cod',
     orderStatus: 'confirmed',
     notes: input.notes?.trim(),
     items: validatedItems,
@@ -315,6 +312,14 @@ export const createOrder = async (input: CreateOrderInput): Promise<OrderCreatio
     }
 
     try {
+      // Ensure payment_status strictly conforms to Supabase constraint ('pending_cod', 'paid_on_delivery', 'cancelled')
+      const dbPaymentStatus: 'pending_cod' | 'paid_on_delivery' | 'cancelled' =
+        newOrder.paymentStatus === 'paid_on_delivery'
+          ? 'paid_on_delivery'
+          : newOrder.paymentStatus === 'cancelled'
+          ? 'cancelled'
+          : 'pending_cod';
+
       const { data: orderData, error: orderError } = await supabase
         .from('orders')
         .insert({
@@ -323,16 +328,19 @@ export const createOrder = async (input: CreateOrderInput): Promise<OrderCreatio
           customer_phone: newOrder.customerPhone,
           customer_email: newOrder.customerEmail,
           shipping_country: 'Egypt',
+          governorate: newOrder.governorate,
           shipping_city: newOrder.shippingCity,
           shipping_address: newOrder.shippingAddress,
           shipping_postal_code: newOrder.shippingPostalCode,
           shipping_zone_id: newOrder.shippingZoneId,
           subtotal: newOrder.subtotal,
           shipping_fee: newOrder.shippingFee,
+          discount_amount: newOrder.discountAmount || 0,
+          coupon_code: newOrder.couponCode || null,
           total_amount: newOrder.totalAmount,
           currency: 'EGP',
           payment_method: newOrder.paymentMethod,
-          payment_status: newOrder.paymentStatus,
+          payment_status: dbPaymentStatus,
           order_status: 'confirmed',
           notes: newOrder.paymentReference
             ? `${newOrder.notes ? newOrder.notes + ' · ' : ''}Ref: ${newOrder.paymentReference}`

@@ -190,11 +190,15 @@ export async function PUT(req: NextRequest) {
       const supabase = getSupabaseServer();
       if (supabase) {
         try {
+          const dbPaymentStatus = ['pending_cod', 'paid_on_delivery', 'cancelled'].includes(order.paymentStatus)
+            ? order.paymentStatus
+            : 'pending_cod';
+
           await supabase
             .from('orders')
             .update({
               order_status: order.orderStatus,
-              payment_status: order.paymentStatus,
+              payment_status: dbPaymentStatus,
               notes: order.notes,
               updated_at: order.updatedAt,
             })
