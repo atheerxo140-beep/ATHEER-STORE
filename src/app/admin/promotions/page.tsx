@@ -15,6 +15,7 @@ import {
   Tag,
   Flame,
   Search,
+  AlertCircle,
 } from 'lucide-react';
 
 export default function AdminPromotionsPage() {
@@ -26,6 +27,7 @@ export default function AdminPromotionsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editingPromo, setEditingPromo] = useState<any | null>(null);
+  const [feedbackMsg, setFeedbackMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   // Form State
   const [titleAr, setTitleAr] = useState('');
@@ -42,7 +44,10 @@ export default function AdminPromotionsPage() {
   const fetchPromotions = async () => {
     setLoading(true);
     try {
-      const res = await adminFetch('/api/admin/promotions');
+      const res = await adminFetch(`/api/admin/promotions?_t=${Date.now()}`, {
+        cache: 'no-store',
+        headers: { 'Cache-Control': 'no-cache' },
+      });
       const data = await res.json();
       if (data.success && Array.isArray(data.promotions)) {
         setPromotions(data.promotions);
@@ -103,35 +108,111 @@ export default function AdminPromotionsPage() {
       };
 
       if (editingPromo) {
-        await adminFetch('/api/admin/promotions', {
+        const res = await adminFetch(`/api/admin/promotions?_t=${Date.now()}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ id: editingPromo.id, ...payload }),
         });
+        const data = await res.json();
+        if (data.success) {
+          setFeedbackMsg({
+            type: 'success',
+            text: isAr ? 'تم تعديل العرض بنجاح' : 'Promotion updated successfully',
+          });
+        }
       } else {
-        await adminFetch('/api/admin/promotions', {
+        const res = await adminFetch(`/api/admin/promotions?_t=${Date.now()}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
         });
+        const data = await res.json();
+        if (data.success) {
+          setFeedbackMsg({
+            type: 'success',
+            text: isAr ? 'تم إنشاء العرض الترويجي الجديد بنجاح' : 'Promotion created successfully',
+          });
+        }
       }
 
       setShowModal(false);
       fetchPromotions();
-    } catch (e) {
+      setTimeout(() => setFeedbackMsg(null), 3500);
+    } catch (e: any) {
       console.error('Failed to save promotion', e);
+      setFeedbackMsg({ type: 'error', text: e.message || 'Error saving promotion' });
     } finally {
       setSubmitting(false);
     }
   };
 
-  const handleDeletePromo = async (id: string) => {
-    if (!confirm(isAr ? 'هل أنت متأكد من حذف هذا العرض؟' : 'Are you sure you want to delete this promotion?')) return;
+  const handleToggleActive = async (id: string, currentStatus: boolean, promoTitle: string) => {
+    // 1. Instant optimistic UI update
+    setPromotions((prev) =>
+      prev.map((p) => (p.id === id ? { ...p, isActive: !currentStatus } : p))
+    );
+
     try {
-      await adminFetch(`/api/admin/promotions?id=${id}`, { method: 'DELETE' });
-      fetchPromotions();
-    } catch (e) {
-      console.error('Failed to delete promotion', e);
+      const res = await adminFetch(`/api/admin/promotions?_t=${Date.now()}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, isActive: !currentStatus }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setFeedbackMsg({
+          type: 'success',
+          text: isAr
+            ? `تم ${!currentStatus ? 'تفعيل' : 'تعطيل'} العرض "${promoTitle}" بنجاح`
+            : `Promotion "${promoTitle}" ${!currentStatus ? 'activated' : 'deactivated'} successfully`,
+        });
+        setTimeout(() => setFeedbackMsg(null), 3500);
+      } else {
+        // Revert on error
+        setPromotions((prev) =>
+          prev.map((p) => (p.id === id ? { ...p, isActive: currentStatus } : p))
+        );
+        setFeedbackMsg({ type: 'error', text: data.error || (isAr ? 'فشل تعديل الحالة' : 'Failed to update') });
+      }
+    } catch (err: any) {
+      setPromotions((prev) =>
+        prev.map((p) => (p.id === id ? { ...p, isActive: currentStatus } : p))
+      );
+      setFeedbackMsg({ type: 'error', text: err.message });
+    }
+  };
+
+  const handleDeletePromo = async (id: string, promoTitle: string) => {
+    const confirmed = window.confirm(
+      isAr
+        ? `هل تريد بالتأكيد حذف العرض "${promoTitle}" نهائياً؟ لن يتمكن العملاء من استخدامه بعد الآن.`
+        : `Are you sure you want to delete promotion "${promoTitle}"?`
+    );
+    if (!confirmed) return;
+
+    // 1. Instant optimistic UI deletion
+    const previousPromos = [...promotions];
+    setPromotions((prev) => prev.filter((p) => p.id !== id));
+
+    try {
+      const res = await adminFetch(`/api/admin/promotions?id=${id}&_t=${Date.now()}`, {
+        method: 'DELETE',
+      });
+      const data = await res.json();
+      if (data.success) {
+        setFeedbackMsg({
+          type: 'success',
+          text: isAr ? `تم حذف العرض "${promoTitle}" نهائياً بنجاح` : `Promotion "${promoTitle}" deleted successfully`,
+        });
+        setTimeout(() => setFeedbackMsg(null), 3500);
+      } else {
+        // Revert on backend error
+        setPromotions(previousPromos);
+        setFeedbackMsg({ type: 'error', text: data.error || (isAr ? 'فشل الحذف' : 'Failed to delete') });
+      }
+    } catch (e: any) {
+      setPromotions(previousPromos);
+      setFeedbackMsg({ type: 'error', text: e.message || (isAr ? 'حدث خطأ في الاتصال' : 'Connection error') });
     }
   };
 
@@ -168,6 +249,33 @@ export default function AdminPromotionsPage() {
           <span>{isAr ? '+ إنشاء عرض باندل جديد' : '+ New Bundle Offer'}</span>
         </button>
       </div>
+
+      {/* Instant Feedback Banner */}
+      {feedbackMsg && (
+        <div
+          className={`p-4 rounded-xs border text-xs font-mono flex items-center justify-between animate-fade-in ${
+            feedbackMsg.type === 'success'
+              ? 'bg-emerald-950/80 border-emerald-500/60 text-emerald-200'
+              : 'bg-rose-950/80 border-rose-500/60 text-rose-200'
+          }`}
+        >
+          <div className="flex items-center space-x-2 rtl:space-x-reverse">
+            {feedbackMsg.type === 'success' ? (
+              <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+            ) : (
+              <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+            )}
+            <span>{feedbackMsg.text}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setFeedbackMsg(null)}
+            className="text-brand-cream/50 hover:text-brand-ivory text-xs"
+          >
+            ✕
+          </button>
+        </div>
+      )}
 
       {/* Promotions List Table */}
       <div className="bg-brand-charcoal border border-brand-border/80 rounded-sm p-6 space-y-4">
@@ -240,29 +348,32 @@ export default function AdminPromotionsPage() {
                       )}
                     </td>
                     <td className="py-3 px-3 text-center">
-                      <span
-                        className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                      <button
+                        type="button"
+                        onClick={() => handleToggleActive(p.id, p.isActive, isAr ? p.titleAr : p.titleEn)}
+                        className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold transition-all hover:scale-105 active:scale-95 cursor-pointer ${
                           p.isActive
-                            ? 'bg-emerald-950/50 text-emerald-400 border border-emerald-500/30'
-                            : 'bg-stone-900 text-stone-500'
+                            ? 'bg-emerald-950/60 text-emerald-400 border border-emerald-500/40 hover:bg-emerald-900/60'
+                            : 'bg-stone-900/80 text-stone-400 border border-stone-700/60 hover:bg-stone-800'
                         }`}
+                        title={p.isActive ? (isAr ? 'اضغط لتعطيل العرض' : 'Click to deactivate') : (isAr ? 'اضغط لتفعيل العرض' : 'Click to activate')}
                       >
-                        {p.isActive ? (isAr ? 'مفعل' : 'Active') : (isAr ? 'معطل' : 'Inactive')}
-                      </span>
+                        {p.isActive ? (isAr ? '✓ مفعل' : '✓ Active') : (isAr ? '✕ معطل' : '✕ Inactive')}
+                      </button>
                     </td>
                     <td className="py-3 px-3 text-center">
                       <div className="flex items-center justify-center space-x-2 rtl:space-x-reverse">
                         <button
                           onClick={() => openEditModal(p)}
-                          className="p-1 text-brand-cream/50 hover:text-brand-gold"
+                          className="p-1 text-brand-cream/50 hover:text-brand-gold transition-colors"
                           title="تعديل"
                         >
                           <Edit3 className="w-3.5 h-3.5" />
                         </button>
                         <button
-                          onClick={() => handleDeletePromo(p.id)}
-                          className="p-1 text-brand-cream/50 hover:text-rose-400"
-                          title="حذف"
+                          onClick={() => handleDeletePromo(p.id, isAr ? p.titleAr : p.titleEn)}
+                          className="p-1 text-brand-cream/50 hover:text-rose-400 transition-colors"
+                          title={isAr ? 'حذف العرض نهائياً' : 'Delete'}
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>

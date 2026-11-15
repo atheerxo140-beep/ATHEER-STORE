@@ -85,14 +85,52 @@ export function updatePromotion(id: string, updates: Partial<PromotionRule>): Pr
     code: updates.code ? updates.code.trim().toUpperCase() : promos[idx].code,
   };
   writePromotions(promos);
+
+  // Synchronize isActive status with couponsStore and homepage if code exists
+  if (updates.isActive !== undefined && promos[idx].code) {
+    try {
+      const { toggleCouponActive, getCoupons } = require('@/data/couponsStore');
+      const allCoupons = getCoupons ? getCoupons() : [];
+      const matching = allCoupons.find((c: any) => c.code?.toUpperCase() === promos[idx].code?.toUpperCase());
+      if (matching && matching.isActive !== updates.isActive) {
+        toggleCouponActive(matching.id);
+      }
+    } catch (e) {}
+  }
+
   return promos[idx];
 }
 
 export function deletePromotion(id: string): boolean {
   const promos = readPromotions();
+  const target = promos.find((p) => p.id === id);
   const filtered = promos.filter((p) => p.id !== id);
   if (filtered.length !== promos.length) {
     writePromotions(filtered);
+
+    // Sync deletion across couponsStore and homepage_content
+    if (target?.code) {
+      try {
+        const { deleteCoupon } = require('@/data/couponsStore');
+        if (typeof deleteCoupon === 'function') {
+          deleteCoupon(target.code);
+        }
+      } catch (e) {}
+
+      try {
+        const hpPath = path.join(process.cwd(), 'src', 'data', 'homepage_content.json');
+        if (fs.existsSync(hpPath)) {
+          const hp = JSON.parse(fs.readFileSync(hpPath, 'utf8'));
+          if (Array.isArray(hp.promoOffers)) {
+            hp.promoOffers = hp.promoOffers.filter(
+              (o: any) => o.couponCode?.toUpperCase() !== target.code?.toUpperCase() && o.id !== target.id
+            );
+            fs.writeFileSync(hpPath, JSON.stringify(hp, null, 2), 'utf8');
+          }
+        }
+      } catch (e) {}
+    }
+
     return true;
   }
   return false;
