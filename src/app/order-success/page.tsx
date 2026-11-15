@@ -140,29 +140,29 @@ function OrderSuccessContent() {
             <div>
               <div className="inline-flex items-center space-x-1.5 rtl:space-x-reverse text-[11px] font-mono font-bold uppercase tracking-wider text-emerald-400 mb-1">
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                <span>{language === 'ar' ? 'استلام وتأكيد الطلب عبر الواتساب' : 'INSTANT WHATSAPP CONFIRMATION'}</span>
+                <span>{language === 'ar' ? '⚡ تم إرسال إشعار طلبك آلياً للإدارة' : '⚡ ORDER AUTO-DISPATCHED TO MANAGEMENT'}</span>
               </div>
               <h3 className="text-lg sm:text-xl font-bold text-white">
-                {language === 'ar' ? 'أرسل تفاصيل طلبك مباشرة على الواتساب' : 'Receive & Confirm Your Order on WhatsApp'}
+                {language === 'ar' ? 'طلبك قيد المراجعة الفورية — تم إشعارنا تلقائياً' : 'Your Order is in Review — Auto-Notified to ATHEER'}
               </h3>
               <p className="text-xs text-brand-cream/80 mt-1 max-w-lg leading-relaxed">
                 {language === 'ar'
-                  ? 'اضغط أدناه لفتح تطبيق الواتساب وإرسال الفاتورة وتفاصيل المقاسات وعنوان التوصيل مباشرة لخدمة عملاء أثير للتأكيد والشحن الفوري.'
-                  : 'Send full order breakdown, sizes, and shipping address via WhatsApp to ATHEER support for immediate express fulfillment.'}
+                  ? 'تم تسجيل طلبك وإرسال تفاصيله تلقائياً إلى إدارة أثير عبر الواتساب الآلي للبدء فوراً في التجهيز. لا يلزمك الضغط على أي زر لتأكيد الطلب؛ وسيقوم فريق العمل بالتواصل معك هاتفياً قبل خروج المندوب للتسليم والدفع عند الاستلام.'
+                  : 'Your order details have been automatically transmitted to ATHEER management via our server automation. No further action is required from you. Our team will contact you prior to courier delivery.'}
               </p>
             </div>
           </div>
 
           <div className="flex flex-col sm:flex-row md:flex-col gap-2.5 w-full md:w-auto flex-shrink-0">
-            {/* Primary Action: Send to Store WhatsApp */}
+            {/* Primary Action: Direct Customer Service Concierge */}
             <a
               href={whatsappUrlStore}
               target="_blank"
               rel="noopener noreferrer"
-              className="px-6 py-3.5 bg-emerald-500 hover:bg-emerald-400 text-black font-bold font-mono text-xs uppercase tracking-wider rounded-xs flex items-center justify-center space-x-2 rtl:space-x-reverse transition-all shadow-lg hover:scale-[1.02]"
+              className="px-6 py-3 bg-emerald-600/90 hover:bg-emerald-500 text-white font-bold font-mono text-xs uppercase tracking-wider rounded-xs flex items-center justify-center space-x-2 rtl:space-x-reverse transition-all shadow-lg hover:scale-[1.02]"
             >
-              <MessageCircle className="w-4 h-4 fill-black" />
-              <span>{language === 'ar' ? 'إرسال وتأكيد الطلب على الواتساب' : 'Send & Confirm on WhatsApp'}</span>
+              <MessageCircle className="w-4 h-4" />
+              <span>{language === 'ar' ? 'محادثة خدمة العملاء (اختياري)' : 'Contact Support via WhatsApp (Optional)'}</span>
             </a>
 
             {/* Secondary Action: Send copy to customer's own phone */}

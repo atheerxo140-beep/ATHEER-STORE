@@ -6,11 +6,13 @@ import { getStoreFilePath } from '@/lib/storePath';
 import { getSupabaseServer, isSupabaseConfigured } from '@/lib/supabaseServer';
 
 export interface WhatsAppGatewayConfig {
-  provider: 'callmebot' | 'ultramsg' | 'custom_webhook' | 'none';
+  provider: 'callmebot' | 'ultramsg' | 'greenapi' | 'custom_webhook' | 'none';
   targetPhone?: string;
   callmebotApiKey?: string;
   ultramsgInstanceId?: string;
   ultramsgToken?: string;
+  greenapiInstanceId?: string;
+  greenapiApiToken?: string;
   customWebhookUrl?: string;
 }
 
@@ -27,7 +29,13 @@ function getGatewayConfigPath(): string {
 
 export async function getWhatsAppGatewayConfig(): Promise<WhatsAppGatewayConfig> {
   // Check memory cache first
-  if (cachedGatewayConfig && (cachedGatewayConfig.callmebotApiKey || cachedGatewayConfig.ultramsgToken)) {
+  if (
+    cachedGatewayConfig &&
+    (cachedGatewayConfig.callmebotApiKey ||
+      cachedGatewayConfig.ultramsgToken ||
+      cachedGatewayConfig.greenapiApiToken ||
+      cachedGatewayConfig.customWebhookUrl)
+  ) {
     return cachedGatewayConfig;
   }
 
@@ -35,18 +43,25 @@ export async function getWhatsAppGatewayConfig(): Promise<WhatsAppGatewayConfig>
   const callmebotApiKey = process.env.CALLMEBOT_APIKEY || '';
   const ultramsgInstanceId = process.env.ULTRAMSG_INSTANCE_ID || '';
   const ultramsgToken = process.env.ULTRAMSG_TOKEN || '';
+  const greenapiInstanceId = process.env.GREENAPI_INSTANCE_ID || '';
+  const greenapiApiToken = process.env.GREENAPI_API_TOKEN || '';
   const customWebhookUrl = process.env.WHATSAPP_WEBHOOK_URL || '';
+  const targetPhone = process.env.WHATSAPP_TARGET_PHONE || process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '201015993802';
 
   if (callmebotApiKey) {
-    cachedGatewayConfig = { provider: 'callmebot', callmebotApiKey };
+    cachedGatewayConfig = { provider: 'callmebot', targetPhone, callmebotApiKey };
     return cachedGatewayConfig;
   }
   if (ultramsgInstanceId && ultramsgToken) {
-    cachedGatewayConfig = { provider: 'ultramsg', ultramsgInstanceId, ultramsgToken };
+    cachedGatewayConfig = { provider: 'ultramsg', targetPhone, ultramsgInstanceId, ultramsgToken };
+    return cachedGatewayConfig;
+  }
+  if (greenapiInstanceId && greenapiApiToken) {
+    cachedGatewayConfig = { provider: 'greenapi', targetPhone, greenapiInstanceId, greenapiApiToken };
     return cachedGatewayConfig;
   }
   if (customWebhookUrl) {
-    cachedGatewayConfig = { provider: 'custom_webhook', customWebhookUrl };
+    cachedGatewayConfig = { provider: 'custom_webhook', targetPhone, customWebhookUrl };
     return cachedGatewayConfig;
   }
 
@@ -57,14 +72,17 @@ export async function getWhatsAppGatewayConfig(): Promise<WhatsAppGatewayConfig>
       try {
         const { data, error } = await supabase
           .from('store_settings')
-          .select('cairo_showrooms_ar')
+          .select('cairo_showrooms_ar, whatsapp_number')
           .eq('id', 'whatsapp_gateway')
           .maybeSingle();
 
         if (!error && data?.cairo_showrooms_ar) {
           try {
             const parsed = JSON.parse(data.cairo_showrooms_ar);
-            if (parsed && (parsed.callmebotApiKey || parsed.ultramsgToken || parsed.provider !== 'none')) {
+            if (parsed && (parsed.callmebotApiKey || parsed.ultramsgToken || parsed.greenapiApiToken || parsed.provider !== 'none')) {
+              if (!parsed.targetPhone && data.whatsapp_number) {
+                parsed.targetPhone = data.whatsapp_number;
+              }
               cachedGatewayConfig = parsed;
               return parsed;
             }
@@ -91,11 +109,22 @@ export async function getWhatsAppGatewayConfig(): Promise<WhatsAppGatewayConfig>
     // Ignore
   }
 
-  return { provider: 'none' };
+  return {
+    provider: 'callmebot',
+    targetPhone: targetPhone || '201015993802',
+    callmebotApiKey: '',
+  };
 }
 
 export async function saveWhatsAppGatewayConfig(config: WhatsAppGatewayConfig): Promise<void> {
   cachedGatewayConfig = config;
+
+  if (config.callmebotApiKey) {
+    process.env.CALLMEBOT_APIKEY = config.callmebotApiKey;
+  }
+  if (config.targetPhone) {
+    process.env.WHATSAPP_TARGET_PHONE = config.targetPhone;
+  }
 
   // Persist locally
   try {
@@ -117,7 +146,7 @@ export async function saveWhatsAppGatewayConfig(config: WhatsAppGatewayConfig): 
             store_name_en: 'WHATSAPP_GATEWAY',
             store_name_ar: 'إعدادات بوابة الواتساب التلقائية',
             cairo_showrooms_ar: JSON.stringify(config),
-            whatsapp_number: config.targetPhone || '',
+            whatsapp_number: config.targetPhone || '201015993802',
             default_currency: 'EGP',
             updated_at: new Date().toISOString(),
           });
@@ -137,13 +166,15 @@ export async function sendAutomatedOrderWhatsApp(
   ownerPhone: string
 ): Promise<{ success: boolean; provider?: string; error?: string }> {
   const config = await getWhatsAppGatewayConfig();
-  const cleanPhone = normalizeWhatsAppNumber(config.targetPhone || ownerPhone) || '201500429943';
+  const cleanPhone = normalizeWhatsAppNumber(config.targetPhone || ownerPhone || process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '201015993802');
 
   const itemsSummary = order.items
     .map((i) => `• ${i.quantity}x ${i.productNameAr || i.productNameEn} (${i.selectedSize} | ${i.selectedColor})`)
     .join('\n');
 
   const destination = [order.governorate, order.shippingCity, order.shippingAddress].filter(Boolean).join(' - ');
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+  const adminOrderUrl = `${siteUrl}/admin/orders?ref=${encodeURIComponent(order.orderReference)}`;
 
   const messageText = `🛍️ *طلب جديد وارد في دار أثير | ATHEER*
 ━━━━━━━━━━━━━━━━━━━━━
@@ -158,17 +189,35 @@ ${itemsSummary}
 💰 *الإجمالي المطلوب عند الاستلام:* *${order.totalAmount.toLocaleString()} جنيه مصري*
 🚚 *طريقة الدفع:* ${order.paymentMethod === 'cash_on_delivery' ? 'كاش عند الاستلام (COD)' : order.paymentMethod}
 ${order.notes ? `📝 *ملاحظة العميل:* ${order.notes}\n` : ''}━━━━━━━━━━━━━━━━━━━━━
-✨ تم تسجيل الطلب بالسيرفر وتجهيزه للشحن.`;
+🔗 *رابط مراجعة وتأكيد الطلب باللوحة:*
+${adminOrderUrl}
+━━━━━━━━━━━━━━━━━━━━━
+⚡ إشعار آلي فوري مرسل تلقائياً من خادم المتجر.`;
 
   // 1. CallMeBot Gateway (Free personal WhatsApp notifications API)
   if (config.callmebotApiKey || process.env.CALLMEBOT_APIKEY) {
     const apikey = config.callmebotApiKey || process.env.CALLMEBOT_APIKEY;
     try {
-      const url = `https://api.callmebot.com/whatsapp.php?phone=${cleanPhone}&text=${encodeURIComponent(messageText)}&apikey=${apikey}`;
-      const res = await fetch(url, { method: 'GET' });
+      const primaryUrl = `https://api.callmebot.com/whatsapp.php?phone=${cleanPhone}&text=${encodeURIComponent(messageText)}&apikey=${apikey}`;
+      const res = await fetch(primaryUrl, { method: 'GET' });
       const text = await res.text();
       const isSuccess = res.ok && !text.toLowerCase().includes('error');
-      return { success: isSuccess, provider: 'callmebot', error: isSuccess ? undefined : text };
+      if (isSuccess) {
+        return { success: true, provider: 'callmebot' };
+      }
+
+      // Try secondary CallMeBot server if primary returned temporary issue
+      try {
+        const altUrl = `https://api2.callmebot.com/whatsapp.php?phone=${cleanPhone}&text=${encodeURIComponent(messageText)}&apikey=${apikey}`;
+        const altRes = await fetch(altUrl, { method: 'GET' });
+        const altText = await altRes.text();
+        const altSuccess = altRes.ok && !altText.toLowerCase().includes('error');
+        if (altSuccess) {
+          return { success: true, provider: 'callmebot' };
+        }
+      } catch (altErr) {}
+
+      return { success: false, provider: 'callmebot', error: text };
     } catch (err: any) {
       console.warn('[CallMeBot WhatsApp Dispatch Error]', err);
       return { success: false, provider: 'callmebot', error: err.message };
@@ -196,7 +245,28 @@ ${order.notes ? `📝 *ملاحظة العميل:* ${order.notes}\n` : ''}━━
     }
   }
 
-  // 3. Custom Webhook
+  // 3. Green-API Gateway (Dedicated instance)
+  if (config.greenapiInstanceId && config.greenapiApiToken) {
+    try {
+      const url = `https://api.green-api.com/waInstance${config.greenapiInstanceId}/sendMessage/${config.greenapiApiToken}`;
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chatId: `${cleanPhone}@c.us`,
+          message: messageText,
+        }),
+      });
+      const data = await res.json();
+      const isSuccess = Boolean(data?.idMessage);
+      return { success: isSuccess, provider: 'greenapi', error: isSuccess ? undefined : JSON.stringify(data) };
+    } catch (err: any) {
+      console.warn('[GreenAPI WhatsApp Dispatch Error]', err);
+      return { success: false, provider: 'greenapi', error: err.message };
+    }
+  }
+
+  // 4. Custom Webhook
   if (config.customWebhookUrl) {
     try {
       const res = await fetch(config.customWebhookUrl, {

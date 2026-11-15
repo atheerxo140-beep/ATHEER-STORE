@@ -815,12 +815,12 @@ export default function CheckoutPage() {
                   </div>
                   <div className="leading-tight">
                     <span className="font-bold text-emerald-400 block font-mono text-[11px] mb-0.5">
-                      {language === 'ar' ? '📲 تأكيد وتتبع الطلب عبر الواتساب' : '📲 WhatsApp Order Tracking & Receipt'}
+                      {language === 'ar' ? '📲 إشعار آلي فوري للإدارة عند الطلب' : '📲 Instant Automated Order Notification'}
                     </span>
                     <span className="text-[11px] text-brand-cream/80 font-sans">
                       {language === 'ar'
-                        ? 'فور تأكيد طلبك، ستصلك نسخة الفاتورة الكاملة عبر الواتساب لمتابعة خط سير الشحنة مع المندوب.'
-                        : 'Instant WhatsApp invoice and tracking details will be generated upon confirmation.'}
+                        ? 'بمجرد الضغط على تأكيد الطلب، يصل إشعار آلي فوري لإدارة أثير بتفاصيل طلبك للبدء فوراً في التجهيز دون أي خطوات إضافية منك.'
+                        : 'Upon placing your order, an instant automated alert is dispatched to ATHEER management to start preparation immediately.'}
                     </span>
                   </div>
                 </div>

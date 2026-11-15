@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
     // Optional test message
     let testResult = null;
     if (testPhone) {
-      const cleanPhone = normalizeWhatsAppNumber(testPhone) || '201500429943';
+      const cleanPhone = normalizeWhatsAppNumber(testPhone) || '201015993802';
       const fakeOrder: any = {
         id: 'test-order',
         orderReference: 'ATH-TEST-001',

@@ -137,7 +137,7 @@ export default function AdminSettingsPage() {
       const res = await adminFetch('/api/admin/whatsapp-gateway', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ config: waGateway, testPhone: waGateway.targetPhone || settings?.whatsappNumber || '201021483802' }),
+        body: JSON.stringify({ config: waGateway, testPhone: waGateway.targetPhone || settings?.whatsappNumber || '201015993802' }),
       });
       const data = await res.json();
       if (data.testResult?.success) {
@@ -858,7 +858,7 @@ export default function AdminSettingsPage() {
                       type="text"
                       value={waGateway.targetPhone || settings.whatsappNumber || ''}
                       onChange={(e) => setWaGateway({ ...waGateway, targetPhone: e.target.value.trim() })}
-                      placeholder="201021483802"
+                      placeholder="201015993802"
                       className="w-full bg-brand-charcoal border border-brand-border px-3 py-2 text-brand-ivory font-mono rounded-sm focus:border-brand-gold focus:outline-none"
                     />
                     <p className="text-[10px] text-brand-cream/60 mt-1">
