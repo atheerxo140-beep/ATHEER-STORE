@@ -437,9 +437,98 @@ export default function AdminCouponsPage() {
         />
       </div>
 
-      {/* Coupons Table */}
+      {/* Coupons Container: Desktop Table + Mobile Responsive Cards */}
       <div className="bg-brand-charcoal border border-brand-border/80 rounded-xs overflow-hidden shadow-2xl">
-        <div className="overflow-x-auto">
+        {/* Mobile View: High-Density Coupon Cards (Phones & Small Tablets) */}
+        <div className="md:hidden divide-y divide-brand-border/40 font-mono">
+          {loading ? (
+            <div className="py-12 text-center text-brand-cream/50 text-xs">
+              <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-brand-gold" />
+              {isAr ? 'جاري تحميل الكوبونات...' : 'Loading coupons...'}
+            </div>
+          ) : filteredCoupons.length === 0 ? (
+            <div className="py-12 text-center text-brand-cream/50 text-xs p-6 space-y-2">
+              <p className="text-sm font-bold text-brand-cream/70 mb-1">
+                {isAr ? 'لا توجد أي كوبونات خصم مسجلة حالياً' : 'No discount coupons found.'}
+              </p>
+              <p className="text-xs text-brand-cream/40">
+                {isAr
+                  ? 'المتجر يعمل الآن بالأسعار الرسمية دون خصومات. يمكنك إنشاء كود جديد في أي وقت.'
+                  : 'Store is running without active discount codes. You can add new ones anytime.'}
+              </p>
+            </div>
+          ) : (
+            filteredCoupons.map((coupon) => (
+              <div key={coupon.id} className="p-4 space-y-3 bg-brand-charcoal hover:bg-brand-stone/10 transition-colors">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-center space-x-2 rtl:space-x-reverse">
+                    <span className="font-bold text-base text-brand-gold tracking-wider bg-brand-black px-2.5 py-1 rounded-xs border border-brand-border/80">
+                      {coupon.code}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => copyCode(coupon.code)}
+                      className="p-1.5 text-brand-cream/60 hover:text-brand-ivory border border-brand-border/60 rounded-xs bg-brand-stone/40"
+                      title={isAr ? 'نسخ الكود' : 'Copy Code'}
+                    >
+                      <Copy className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => handleToggleActive(coupon.id, coupon.isActive, coupon.code)}
+                    className={`px-2.5 py-1 text-[10px] font-bold rounded-xs border transition-all ${
+                      coupon.isActive
+                        ? 'bg-emerald-950/60 text-emerald-400 border-emerald-500/50'
+                        : 'bg-rose-950/60 text-rose-400 border-rose-500/50'
+                    }`}
+                  >
+                    {coupon.isActive ? (isAr ? '✓ نشط' : '✓ Active') : (isAr ? '✕ معطل' : '✕ Inactive')}
+                  </button>
+                </div>
+
+                <div className="flex flex-wrap items-center justify-between gap-2 text-xs pt-1">
+                  <div>
+                    {coupon.discountType === 'percentage' ? (
+                      <span className="font-bold text-brand-ivory text-sm">
+                        {coupon.discountValue}% <span className="text-brand-gold text-xs">OFF</span>
+                      </span>
+                    ) : (
+                      <span className="font-bold text-brand-ivory text-sm">
+                        {coupon.discountValue} <span className="text-brand-gold text-xs">EGP OFF</span>
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="text-[11px] text-brand-cream/70">
+                    <span>{isAr ? 'الحد الأدنى: ' : 'Min: '}</span>
+                    <span className="text-brand-ivory font-bold">
+                      {coupon.minOrderAmount ? `${coupon.minOrderAmount.toLocaleString()} EGP` : (isAr ? 'بدون حد' : 'None')}
+                    </span>
+                    <span className="text-brand-border mx-1">·</span>
+                    <span>{coupon.timesUsed || 0} / {coupon.usageLimit || '∞'}</span>
+                  </div>
+                </div>
+
+                {/* Mobile Quick Action Buttons */}
+                <div className="flex items-center justify-end gap-2 pt-2 border-t border-brand-border/40">
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteCoupon(coupon.id, coupon.code)}
+                    className="py-1.5 px-3 border border-rose-900/60 bg-rose-950/30 hover:bg-rose-950/60 text-rose-300 text-xs font-bold rounded-xs flex items-center space-x-1.5 rtl:space-x-reverse"
+                  >
+                    <Trash2 className="w-3.5 h-3.5 text-rose-400" />
+                    <span>{isAr ? 'حذف الكوبون نهائياً' : 'Delete'}</span>
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Desktop View: Wide Spreadsheet Table */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left rtl:text-right border-collapse">
             <thead>
               <tr className="border-b border-brand-border/80 bg-brand-stone/30 text-[10px] uppercase font-mono tracking-widest text-brand-cream/60">
@@ -565,8 +654,8 @@ export default function AdminCouponsPage() {
 
       {/* CREATE COUPON MODAL */}
       {isCreateModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-sm p-4">
-          <div className="bg-brand-charcoal border border-brand-border w-full max-w-md rounded-xs p-6 shadow-2xl space-y-5 font-mono text-xs">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-sm p-2 sm:p-4 overflow-y-auto">
+          <div className="bg-brand-charcoal border border-brand-border w-full max-w-md max-h-[92vh] overflow-y-auto rounded-xs p-4 sm:p-6 shadow-2xl space-y-5 font-mono text-xs">
             <div className="flex items-center justify-between pb-3 border-b border-brand-border/80">
               <div>
                 <span className="text-[10px] text-brand-gold uppercase tracking-widest font-bold">

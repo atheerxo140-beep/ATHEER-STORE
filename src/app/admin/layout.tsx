@@ -424,7 +424,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
               {/* Notifications Dropdown Panel */}
               {showNotificationsDropdown && (
-                <div className="absolute right-0 rtl:right-auto rtl:left-0 mt-2 w-80 sm:w-96 bg-brand-charcoal border border-brand-border/90 rounded-sm shadow-2xl z-50 overflow-hidden font-mono text-xs animate-slide-down">
+                <div className="fixed sm:absolute top-16 sm:top-full left-3 right-3 sm:left-auto sm:right-0 rtl:sm:right-auto rtl:sm:left-0 mt-2 sm:w-96 bg-brand-charcoal border border-brand-border/90 rounded-sm shadow-2xl z-50 overflow-hidden font-mono text-xs animate-slide-down">
                   <div className="p-3 bg-brand-black border-b border-brand-border/60 flex items-center justify-between">
                     <div className="flex items-center space-x-1.5 rtl:space-x-reverse font-bold text-brand-gold">
                       <Bell className="w-3.5 h-3.5" />
@@ -649,43 +649,114 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
         )}
 
-        {/* Page Content */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto">{children}</main>
+        {/* Page Content with Mobile Bottom Padding */}
+        <main className="flex-1 p-3 sm:p-6 lg:p-8 pb-28 lg:pb-8 overflow-y-auto">{children}</main>
       </div>
 
-      {/* Mobile Drawer */}
+      {/* Mobile Admin Bottom Quick-Action Bar (Shopify & Square Style) */}
+      <nav
+        className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-brand-charcoal/95 backdrop-blur-md border-t border-brand-border/80 px-2 py-1 flex items-center justify-around shadow-2xl select-none"
+        aria-label="Admin Mobile Navigation"
+      >
+        <Link
+          href="/admin"
+          className={`flex flex-col items-center justify-center py-1.5 px-2 rounded-xs min-w-[56px] transition-colors ${
+            pathname === '/admin' ? 'text-brand-gold font-bold' : 'text-brand-cream/60 hover:text-brand-ivory'
+          }`}
+        >
+          <LayoutDashboard className="w-4 h-4 mb-1" />
+          <span className="text-[10px] font-mono">{isAr ? 'الرئيسية' : 'Overview'}</span>
+        </Link>
+
+        <Link
+          href="/admin/orders"
+          className={`relative flex flex-col items-center justify-center py-1.5 px-2 rounded-xs min-w-[56px] transition-colors ${
+            pathname.startsWith('/admin/orders') ? 'text-brand-gold font-bold' : 'text-brand-cream/60 hover:text-brand-ivory'
+          }`}
+        >
+          <div className="relative">
+            <ShoppingBag className="w-4 h-4 mb-1" />
+            {unreadCount > 0 && (
+              <span className="absolute -top-1.5 -right-2 bg-emerald-500 text-black text-[8px] font-bold font-mono px-1 rounded-full animate-pulse shadow-sm">
+                +{unreadCount}
+              </span>
+            )}
+          </div>
+          <span className="text-[10px] font-mono">{isAr ? 'الطلبات' : 'Orders'}</span>
+        </Link>
+
+        <Link
+          href="/admin/products"
+          className={`flex flex-col items-center justify-center py-1.5 px-2 rounded-xs min-w-[56px] transition-colors ${
+            pathname.startsWith('/admin/products') ? 'text-brand-gold font-bold' : 'text-brand-cream/60 hover:text-brand-ivory'
+          }`}
+        >
+          <Package className="w-4 h-4 mb-1" />
+          <span className="text-[10px] font-mono">{isAr ? 'المنتجات' : 'Products'}</span>
+        </Link>
+
+        <Link
+          href="/admin/promotions"
+          className={`flex flex-col items-center justify-center py-1.5 px-2 rounded-xs min-w-[56px] transition-colors ${
+            pathname.startsWith('/admin/promotions') || pathname.startsWith('/admin/coupons') ? 'text-brand-gold font-bold' : 'text-brand-cream/60 hover:text-brand-ivory'
+          }`}
+        >
+          <Percent className="w-4 h-4 mb-1" />
+          <span className="text-[10px] font-mono">{isAr ? 'العروض' : 'Promos'}</span>
+        </Link>
+
+        <button
+          type="button"
+          onClick={() => setMobileSidebarOpen(true)}
+          className={`flex flex-col items-center justify-center py-1.5 px-2 rounded-xs min-w-[56px] transition-colors ${
+            mobileSidebarOpen ? 'text-brand-gold' : 'text-brand-cream/60 hover:text-brand-ivory'
+          }`}
+          aria-label="Open Full Admin Menu"
+        >
+          <Menu className="w-4 h-4 mb-1" />
+          <span className="text-[10px] font-mono">{isAr ? 'القائمة' : 'Menu'}</span>
+        </button>
+      </nav>
+
+      {/* Mobile Drawer (Fully Scrollable, RTL-Positioned, Touch-Friendly) */}
       {mobileSidebarOpen && (
-        <div className="fixed inset-0 z-50 lg:hidden flex">
+        <div className="fixed inset-0 z-50 lg:hidden flex justify-start rtl:justify-end">
           <div
-            className="fixed inset-0 bg-black/80 backdrop-blur-sm"
+            className="fixed inset-0 bg-black/85 backdrop-blur-sm transition-opacity"
             onClick={() => setMobileSidebarOpen(false)}
           />
-          <div className="relative w-72 bg-brand-charcoal border-r border-brand-border p-5 flex flex-col justify-between z-10 font-sans">
-            <div>
-              <div className="flex items-center justify-between pb-4 border-b border-brand-border/60 mb-6">
-                <div className="flex items-center space-x-2 rtl:space-x-reverse">
-                  {isAr ? (
-                    <>
-                      <span className="font-arabic font-bold text-lg text-brand-ivory">أثير</span>
-                      <span className="text-brand-gold">/</span>
-                      <span className="font-english font-bold text-lg text-brand-gold">ATHEER</span>
-                    </>
-                  ) : (
-                    <>
-                      <span className="font-english font-bold text-lg text-brand-ivory">ATHEER</span>
-                      <span className="text-brand-gold">/</span>
-                      <span className="font-arabic font-bold text-lg text-brand-gold">أثير</span>
-                    </>
-                  )}
-                </div>
-                <button
-                  onClick={() => setMobileSidebarOpen(false)}
-                  className="p-1 text-brand-cream/60 hover:text-brand-ivory"
-                >
-                  <X className="w-5 h-5" />
-                </button>
+          <div className="relative w-80 max-w-[85vw] h-full bg-brand-charcoal border-r rtl:border-r-0 rtl:border-l border-brand-border/80 flex flex-col justify-between z-10 font-sans shadow-2xl animate-fade-in">
+            {/* Drawer Header (Fixed at top) */}
+            <div className="p-4 border-b border-brand-border/60 bg-brand-black flex items-center justify-between shrink-0">
+              <div className="flex items-center space-x-2 rtl:space-x-reverse">
+                {isAr ? (
+                  <>
+                    <span className="font-arabic font-bold text-lg text-brand-ivory">أثير</span>
+                    <span className="text-brand-gold font-light">/</span>
+                    <span className="font-english font-black text-lg tracking-[0.2em] text-brand-gold">ATHEER</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="font-english font-black text-lg tracking-[0.2em] text-brand-ivory">ATHEER</span>
+                    <span className="text-brand-gold font-light">/</span>
+                    <span className="font-arabic font-bold text-lg text-brand-gold">أثير</span>
+                  </>
+                )}
               </div>
+              <button
+                onClick={() => setMobileSidebarOpen(false)}
+                className="p-1.5 rounded-xs bg-brand-stone/40 border border-brand-border/60 text-brand-cream/80 hover:text-brand-gold hover:border-brand-gold"
+                aria-label="Close menu"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
 
+            {/* Scrollable Menu Items (Guaranteed 100% accessible on any screen height) */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-1 overscroll-contain">
+              <div className="text-[10px] font-mono uppercase tracking-widest text-brand-gold/70 px-2 py-1 mb-1">
+                {isAr ? 'أقسام الإدارة والتحكم' : 'Navigation Modules'}
+              </div>
               <nav className="space-y-1">
                 {menuItems.map((item) => {
                   const Icon = item.icon;
@@ -699,15 +770,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                       key={item.href}
                       href={item.href}
                       onClick={() => setMobileSidebarOpen(false)}
-                      className={`flex items-center justify-between px-3 py-2.5 text-xs font-mono rounded-sm ${
+                      className={`flex items-center justify-between px-3.5 py-3 text-xs font-mono rounded-xs transition-colors ${
                         isActive
-                          ? 'bg-brand-gold text-brand-black font-bold'
-                          : 'text-brand-cream/80 hover:bg-brand-stone/40'
+                          ? 'bg-brand-gold text-brand-black font-bold shadow-gold'
+                          : 'text-brand-cream/80 hover:text-brand-ivory hover:bg-brand-stone/40'
                       }`}
                     >
                       <div className="flex items-center space-x-3 rtl:space-x-reverse">
-                        <Icon className="w-4 h-4" />
-                        <span>{language === 'ar' ? item.labelAr : item.labelEn}</span>
+                        <Icon className="w-4 h-4 flex-shrink-0" />
+                        <span className="text-xs">{language === 'ar' ? item.labelAr : item.labelEn}</span>
                       </div>
                       <div className="flex items-center space-x-1.5 rtl:space-x-reverse">
                         {item.badge && (
@@ -727,10 +798,40 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               </nav>
             </div>
 
-            <div className="pt-4 border-t border-brand-border/60 space-y-2">
+            {/* Drawer Bottom Actions (Fixed at bottom) */}
+            <div className="p-4 border-t border-brand-border/60 bg-brand-black/60 space-y-2 shrink-0">
+              <Link
+                href="/"
+                target="_blank"
+                onClick={() => setMobileSidebarOpen(false)}
+                className="flex items-center justify-between p-2.5 text-xs font-mono text-brand-cream/80 hover:text-brand-gold border border-brand-border/60 rounded-xs bg-brand-charcoal"
+              >
+                <span>{language === 'ar' ? 'معاينة متجر العملاء' : 'View Storefront'}</span>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </Link>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setMobileSidebarOpen(false);
+                  setShowDbInfo(true);
+                }}
+                className="w-full flex items-center justify-between p-2.5 text-[11px] font-mono border border-brand-border/60 rounded-xs bg-brand-charcoal text-brand-cream/80"
+              >
+                <span className="flex items-center space-x-1.5 rtl:space-x-reverse">
+                  <Database className="w-3.5 h-3.5 text-brand-gold" />
+                  <span>{isAr ? 'حالة قاعدة البيانات' : 'Database Status'}</span>
+                </span>
+                <span
+                  className={`w-2 h-2 rounded-full ${
+                    supabaseStatus.connected ? 'bg-emerald-400' : 'bg-amber-400'
+                  }`}
+                />
+              </button>
+
               <button
                 onClick={handleLogout}
-                className="w-full flex items-center justify-center space-x-2 rtl:space-x-reverse py-2 border border-rose-900/40 text-rose-400 text-xs font-mono"
+                className="w-full flex items-center justify-center space-x-2 rtl:space-x-reverse py-2.5 border border-rose-900/60 bg-rose-950/30 hover:bg-rose-950/60 text-rose-300 text-xs font-mono rounded-xs transition-colors"
               >
                 <LogOut className="w-3.5 h-3.5" />
                 <span>{language === 'ar' ? 'تسجيل الخروج' : 'Log Out'}</span>

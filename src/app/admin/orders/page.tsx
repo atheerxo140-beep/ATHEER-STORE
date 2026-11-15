@@ -350,9 +350,108 @@ export default function AdminOrdersPage() {
         </div>
       </div>
 
-      {/* Orders Table */}
+      {/* Orders List Container: Desktop Table + Mobile Responsive Cards */}
       <div className="bg-brand-charcoal border border-brand-border/80 rounded-sm overflow-hidden shadow-2xl">
-        <div className="overflow-x-auto">
+        {/* Mobile View: High-Density Touch Cards (Phones & Small Tablets) */}
+        <div className="md:hidden divide-y divide-brand-border/40">
+          {loading && orders.length === 0 ? (
+            <div className="py-12 text-center text-brand-cream/50 font-mono text-xs">
+              <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-brand-gold" />
+              {isAr ? 'جاري تحميل الطلبات...' : 'Loading orders...'}
+            </div>
+          ) : orders.length === 0 ? (
+            <div className="py-12 text-center text-brand-cream/50 font-mono text-xs">
+              {isAr ? 'لا توجد طلبات مسجلة مطابقة' : 'No customer orders match the criteria.'}
+            </div>
+          ) : (
+            orders.map((order) => {
+              const totalItems = order.items.reduce((acc, it) => acc + it.quantity, 0);
+              return (
+                <div key={order.id} className="p-4 space-y-3 bg-brand-charcoal hover:bg-brand-stone/10 transition-colors">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <button
+                        onClick={() => setSelectedOrder(order)}
+                        className="font-mono font-bold text-sm text-brand-gold hover:underline flex items-center space-x-1.5 rtl:space-x-reverse"
+                      >
+                        <span>{order.orderReference}</span>
+                      </button>
+                      <span className="text-[10px] text-brand-cream/50 font-mono block mt-0.5">
+                        {new Date(order.createdAt).toLocaleDateString(isAr ? 'ar-EG' : 'en-US', {
+                          month: 'short',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
+                      </span>
+                    </div>
+                    <div className="text-right rtl:text-left">
+                      <span className="font-mono font-bold text-sm text-brand-ivory block">
+                        {order.totalAmount.toLocaleString()} <span className="text-[10px] text-brand-gold">EGP</span>
+                      </span>
+                      <span className="text-[10px] text-brand-cream/60 block font-mono">
+                        {totalItems} {isAr ? 'قطع' : 'pcs'}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between text-xs">
+                    <div>
+                      <span className="font-bold text-brand-ivory block text-xs">{order.customerName}</span>
+                      <div className="text-[11px] text-brand-cream/70 flex items-center space-x-1 rtl:space-x-reverse mt-0.5 font-mono">
+                        <MapPin className="w-3 h-3 text-brand-gold shrink-0" />
+                        <span>{order.shippingCity}</span>
+                        <span className="text-brand-border">·</span>
+                        <span>{order.customerPhone}</span>
+                      </div>
+                    </div>
+                    <div className="flex flex-col items-end rtl:items-start gap-1">
+                      {getStatusBadge(order.orderStatus)}
+                      {getPaymentBadge(order.paymentStatus)}
+                    </div>
+                  </div>
+
+                  {/* Mobile Quick Action Buttons */}
+                  <div className="flex items-center gap-2 pt-2 border-t border-brand-border/40">
+                    <a
+                      href={getAdminToCustomerWhatsAppUrl(order, isAr ? 'ar' : 'en')}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex-1 py-2 px-2.5 bg-emerald-950/40 hover:bg-emerald-900/60 border border-emerald-500/50 text-emerald-300 text-xs font-mono font-bold rounded-xs flex items-center justify-center space-x-1.5 rtl:space-x-reverse transition-colors shadow-sm"
+                    >
+                      <MessageCircle className="w-4 h-4 text-emerald-400 shrink-0" />
+                      <span>{isAr ? 'واتساب العميل' : 'WhatsApp'}</span>
+                    </a>
+
+                    <button
+                      type="button"
+                      onClick={() => setSelectedOrder(order)}
+                      className="flex-1 py-2 px-2.5 bg-brand-stone/40 hover:bg-brand-stone border border-brand-border text-brand-ivory text-xs font-mono font-bold rounded-xs flex items-center justify-center space-x-1.5 rtl:space-x-reverse transition-colors"
+                    >
+                      <Eye className="w-4 h-4 text-brand-gold shrink-0" />
+                      <span>{isAr ? 'تفاصيل الطلب' : 'Details'}</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedOrder(order);
+                        setIsInvoiceModalOpen(true);
+                      }}
+                      className="p-2 border border-brand-border bg-brand-stone/30 text-brand-cream/80 hover:text-brand-gold rounded-xs transition-colors shrink-0"
+                      title={isAr ? 'طباعة الفاتورة' : 'Print Invoice'}
+                    >
+                      <Printer className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+
+        {/* Desktop View: Wide Spreadsheet Table (Tablets & Desktops) */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left rtl:text-right border-collapse">
             <thead>
               <tr className="border-b border-brand-border/80 bg-brand-stone/30 text-[10px] uppercase font-mono tracking-widest text-brand-cream/60">

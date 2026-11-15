@@ -307,7 +307,76 @@ export default function AdminPromotionsPage() {
             {isAr ? 'لا توجد عروض ترويجية مطابقة' : 'No promotions found.'}
           </p>
         ) : (
-          <div className="overflow-x-auto">
+          <>
+            {/* Mobile View: High-Density Promotion Cards (Phones & Small Tablets) */}
+            <div className="md:hidden divide-y divide-brand-border/40 font-mono">
+            {filteredPromotions.map((p) => (
+              <div key={p.id} className="p-4 space-y-3 bg-brand-charcoal hover:bg-brand-stone/10 transition-colors">
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <h4 className="font-bold text-sm text-brand-ivory font-serif">{isAr ? p.titleAr : p.titleEn}</h4>
+                    {p.descriptionAr && (
+                      <p className="text-[11px] text-brand-cream/60 font-sans mt-0.5 leading-relaxed">{p.descriptionAr}</p>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleToggleActive(p.id, p.isActive, isAr ? p.titleAr : p.titleEn)}
+                    className={`px-2.5 py-1 rounded-full text-[10px] font-bold shrink-0 transition-all ${
+                      p.isActive
+                        ? 'bg-emerald-950/60 text-emerald-400 border border-emerald-500/40'
+                        : 'bg-stone-900/80 text-stone-400 border border-stone-700/60'
+                    }`}
+                  >
+                    {p.isActive ? (isAr ? '✓ مفعل' : '✓ Active') : (isAr ? '✕ معطل' : '✕ Inactive')}
+                  </button>
+                </div>
+
+                <div className="flex flex-wrap items-center justify-between gap-2 text-xs pt-1">
+                  <div className="flex items-center space-x-2 rtl:space-x-reverse">
+                    {p.code ? (
+                      <span className="font-bold text-brand-gold bg-brand-black px-2 py-0.5 rounded-xs border border-brand-border">
+                        {p.code}
+                      </span>
+                    ) : (
+                      <span className="text-brand-cream/40 text-[11px]">—</span>
+                    )}
+                    <span className="px-2 py-0.5 bg-brand-gold/10 text-brand-gold border border-brand-gold/30 rounded-xs font-bold">
+                      {p.type === 'fixed_amount' ? `${p.discountValue} ج.م` : `${p.discountValue}%`}
+                    </span>
+                  </div>
+
+                  <div className="text-[11px] text-brand-cream/60">
+                    {p.minItemsRequired ? `${p.minItemsRequired} قطع` : ''} {p.minSpendEgp ? `| ${p.minSpendEgp} ج.م` : ''}
+                  </div>
+                </div>
+
+                {/* Mobile Quick Actions */}
+                <div className="flex items-center gap-2 pt-2 border-t border-brand-border/40">
+                  <button
+                    type="button"
+                    onClick={() => openEditModal(p)}
+                    className="flex-1 py-1.5 px-3 bg-brand-stone/40 hover:bg-brand-stone border border-brand-border text-brand-ivory text-xs font-bold rounded-xs flex items-center justify-center space-x-1.5 rtl:space-x-reverse"
+                  >
+                    <Edit3 className="w-3.5 h-3.5 text-brand-gold" />
+                    <span>{isAr ? 'تعديل العرض' : 'Edit'}</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleDeletePromo(p.id, isAr ? p.titleAr : p.titleEn)}
+                    className="py-1.5 px-3 border border-rose-900/60 bg-rose-950/30 hover:bg-rose-950/60 text-rose-300 text-xs font-bold rounded-xs flex items-center justify-center space-x-1 rtl:space-x-reverse shrink-0"
+                  >
+                    <Trash2 className="w-3.5 h-3.5 text-rose-400" />
+                    <span>{isAr ? 'حذف' : 'Delete'}</span>
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Desktop View: Wide Spreadsheet Table */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-start text-xs font-mono">
               <thead className="bg-brand-stone/40 text-brand-cream/60 border-b border-brand-border">
                 <tr>
@@ -390,15 +459,16 @@ export default function AdminPromotionsPage() {
               </tbody>
             </table>
           </div>
+          </>
         )}
       </div>
 
       {/* Modal for Adding / Editing Promotion */}
       {showModal && (
-        <div className="fixed inset-0 z-50 bg-brand-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-brand-black/85 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 overflow-y-auto">
           <form
             onSubmit={handleSavePromo}
-            className="bg-brand-charcoal border-2 border-brand-gold/60 rounded-xs p-6 max-w-lg w-full space-y-4 shadow-2xl animate-scale-in"
+            className="bg-brand-charcoal border-2 border-brand-gold/60 rounded-xs p-4 sm:p-6 max-w-lg w-full max-h-[92vh] overflow-y-auto space-y-4 shadow-2xl animate-scale-in"
           >
             <div className="flex items-center justify-between border-b border-brand-border/60 pb-3">
               <h3 className="text-sm font-bold text-brand-ivory font-serif">

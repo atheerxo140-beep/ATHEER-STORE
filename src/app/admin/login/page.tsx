@@ -81,7 +81,7 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-brand-black flex flex-col justify-between p-6 sm:p-12 font-sans relative overflow-hidden">
+    <div className="min-h-screen bg-brand-black flex flex-col justify-between p-4 sm:p-12 font-sans relative overflow-hidden">
       {/* Background Ambience */}
       <div className="absolute top-0 right-0 w-96 h-96 bg-brand-gold/5 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-96 h-96 bg-brand-charcoal/80 rounded-full blur-3xl pointer-events-none" />
@@ -106,8 +106,8 @@ export default function AdminLoginPage() {
       </div>
 
       {/* Login Card */}
-      <div className="w-full max-w-md mx-auto my-auto z-10">
-        <div className="bg-brand-charcoal border border-brand-border/80 rounded-sm p-8 shadow-2xl space-y-6">
+      <div className="w-full max-w-md mx-auto my-auto z-10 py-6 sm:py-0">
+        <div className="bg-brand-charcoal border border-brand-border/80 rounded-sm p-5 sm:p-8 shadow-2xl space-y-6">
           {/* Brand Mark */}
           <div className="text-center space-y-1">
             <div className="inline-flex items-center justify-center p-3 bg-brand-stone/40 border border-brand-gold/30 rounded-xs mb-2">
@@ -178,7 +178,7 @@ export default function AdminLoginPage() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full bg-brand-stone/40 border border-brand-border/80 px-9 py-2.5 text-brand-ivory rounded-xs focus:border-brand-gold focus:outline-none"
+                  className="w-full bg-brand-stone/40 border border-brand-border/80 px-9 py-2.5 text-brand-ivory text-base sm:text-xs rounded-xs focus:border-brand-gold focus:outline-none font-mono"
                   placeholder="admin@atheer.store"
                 />
               </div>
@@ -195,7 +195,7 @@ export default function AdminLoginPage() {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-brand-stone/40 border border-brand-border/80 px-9 py-2.5 text-brand-ivory rounded-xs focus:border-brand-gold focus:outline-none"
+                  className="w-full bg-brand-stone/40 border border-brand-border/80 px-9 py-2.5 text-brand-ivory text-base sm:text-xs rounded-xs focus:border-brand-gold focus:outline-none font-mono"
                 />
               </div>
             </div>
