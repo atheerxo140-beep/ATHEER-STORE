@@ -6,7 +6,7 @@ import { useThemeMode } from '@/context/ThemeModeContext';
 import { useStoreSettings } from '@/hooks/useStoreSettings';
 import { useHomepageContent } from '@/hooks/useHomepageContent';
 import QRCode from 'qrcode';
-import { Flame, ArrowRight, ArrowLeft, Check, MapPin, Phone, QrCode, Sun, Moon } from 'lucide-react';
+import { Flame, ArrowRight, ArrowLeft, Check, MapPin, Phone, QrCode, Sun, Moon, ShieldCheck, Truck, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 
 export const Footer: React.FC = () => {
@@ -71,6 +71,49 @@ export const Footer: React.FC = () => {
 
   return (
     <footer className="bg-brand-black text-brand-ivory border-t border-brand-border/60 font-sans">
+      {/* Caesar Trust & Guarantee Strip */}
+      <div className="border-b border-brand-border/60 bg-brand-charcoal/70 py-6 sm:py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8 text-center sm:text-start">
+            <div className="flex items-center space-x-3.5 rtl:space-x-reverse justify-center sm:justify-start">
+              <ShieldCheck className="w-6 h-6 text-brand-gold flex-shrink-0" />
+              <div className="text-xs">
+                <span className="font-bold text-brand-ivory block text-sm">
+                  {language === 'ar' ? 'معاينة قبل الاستلام والدفع' : 'Open Box Inspection'}
+                </span>
+                <span className="text-[11px] text-brand-cream/60">
+                  {language === 'ar' ? 'افتح الأوردر مع المندوب وتأكد من الخامة' : 'Check fabric & finishing with courier'}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center space-x-3.5 rtl:space-x-reverse justify-center sm:justify-start">
+              <Truck className="w-6 h-6 text-brand-gold flex-shrink-0" />
+              <div className="text-xs">
+                <span className="font-bold text-brand-ivory block text-sm">
+                  {language === 'ar' ? 'شحن سريع لجميع محافظات مصر' : 'Fast Delivery Across Egypt'}
+                </span>
+                <span className="text-[11px] text-brand-cream/60">
+                  {language === 'ar' ? 'توصيل لباب بيتك خلال 48 إلى 72 ساعة' : 'To your doorstep in 48-72 hours'}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center space-x-3.5 rtl:space-x-reverse justify-center sm:justify-start">
+              <Sparkles className="w-6 h-6 text-brand-gold flex-shrink-0" />
+              <div className="text-xs">
+                <span className="font-bold text-brand-ivory block text-sm">
+                  {language === 'ar' ? 'استبدال واسترجاع سهل 14 يوم' : '14-Day Free Exchange'}
+                </span>
+                <span className="text-[11px] text-brand-cream/60">
+                  {language === 'ar' ? 'تغيير المقاس متاح مجاناً وبكل سلاسة' : 'Hassle-free size swaps anytime'}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Drop Club VIP Signup */}
       <div className="border-b border-brand-border/40 py-16 sm:py-20 bg-brand-charcoal/40">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">

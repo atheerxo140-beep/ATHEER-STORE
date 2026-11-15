@@ -242,45 +242,6 @@ export const PromoOffersSection: React.FC = () => {
             );
           })}
         </div>
-
-        {/* Caesar Trust Strip Under Offers */}
-        <div className="mt-12 p-4 bg-brand-charcoal/60 border border-brand-border/60 rounded-xs grid grid-cols-1 sm:grid-cols-3 gap-4 text-center sm:text-start">
-          <div className="flex items-center space-x-3 rtl:space-x-reverse justify-center sm:justify-start">
-            <ShieldCheck className="w-5 h-5 text-brand-gold flex-shrink-0" />
-            <div className="text-xs">
-              <span className="font-bold text-brand-ivory block">
-                {isAr ? 'معاينة قبل الاستلام والدفع' : 'Open Box Inspection'}
-              </span>
-              <span className="text-[11px] text-brand-cream/60">
-                {isAr ? 'افتح الأوردر مع المندوب وتأكد من الخامة' : 'Check fabric & finishing with courier'}
-              </span>
-            </div>
-          </div>
-
-          <div className="flex items-center space-x-3 rtl:space-x-reverse justify-center sm:justify-start">
-            <Truck className="w-5 h-5 text-brand-gold flex-shrink-0" />
-            <div className="text-xs">
-              <span className="font-bold text-brand-ivory block">
-                {isAr ? 'شحن سريع لجميع محافظات مصر' : 'Fast Delivery Across Egypt'}
-              </span>
-              <span className="text-[11px] text-brand-cream/60">
-                {isAr ? 'توصيل لباب بيتك خلال 48 إلى 72 ساعة' : 'To your doorstep in 48-72 hours'}
-              </span>
-            </div>
-          </div>
-
-          <div className="flex items-center space-x-3 rtl:space-x-reverse justify-center sm:justify-start">
-            <Sparkles className="w-5 h-5 text-brand-gold flex-shrink-0" />
-            <div className="text-xs">
-              <span className="font-bold text-brand-ivory block">
-                {isAr ? 'استبدال واسترجاع سهل 14 يوم' : '14-Day Free Exchange'}
-              </span>
-              <span className="text-[11px] text-brand-cream/60">
-                {isAr ? 'تغيير المقاس متاح مجاناً وبكل سلاسة' : 'Hassle-free size swaps anytime'}
-              </span>
-            </div>
-          </div>
-        </div>
       </div>
 
       {/* Toast Notification */}
