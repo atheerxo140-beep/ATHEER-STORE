@@ -161,11 +161,68 @@ export function generateThemeCss(theme: ThemeConfig): string {
     html, body {
       background-color: var(--brand-black, #0A0A0A) !important;
       color: var(--brand-ivory, #FAF9F6) !important;
+      transition: background-color 0.25s ease, color 0.25s ease;
     }
 
     ::selection {
       background-color: var(--brand-gold, #C5A880) !important;
       color: var(--brand-black, #0A0A0A) !important;
+    }
+
+    /* =========================================================================
+       Light Mode Overrides (Luxury Minimalist Sand & Rich Warm Bronze)
+       ========================================================================= */
+    html.theme-light, [data-theme="light"] {
+      --brand-black: #F8F6F0;
+      --brand-black-rgb: 248, 246, 240;
+      --brand-charcoal: #FFFFFF;
+      --brand-charcoal-rgb: 255, 255, 255;
+      --brand-dark: #F0EAE1;
+      --brand-dark-rgb: 240, 234, 225;
+      --brand-stone: #E6DFD3;
+      --brand-stone-rgb: 230, 223, 211;
+      --brand-border: #DCD3C5;
+      --brand-border-rgb: 220, 211, 197;
+
+      --brand-ivory: #111111;
+      --brand-ivory-rgb: 17, 17, 17;
+      --brand-cream: #2C2C2E;
+      --brand-cream-rgb: 44, 44, 46;
+
+      --brand-gold: #9E783E;
+      --brand-gold-rgb: 158, 120, 62;
+      --brand-gold-hover: #83622E;
+      --brand-gold-hover-rgb: 131, 98, 46;
+      --brand-gold-light: #5A4016;
+      --brand-gold-light-rgb: 90, 64, 22;
+      --brand-gold-dark: #C5A880;
+      --brand-gold-dark-rgb: 197, 168, 128;
+    }
+
+    html.theme-light, html.theme-light body {
+      background-color: #F8F6F0 !important;
+      color: #111111 !important;
+    }
+
+    html.theme-light ::selection {
+      background-color: #9E783E !important;
+      color: #FFFFFF !important;
+    }
+
+    html.theme-light ::-webkit-scrollbar-track {
+      background: #F8F6F0;
+    }
+
+    html.theme-light ::-webkit-scrollbar-thumb {
+      background: #DCD3C5;
+    }
+
+    html.theme-light ::-webkit-scrollbar-thumb:hover {
+      background: #9E783E;
+    }
+
+    html.theme-light .shadow-luxury-dark {
+      box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.08) !important;
     }
   `;
 }

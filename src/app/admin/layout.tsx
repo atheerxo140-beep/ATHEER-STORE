@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useLanguage } from '@/context/LanguageContext';
+import { useThemeMode } from '@/context/ThemeModeContext';
 import {
   LayoutDashboard,
   Package,
@@ -31,6 +32,8 @@ import {
   Layout,
   FileText,
   TrendingUp,
+  Sun,
+  Moon,
 } from 'lucide-react';
 import { ensureValidAdminSession, clearAdminToken, initAdminAuthSync } from '@/lib/adminAuthClient';
 
@@ -67,6 +70,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const pathname = usePathname();
   const router = useRouter();
   const { language, setLanguage, isRtl } = useLanguage();
+  const { mode, isDark, toggleMode } = useThemeMode();
   const isAr = language === 'ar';
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [showDbInfo, setShowDbInfo] = useState(false);
@@ -495,6 +499,26 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 </div>
               )}
             </div>
+
+            {/* Theme Mode Toggle (Dark / Light) */}
+            <button
+              type="button"
+              onClick={toggleMode}
+              className="flex items-center space-x-1 rtl:space-x-reverse text-xs text-brand-ivory hover:text-brand-gold font-mono px-2.5 py-1 border border-brand-border rounded-sm hover:border-brand-gold transition-colors"
+              title={isDark ? (language === 'ar' ? 'التبديل إلى الوضع الفاتح ☀️' : 'Switch to Light Mode ☀️') : (language === 'ar' ? 'التبديل إلى الوضع الداكن 🌙' : 'Switch to Dark Mode 🌙')}
+            >
+              {isDark ? (
+                <>
+                  <Sun className="w-3.5 h-3.5 text-brand-gold" />
+                  <span className="hidden md:inline">{language === 'ar' ? 'فاتح' : 'Light'}</span>
+                </>
+              ) : (
+                <>
+                  <Moon className="w-3.5 h-3.5 text-brand-gold" />
+                  <span className="hidden md:inline">{language === 'ar' ? 'داكن' : 'Dark'}</span>
+                </>
+              )}
+            </button>
 
             {/* Language Toggle */}
             <button

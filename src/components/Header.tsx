@@ -7,6 +7,7 @@ import { useLanguage } from '@/context/LanguageContext';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
 import { useCustomerAuth } from '@/context/CustomerAuthContext';
+import { useThemeMode } from '@/context/ThemeModeContext';
 import { useHomepageContent } from '@/hooks/useHomepageContent';
 import { Product } from '@/types';
 import { mockProducts } from '@/data/mockProducts';
@@ -25,6 +26,8 @@ import {
   ArrowUpRight,
   User,
   Truck,
+  Sun,
+  Moon,
 } from 'lucide-react';
 
 export const Header: React.FC = () => {
@@ -34,6 +37,7 @@ export const Header: React.FC = () => {
   const { totalCount, setIsCartOpen } = useCart();
   const { wishlistCount } = useWishlist();
   const { customer, isAuthenticated } = useCustomerAuth();
+  const { mode, isDark, toggleMode } = useThemeMode();
   const isAr = language === 'ar';
   const ArrowIcon = isRtl ? ArrowLeft : ArrowRight;
   const announcementText = isAr
@@ -146,6 +150,28 @@ export const Header: React.FC = () => {
 
               <span className="text-brand-border">|</span>
 
+              {/* Theme Mode Switcher (Dark / Light) */}
+              <button
+                type="button"
+                onClick={toggleMode}
+                className="flex items-center space-x-1.5 rtl:space-x-reverse text-brand-ivory/90 hover:text-brand-gold transition-colors font-mono text-[11px]"
+                title={isDark ? (isAr ? 'التبديل إلى المظهر الفاتح' : 'Switch to Light Mode') : (isAr ? 'التبديل إلى المظهر الداكن' : 'Switch to Dark Mode')}
+              >
+                {isDark ? (
+                  <>
+                    <Sun className="w-3.5 h-3.5 text-brand-gold" />
+                    <span>{isAr ? 'مظهر فاتح' : 'Light'}</span>
+                  </>
+                ) : (
+                  <>
+                    <Moon className="w-3.5 h-3.5 text-brand-gold" />
+                    <span>{isAr ? 'مظهر داكن' : 'Dark'}</span>
+                  </>
+                )}
+              </button>
+
+              <span className="text-brand-border">|</span>
+
               {/* Language Switcher */}
               <button
                 onClick={() => setLanguage(language === 'en' ? 'ar' : 'en')}
@@ -236,7 +262,22 @@ export const Header: React.FC = () => {
             </div>
 
             {/* Right: Actions */}
-            <div className="flex items-center space-x-3 sm:space-x-5 rtl:space-x-reverse">
+            <div className="flex items-center space-x-2 sm:space-x-4 rtl:space-x-reverse">
+              {/* Theme Mode Toggle (Sun/Moon Button) */}
+              <button
+                type="button"
+                onClick={toggleMode}
+                className="p-2 text-brand-ivory/80 hover:text-brand-gold transition-colors rounded-xs hover:bg-brand-stone/30"
+                aria-label={isDark ? (isAr ? 'التبديل إلى الوضع الفاتح' : 'Switch to Light Mode') : (isAr ? 'التبديل إلى الوضع الداكن' : 'Switch to Dark Mode')}
+                title={isDark ? (isAr ? 'التبديل إلى الوضع الفاتح ☀️' : 'Switch to Light Mode ☀️') : (isAr ? 'التبديل إلى الوضع الداكن 🌙' : 'Switch to Dark Mode 🌙')}
+              >
+                {isDark ? (
+                  <Sun className="w-5 h-5 stroke-[1.5] text-brand-gold hover:rotate-45 transition-transform duration-300" />
+                ) : (
+                  <Moon className="w-5 h-5 stroke-[1.5] text-brand-gold hover:-rotate-12 transition-transform duration-300" />
+                )}
+              </button>
+
               {/* Search Toggle */}
               <button
                 onClick={() => setSearchOpen(!searchOpen)}
@@ -547,6 +588,28 @@ export const Header: React.FC = () => {
                     className="px-3 py-1 text-xs border border-brand-gold text-brand-gold bg-brand-gold/10 font-medium"
                   >
                     {language === 'en' ? 'العربية' : 'English'}
+                  </button>
+                </div>
+
+                <div className="flex items-center justify-between text-xs pt-2">
+                  <span className="text-brand-muted uppercase tracking-wider">
+                    {isAr ? 'مظهر المتجر' : 'Store Appearance'}
+                  </span>
+                  <button
+                    onClick={toggleMode}
+                    className="flex items-center space-x-2 rtl:space-x-reverse font-mono text-xs px-3 py-1 bg-brand-charcoal border border-brand-border text-brand-gold rounded-xs hover:border-brand-gold transition-colors"
+                  >
+                    {isDark ? (
+                      <>
+                        <Sun className="w-3.5 h-3.5 text-brand-gold" />
+                        <span>{isAr ? 'المظهر الفاتح ☀️' : 'Light Mode ☀️'}</span>
+                      </>
+                    ) : (
+                      <>
+                        <Moon className="w-3.5 h-3.5 text-brand-gold" />
+                        <span>{isAr ? 'المظهر الداكن 🌙' : 'Dark Mode 🌙'}</span>
+                      </>
+                    )}
                   </button>
                 </div>
               </div>

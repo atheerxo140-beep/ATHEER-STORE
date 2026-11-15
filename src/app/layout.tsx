@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import { ThemeModeProvider } from '@/context/ThemeModeContext';
 import { LanguageProvider } from '@/context/LanguageContext';
 import { CartProvider } from '@/context/CartContext';
 import { WishlistProvider } from '@/context/WishlistContext';
@@ -27,17 +28,35 @@ export default function RootLayout({
     <html lang="ar" dir="rtl">
       <head>
         <style id="atheer-theme-vars" dangerouslySetInnerHTML={{ __html: themeStyles }} />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                var savedMode = localStorage.getItem('atheer_theme_mode');
+                if (savedMode === 'light') {
+                  document.documentElement.classList.add('theme-light');
+                  document.documentElement.setAttribute('data-theme', 'light');
+                } else {
+                  document.documentElement.classList.remove('theme-light');
+                  document.documentElement.setAttribute('data-theme', 'dark');
+                }
+              } catch(e){}
+            `,
+          }}
+        />
       </head>
       <body className="min-h-screen bg-brand-black text-brand-ivory antialiased">
-        <LanguageProvider>
-          <CustomerAuthProvider>
-            <CartProvider>
-              <WishlistProvider>
-                {children}
-              </WishlistProvider>
-            </CartProvider>
-          </CustomerAuthProvider>
-        </LanguageProvider>
+        <ThemeModeProvider>
+          <LanguageProvider>
+            <CustomerAuthProvider>
+              <CartProvider>
+                <WishlistProvider>
+                  {children}
+                </WishlistProvider>
+              </CartProvider>
+            </CustomerAuthProvider>
+          </LanguageProvider>
+        </ThemeModeProvider>
       </body>
     </html>
   );

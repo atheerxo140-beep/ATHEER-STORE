@@ -2,14 +2,16 @@
 
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '@/context/LanguageContext';
+import { useThemeMode } from '@/context/ThemeModeContext';
 import { useStoreSettings } from '@/hooks/useStoreSettings';
 import { useHomepageContent } from '@/hooks/useHomepageContent';
 import QRCode from 'qrcode';
-import { Flame, ArrowRight, ArrowLeft, Check, MapPin, Phone, QrCode } from 'lucide-react';
+import { Flame, ArrowRight, ArrowLeft, Check, MapPin, Phone, QrCode, Sun, Moon } from 'lucide-react';
 import Link from 'next/link';
 
 export const Footer: React.FC = () => {
   const { t, language, isRtl } = useLanguage();
+  const { mode, isDark, toggleMode } = useThemeMode();
   const { settings } = useStoreSettings();
   const { content } = useHomepageContent();
   const ArrowIcon = isRtl ? ArrowLeft : ArrowRight;
@@ -337,7 +339,27 @@ export const Footer: React.FC = () => {
             <p>© 2026 ATHEER | أثير. {t('footerRights')}</p>
           </div>
 
-          <div className="flex items-center space-x-3 rtl:space-x-reverse text-[10px] tracking-wider uppercase font-mono text-brand-cream/70">
+          <div className="flex flex-wrap items-center gap-2.5 rtl:space-x-reverse text-[10px] tracking-wider uppercase font-mono text-brand-cream/70">
+            {/* Theme Switcher Button */}
+            <button
+              type="button"
+              onClick={toggleMode}
+              className="px-2.5 py-1 border border-brand-border bg-brand-charcoal text-brand-gold hover:border-brand-gold flex items-center space-x-1.5 rtl:space-x-reverse transition-colors rounded-xs"
+              title={isDark ? (language === 'ar' ? 'التبديل إلى المظهر الفاتح ☀️' : 'Switch to Light Mode ☀️') : (language === 'ar' ? 'التبديل إلى المظهر الداكن 🌙' : 'Switch to Dark Mode 🌙')}
+            >
+              {isDark ? (
+                <>
+                  <Sun className="w-3.5 h-3.5 text-brand-gold" />
+                  <span>{language === 'ar' ? 'مظهر فاتح ☀️' : 'Light Mode ☀️'}</span>
+                </>
+              ) : (
+                <>
+                  <Moon className="w-3.5 h-3.5 text-brand-gold" />
+                  <span>{language === 'ar' ? 'مظهر داكن 🌙' : 'Dark Mode 🌙'}</span>
+                </>
+              )}
+            </button>
+
             <span className="px-2.5 py-1 border border-brand-border bg-brand-charcoal text-brand-gold">
               الدفع عند الاستلام (EGP)
             </span>
