@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useLanguage } from '@/context/LanguageContext';
 import { BuilderSection, HomepageContent, ThemeConfig } from '@/types';
@@ -32,6 +32,10 @@ import {
   CheckCircle2,
   X,
   RotateCcw,
+  Upload,
+  Camera,
+  Film,
+  Loader2,
 } from 'lucide-react';
 
 export default function VisualBuilderPage() {
@@ -58,6 +62,115 @@ export default function VisualBuilderPage() {
   const [versions, setVersions] = useState<any[]>([]);
   const [publishSummary, setPublishSummary] = useState('');
   const [showPublishModal, setShowPublishModal] = useState(false);
+
+  // Direct Studio / Gallery Media Upload Refs & State
+  const [uploadingSection, setUploadingSection] = useState<string | null>(null);
+  const heroFileRef = useRef<HTMLInputElement>(null);
+  const heroVideoFileRef = useRef<HTMLInputElement>(null);
+  const storyFileRef = useRef<HTMLInputElement>(null);
+  const futureFileRef = useRef<HTMLInputElement>(null);
+  const categoryFileInputRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const [showManualHeroUrl, setShowManualHeroUrl] = useState(false);
+
+  // Direct file uploader to Supabase Storage
+  const handleUploadFile = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+    folder: string,
+    targetKey: string,
+    isHero = false
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingSection(targetKey);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('folder', folder);
+
+      const res = await adminFetch('/api/admin/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (data.success && data.url) {
+        if (isHero) {
+          const isVideo = file.type.startsWith('video/');
+          setContent((prev: any) => ({
+            ...prev,
+            heroMediaType: isVideo ? 'video' : 'image',
+            ...(isVideo ? { heroBgVideo: data.url } : { heroBgImage: data.url }),
+          }));
+        } else {
+          setContent((prev: any) => ({
+            ...prev,
+            [targetKey]: data.url,
+          }));
+        }
+        setFeedback({
+          type: 'success',
+          message: isAr
+            ? 'تم رفع الصورة من الاستوديو بنجاح! لا تنسَ الضغط على "نشر على الموقع" أو "حفظ مسودة".'
+            : 'Visual uploaded from your device successfully! Remember to click Publish Live.',
+        });
+        setTimeout(() => setFeedback(null), 5000);
+      } else {
+        alert(data.error || (isAr ? 'فشل رفع الملف من الاستوديو' : 'Failed to upload file'));
+      }
+    } catch (err: any) {
+      alert(err.message || (isAr ? 'حدث خطأ أثناء رفع الملف' : 'Upload error occurred'));
+    } finally {
+      setUploadingSection(null);
+      e.target.value = '';
+    }
+  };
+
+  // Direct Category Card Image Uploader
+  const handleCategoryUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+    idx: number
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingSection(`cat-${idx}`);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('folder', 'categories');
+
+      const res = await adminFetch('/api/admin/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (data.success && data.url) {
+        setContent((prev: any) => {
+          const currentCats = [...(prev.categories || [])];
+          if (currentCats[idx]) {
+            currentCats[idx] = { ...currentCats[idx], image: data.url };
+          }
+          return { ...prev, categories: currentCats };
+        });
+        setFeedback({
+          type: 'success',
+          message: isAr
+            ? `تم رفع صورة بطاقة التشكيلة #${idx + 1} بنجاح!`
+            : `Category card #${idx + 1} image uploaded!`,
+        });
+        setTimeout(() => setFeedback(null), 4000);
+      } else {
+        alert(data.error || 'Failed to upload image');
+      }
+    } catch (err: any) {
+      alert(err.message || 'Upload error');
+    } finally {
+      setUploadingSection(null);
+      e.target.value = '';
+    }
+  };
 
   // Load builder state
   const loadBuilderData = async () => {
@@ -549,6 +662,22 @@ export default function VisualBuilderPage() {
             {/* Dynamic Inspector Form based on Section Type */}
             {activeSection?.id === 'hero' && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-mono">
+                {/* Hidden File Inputs for Direct Studio / Phone Gallery Upload */}
+                <input
+                  ref={heroFileRef}
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp,image/jpg"
+                  className="hidden"
+                  onChange={(e) => handleUploadFile(e, 'hero', 'heroBgImage', true)}
+                />
+                <input
+                  ref={heroVideoFileRef}
+                  type="file"
+                  accept="video/mp4,video/webm,video/quicktime,video/mov,video/x-m4v"
+                  className="hidden"
+                  onChange={(e) => handleUploadFile(e, 'hero-video', 'heroBgVideo', true)}
+                />
+
                 <div className="md:col-span-2">
                   <label className="block text-brand-cream/80 mb-1">{isAr ? 'عنوان البانر الرئيسي (عربي)' : 'Hero Title (Arabic)'}</label>
                   <input
@@ -576,14 +705,164 @@ export default function VisualBuilderPage() {
                     className="w-full bg-brand-stone/40 border border-brand-border px-3 py-2 text-brand-ivory rounded-xs text-right focus:border-brand-gold focus:outline-none"
                   />
                 </div>
-                <div className="md:col-span-2">
-                  <label className="block text-brand-cream/80 mb-1">{isAr ? 'رابط صورة الخلفية الفاخرة' : 'Hero Image URL'}</label>
-                  <input
-                    type="text"
-                    value={content.heroBgImage || ''}
-                    onChange={(e) => setContent({ ...content, heroBgImage: e.target.value })}
-                    className="w-full bg-brand-stone/40 border border-brand-border px-3 py-2 text-brand-ivory rounded-xs font-mono text-[11px] focus:border-brand-gold focus:outline-none"
-                  />
+
+                {/* 1-CLICK STUDIO / PHONE GALLERY UPLOADER */}
+                <div className="md:col-span-2 p-3.5 bg-brand-black/80 border border-brand-gold/40 rounded-sm space-y-3 shadow-inner">
+                  <div className="flex items-center justify-between border-b border-brand-border/60 pb-2">
+                    <div className="flex items-center space-x-2 rtl:space-x-reverse text-brand-gold font-bold">
+                      <Camera className="w-4 h-4" />
+                      <span>{isAr ? 'صورة أو فيديو خلفية البانر (رفع مباشر من الاستوديو)' : 'Hero Background Visual (Direct Studio Upload)'}</span>
+                    </div>
+                    <span className="text-[10px] text-brand-cream/60 font-mono">
+                      {content.heroMediaType === 'video' && content.heroBgVideo
+                        ? (isAr ? '🎬 فيديو نشط' : 'Active Video')
+                        : (isAr ? '📸 صورة نشطة' : 'Active Image')}
+                    </span>
+                  </div>
+
+                  {/* Thumbnail & Replace Controls if Media exists */}
+                  {(content.heroBgImage || content.heroBgVideo) && (
+                    <div className="rounded-xs border border-brand-border bg-brand-stone/30 p-2.5 flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                      {content.heroMediaType === 'video' && content.heroBgVideo ? (
+                        <video
+                          src={content.heroBgVideo}
+                          className="w-24 h-20 object-cover rounded-xs border border-brand-gold/40 bg-black flex-shrink-0"
+                          muted
+                          autoPlay
+                          loop
+                        />
+                      ) : (
+                        <img
+                          src={content.heroBgImage}
+                          alt="Hero Preview"
+                          className="w-24 h-20 object-cover rounded-xs border border-brand-gold/40 bg-black flex-shrink-0"
+                        />
+                      )}
+
+                      <div className="flex-1 min-w-0 space-y-1.5 w-full">
+                        <div className="text-[11px] font-bold text-brand-ivory flex items-center justify-between">
+                          <span>
+                            {content.heroMediaType === 'video' && content.heroBgVideo
+                              ? (isAr ? '🎬 فيديو سينمائي مرفوع' : 'Uploaded Video')
+                              : (isAr ? '📸 صورة خلفية مرفوعة من الاستوديو' : 'Uploaded Image')}
+                          </span>
+                        </div>
+                        <p className="text-[10px] text-brand-cream/50 font-mono truncate" dir="ltr">
+                          {content.heroMediaType === 'video' ? content.heroBgVideo : content.heroBgImage}
+                        </p>
+                        <div className="flex flex-wrap items-center gap-2 pt-1">
+                          <button
+                            type="button"
+                            onClick={() => heroFileRef.current?.click()}
+                            disabled={uploadingSection === 'heroBgImage'}
+                            className="px-3 py-1.5 bg-brand-gold hover:bg-brand-gold-hover text-brand-black font-bold text-xs rounded-xs transition-colors flex items-center gap-1.5 shadow-gold disabled:opacity-50"
+                          >
+                            {uploadingSection === 'heroBgImage' ? (
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            ) : (
+                              <Camera className="w-3.5 h-3.5" />
+                            )}
+                            <span>{isAr ? '📸 رفع صورة بديلة من الاستوديو' : 'Change from Studio'}</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => heroVideoFileRef.current?.click()}
+                            disabled={uploadingSection === 'heroBgVideo'}
+                            className="px-3 py-1.5 bg-brand-stone hover:bg-brand-stone/80 text-brand-ivory font-bold text-xs rounded-xs transition-colors flex items-center gap-1.5 border border-brand-border disabled:opacity-50"
+                          >
+                            {uploadingSection === 'heroBgVideo' ? (
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            ) : (
+                              <Film className="w-3.5 h-3.5 text-brand-gold" />
+                            )}
+                            <span>{isAr ? '🎬 رفع فيديو بديل' : 'Upload Video'}</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setContent({
+                                ...content,
+                                heroBgImage: '',
+                                heroBgVideo: '',
+                                heroMediaType: 'image',
+                              });
+                            }}
+                            className="px-2 py-1 text-rose-400 hover:text-rose-300 text-xs hover:underline"
+                          >
+                            {isAr ? 'إزالة الصورة' : 'Remove Visual'}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Big Upload Dropzone if no media */}
+                  {!content.heroBgImage && !content.heroBgVideo && (
+                    <div className="border border-dashed border-brand-gold/60 rounded-xs p-5 text-center space-y-3 bg-brand-stone/15">
+                      <Camera className="w-8 h-8 mx-auto text-brand-gold animate-bounce" />
+                      <div>
+                        <p className="text-xs font-bold text-brand-ivory">
+                          {isAr ? 'ارفع صورة أو فيديو الخلفية من الاستوديو أو الهاتف مباشرة' : 'Upload background photo or video from studio'}
+                        </p>
+                        <p className="text-[10px] text-brand-cream/60">
+                          {isAr ? 'يدعم الصور JPG, PNG, WEBP ومقاطع الفيديو MP4 (يتم حفظها في التخزين السحابي فوراً)' : 'Supports JPG, PNG, WEBP, and MP4'}
+                        </p>
+                      </div>
+                      <div className="flex flex-wrap items-center justify-center gap-3 pt-1">
+                        <button
+                          type="button"
+                          onClick={() => heroFileRef.current?.click()}
+                          disabled={uploadingSection === 'heroBgImage'}
+                          className="px-4 py-2 bg-brand-gold hover:bg-brand-gold-hover text-brand-black text-xs font-bold rounded-xs transition-colors flex items-center gap-1.5 shadow-gold disabled:opacity-50"
+                        >
+                          {uploadingSection === 'heroBgImage' ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <Upload className="w-4 h-4" />
+                          )}
+                          <span>{isAr ? '📸 ارفع صورة من الاستوديو' : 'Upload Photo'}</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => heroVideoFileRef.current?.click()}
+                          disabled={uploadingSection === 'heroBgVideo'}
+                          className="px-3.5 py-2 bg-brand-stone/80 border border-brand-border hover:border-brand-gold text-brand-ivory text-xs font-bold rounded-xs transition-colors flex items-center gap-1.5 disabled:opacity-50"
+                        >
+                          {uploadingSection === 'heroBgVideo' ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <Film className="w-4 h-4 text-brand-gold" />
+                          )}
+                          <span>{isAr ? '🎬 ارفع فيديو' : 'Upload Video'}</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Advanced manual URL toggle */}
+                  <div className="pt-1.5 border-t border-brand-border/40">
+                    <button
+                      type="button"
+                      onClick={() => setShowManualHeroUrl(!showManualHeroUrl)}
+                      className="text-[10px] text-brand-cream/50 hover:text-brand-gold underline flex items-center gap-1 font-mono"
+                    >
+                      <span>{isAr ? (showManualHeroUrl ? '▲ إخفاء خانة الرابط اليدوي' : '▼ إدخال رابط صورة يدوياً (متقدم)') : (showManualHeroUrl ? '▲ Hide manual URL' : '▼ Enter manual image URL')}</span>
+                    </button>
+                    {showManualHeroUrl && (
+                      <div className="mt-2 space-y-1">
+                        <label className="block text-[10px] text-brand-cream/60">{isAr ? 'رابط الصورة المباشر:' : 'Direct Image URL:'}</label>
+                        <input
+                          type="text"
+                          value={content.heroBgImage || ''}
+                          onChange={(e) => setContent({ ...content, heroBgImage: e.target.value })}
+                          placeholder="https://..."
+                          className="w-full bg-brand-stone/40 border border-brand-border px-3 py-1.5 text-brand-ivory rounded-xs font-mono text-[11px] focus:border-brand-gold focus:outline-none"
+                        />
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             )}
@@ -669,37 +948,63 @@ export default function VisualBuilderPage() {
                   </div>
                 </div>
 
-                {/* Photo & Specs Section */}
+                {/* Photo & Direct Studio Upload Section */}
+                <input
+                  ref={storyFileRef}
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp,image/jpg"
+                  className="hidden"
+                  onChange={(e) => handleUploadFile(e, 'story-media', 'storyImage')}
+                />
                 <div className="border-t border-brand-border/60 pt-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                   <div className="flex items-center gap-3">
                     {content.storyImage ? (
                       <img
                         src={content.storyImage}
                         alt="Story Visual"
-                        className="w-12 h-14 object-cover rounded-xs border border-brand-gold/50 shadow-sm"
+                        className="w-14 h-16 object-cover rounded-xs border border-brand-gold/50 shadow-sm"
                       />
                     ) : (
-                      <div className="w-12 h-14 bg-brand-stone/40 rounded-xs border border-brand-border" />
+                      <div className="w-14 h-16 bg-brand-stone/40 rounded-xs border border-brand-border flex items-center justify-center text-brand-cream/30">
+                        <Camera className="w-5 h-5" />
+                      </div>
                     )}
                     <div>
                       <div className="text-[11px] font-bold text-brand-ivory">
                         {isAr ? 'صورة الموديل المرفقة بالقسم' : 'Story Model Image'}
                       </div>
                       <div className="text-[10px] text-brand-cream/60">
-                        {isAr ? 'يمكنك رفع صورة جديدة من الاستوديو أو استبدالها' : 'Upload or replace from studio'}
+                        {isAr ? 'ارفع صورة الموديل أو الأتيليه من الاستوديو مباشرة' : 'Upload model photo from studio'}
                       </div>
                     </div>
                   </div>
 
-                  <a
-                    href="/admin/content?tab=story"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex-shrink-0 px-3 py-1.5 bg-brand-gold text-brand-black text-[11px] font-bold rounded-xs hover:bg-brand-gold-hover transition-colors flex items-center gap-1 shadow-gold"
-                  >
-                    <span>{isAr ? 'رفع وتعديل صورة الموديل والمقاييس ←' : 'Upload Image & Specs →'}</span>
-                    <ExternalLink className="w-3 h-3" />
-                  </a>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => storyFileRef.current?.click()}
+                      disabled={uploadingSection === 'storyImage'}
+                      className="px-3.5 py-2 bg-brand-gold hover:bg-brand-gold-hover text-brand-black text-xs font-bold rounded-xs transition-colors flex items-center gap-1.5 shadow-gold disabled:opacity-50"
+                    >
+                      {uploadingSection === 'storyImage' ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      ) : (
+                        <Camera className="w-3.5 h-3.5" />
+                      )}
+                      <span>{isAr ? '📸 ارفع صورة من الاستوديو' : 'Upload from Studio'}</span>
+                    </button>
+
+                    <a
+                      href="/admin/content?tab=story"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-2.5 py-2 bg-brand-stone/60 border border-brand-border hover:border-brand-gold text-brand-cream hover:text-brand-ivory text-[11px] rounded-xs transition-colors flex items-center gap-1"
+                      title={isAr ? 'تعديل أرقام الجراماج 500 GSM والمقاييس' : 'Edit Specs'}
+                    >
+                      <span>{isAr ? 'المقاييس' : 'Specs'}</span>
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                  </div>
                 </div>
               </div>
             )}
@@ -744,11 +1049,11 @@ export default function VisualBuilderPage() {
                   </div>
                 </div>
 
-                {/* Cards Preview & Direct link to upload pictures */}
+                {/* Cards Preview & Direct studio image upload */}
                 <div className="border-t border-brand-border/60 pt-3">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-[11px] font-bold text-brand-ivory">
-                      {isAr ? 'بطاقات التشكيلات الأربعة الحالية:' : 'Showcase Cards (4 Items):'}
+                      {isAr ? 'بطاقات التشكيلات الأربعة الحالية (رفع مباشر من الاستوديو):' : 'Showcase Cards (Direct Studio Upload):'}
                     </span>
                     <a
                       href="/admin/content?tab=categories"
@@ -756,22 +1061,47 @@ export default function VisualBuilderPage() {
                       rel="noopener noreferrer"
                       className="text-[10px] text-brand-gold hover:underline flex items-center gap-1 font-bold"
                     >
-                      <span>{isAr ? 'رفع صور جديدة أو تعديل البطاقات بالكامل ←' : 'Upload Images & Full Cards Editor →'}</span>
+                      <span>{isAr ? 'تعديل نصوص وتفاصيل البطاقات بالكامل ←' : 'Full Cards Content Editor →'}</span>
                       <ExternalLink className="w-3 h-3" />
                     </a>
                   </div>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                     {(content.categories || []).map((cat: any, idx: number) => (
-                      <div key={cat.id || idx} className="bg-brand-black/60 border border-brand-border p-2 rounded-xs flex items-center gap-2">
-                        {cat.image ? (
-                          <img src={cat.image} alt="" className="w-9 h-9 object-cover rounded-xs border border-brand-border flex-shrink-0" />
-                        ) : (
-                          <div className="w-9 h-9 bg-brand-stone/50 rounded-xs flex-shrink-0" />
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <div className="text-[11px] font-bold text-brand-ivory truncate">{isAr ? cat.titleAr : cat.titleEn}</div>
-                          <div className="text-[9px] text-brand-gold truncate">{isAr ? cat.tagAr : cat.tagEn}</div>
+                      <div key={cat.id || idx} className="bg-brand-black/60 border border-brand-border p-2.5 rounded-xs flex items-center justify-between gap-2.5">
+                        <input
+                          type="file"
+                          ref={(el) => { categoryFileInputRefs.current[idx] = el; }}
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => handleCategoryUpload(e, idx)}
+                        />
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          {cat.image ? (
+                            <img src={cat.image} alt="" className="w-11 h-11 object-cover rounded-xs border border-brand-gold/40 flex-shrink-0" />
+                          ) : (
+                            <div className="w-11 h-11 bg-brand-stone/50 rounded-xs flex-shrink-0 flex items-center justify-center text-brand-cream/40">
+                              <Camera className="w-4 h-4" />
+                            </div>
+                          )}
+                          <div className="min-w-0">
+                            <div className="text-[11px] font-bold text-brand-ivory truncate">{isAr ? cat.titleAr : cat.titleEn}</div>
+                            <div className="text-[9px] text-brand-gold truncate">{isAr ? cat.tagAr : cat.tagEn}</div>
+                          </div>
                         </div>
+
+                        <button
+                          type="button"
+                          onClick={() => categoryFileInputRefs.current[idx]?.click()}
+                          disabled={uploadingSection === `cat-${idx}`}
+                          className="px-2.5 py-1.5 bg-brand-gold/20 hover:bg-brand-gold text-brand-gold hover:text-brand-black text-[10px] font-mono font-bold rounded-xs border border-brand-gold/40 transition-colors flex items-center gap-1 flex-shrink-0 disabled:opacity-50"
+                        >
+                          {uploadingSection === `cat-${idx}` ? (
+                            <Loader2 className="w-3 h-3 animate-spin" />
+                          ) : (
+                            <Camera className="w-3 h-3" />
+                          )}
+                          <span>{isAr ? '📸 رفع صورة' : 'Upload'}</span>
+                        </button>
                       </div>
                     ))}
                   </div>
@@ -781,6 +1111,15 @@ export default function VisualBuilderPage() {
 
             {activeSection?.id === 'future' && (
               <div className="space-y-4 text-xs font-mono">
+                {/* Hidden File Input for Future Drop */}
+                <input
+                  ref={futureFileRef}
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp,image/jpg"
+                  className="hidden"
+                  onChange={(e) => handleUploadFile(e, 'future-drop', 'futureImage')}
+                />
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-brand-cream/80 mb-1">
@@ -851,37 +1190,56 @@ export default function VisualBuilderPage() {
                   </div>
                 </div>
 
-                {/* Photo & Upload Section */}
+                {/* Photo & Direct Studio Upload Section */}
                 <div className="border-t border-brand-border/60 pt-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                   <div className="flex items-center gap-3">
                     {content.futureImage ? (
                       <img
                         src={content.futureImage}
                         alt="Future Visual"
-                        className="w-12 h-12 object-cover rounded-xs border border-brand-gold/50 shadow-sm"
+                        className="w-14 h-14 object-cover rounded-xs border border-brand-gold/50 shadow-sm"
                       />
                     ) : (
-                      <div className="w-12 h-12 bg-brand-stone/40 rounded-xs border border-brand-border" />
+                      <div className="w-14 h-14 bg-brand-stone/40 rounded-xs border border-brand-border flex items-center justify-center text-brand-cream/30">
+                        <Camera className="w-5 h-5" />
+                      </div>
                     )}
                     <div>
                       <div className="text-[11px] font-bold text-brand-ivory">
                         {isAr ? 'صورة التي شيرت / الإصدار القادم' : 'Future Drop Teaser Photo'}
                       </div>
                       <div className="text-[10px] text-brand-cream/60">
-                        {isAr ? 'يمكنك رفع صورة جديدة من الاستوديو أو استبدالها' : 'Upload or replace photo'}
+                        {isAr ? 'ارفع صورة التي شيرت من الاستوديو أو استبدلها بضغطة زر' : 'Upload or replace photo from studio'}
                       </div>
                     </div>
                   </div>
 
-                  <a
-                    href="/admin/content?tab=future"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex-shrink-0 px-3 py-1.5 bg-brand-gold text-brand-black text-[11px] font-bold rounded-xs hover:bg-brand-gold-hover transition-colors flex items-center gap-1 shadow-gold"
-                  >
-                    <span>{isAr ? 'رفع وتعديل صورة التي شيرت بالكامل ←' : 'Upload Tee Photo & Details →'}</span>
-                    <ExternalLink className="w-3 h-3" />
-                  </a>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => futureFileRef.current?.click()}
+                      disabled={uploadingSection === 'futureImage'}
+                      className="px-3.5 py-2 bg-brand-gold hover:bg-brand-gold-hover text-brand-black text-xs font-bold rounded-xs transition-colors flex items-center gap-1.5 shadow-gold disabled:opacity-50"
+                    >
+                      {uploadingSection === 'futureImage' ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      ) : (
+                        <Camera className="w-3.5 h-3.5" />
+                      )}
+                      <span>{isAr ? '📸 ارفع صورة من الاستوديو' : 'Upload from Studio'}</span>
+                    </button>
+
+                    <a
+                      href="/admin/content?tab=future"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-2.5 py-2 bg-brand-stone/60 border border-brand-border hover:border-brand-gold text-brand-cream hover:text-brand-ivory text-[11px] rounded-xs transition-colors flex items-center gap-1"
+                      title={isAr ? 'تعديل تفاصيل وأوسمة الإصدار القادم' : 'Edit Details'}
+                    >
+                      <span>{isAr ? 'التفاصيل' : 'Details'}</span>
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                  </div>
                 </div>
               </div>
             )}
@@ -944,11 +1302,14 @@ export default function VisualBuilderPage() {
                         </div>
 
                         {sec.id === 'hero' && (
-                          <div className="space-y-1.5">
-                            <span className="text-[10px] bg-brand-gold/15 text-brand-gold px-2 py-0.5 rounded-full font-mono">
+                          <div
+                            className="relative overflow-hidden rounded-xs p-3.5 min-h-[110px] flex flex-col justify-end border border-brand-gold/30 bg-cover bg-center"
+                            style={content.heroBgImage ? { backgroundImage: `linear-gradient(to top, rgba(0,0,0,0.85), rgba(0,0,0,0.3)), url('${content.heroBgImage}')` } : {}}
+                          >
+                            <span className="text-[10px] bg-brand-gold/20 text-brand-gold px-2 py-0.5 rounded-full font-mono inline-block w-fit mb-1 border border-brand-gold/40">
                               {content.heroBadgeAr || '500 GSM HEAVYWEIGHT'}
                             </span>
-                            <h4 className="text-base font-black text-brand-ivory font-serif">
+                            <h4 className="text-base font-black text-brand-ivory font-serif drop-shadow-md">
                               {content.heroTitleAr || 'إصدار الانطلاق: الهوديز الثقيلة'}
                             </h4>
                           </div>
@@ -965,7 +1326,53 @@ export default function VisualBuilderPage() {
                           </div>
                         )}
 
-                        {!['hero', 'offers'].includes(sec.id) && (
+                        {sec.id === 'categories' && (
+                          <div className="space-y-1.5">
+                            <h4 className="text-xs font-bold text-brand-ivory">{content.categoriesTitleAr || 'خزانة الستريتوير'}</h4>
+                            <div className="grid grid-cols-4 gap-1">
+                              {(content.categories || []).slice(0, 4).map((c: any, i: number) => (
+                                <div key={i} className="text-center">
+                                  {c.image ? (
+                                    <img src={c.image} alt="" className="w-full h-10 object-cover rounded-xs border border-brand-border mb-0.5" />
+                                  ) : (
+                                    <div className="w-full h-10 bg-brand-stone/40 rounded-xs mb-0.5" />
+                                  )}
+                                  <div className="text-[8px] text-brand-cream/70 truncate">{c.titleAr || c.titleEn}</div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {sec.id === 'story' && (
+                          <div className="flex items-center gap-3">
+                            {content.storyImage ? (
+                              <img src={content.storyImage} alt="" className="w-12 h-14 object-cover rounded-xs border border-brand-gold/40 flex-shrink-0" />
+                            ) : (
+                              <div className="w-12 h-14 bg-brand-stone/40 rounded-xs border border-brand-border flex-shrink-0" />
+                            )}
+                            <div>
+                              <div className="text-xs font-bold text-brand-ivory">{content.storyTitleAr || 'فلسفة دار أثير'}</div>
+                              <p className="text-[10px] text-brand-cream/60 line-clamp-2 mt-0.5">{content.storyParagraph1Ar || ''}</p>
+                            </div>
+                          </div>
+                        )}
+
+                        {sec.id === 'future' && (
+                          <div className="flex items-center gap-3">
+                            {content.futureImage ? (
+                              <img src={content.futureImage} alt="" className="w-12 h-12 object-cover rounded-xs border border-brand-gold/40 flex-shrink-0" />
+                            ) : (
+                              <div className="w-12 h-12 bg-brand-stone/40 rounded-xs border border-brand-border flex-shrink-0" />
+                            )}
+                            <div>
+                              <div className="text-xs font-bold text-brand-ivory">{content.futureTitleAr || 'تي شيرت أثير الثقيل 320 GSM'}</div>
+                              <span className="text-[9px] text-brand-gold font-mono">{content.futureBadgeAr || 'قريباً'}</span>
+                            </div>
+                          </div>
+                        )}
+
+                        {!['hero', 'offers', 'categories', 'story', 'future'].includes(sec.id) && (
                           <p className="text-brand-cream/60 text-[11px]">
                             {isAr ? 'عناصر ومحتوى حي يتزامن مباشرة مع المتجر العام.' : 'Live section element synced with storefront.'}
                           </p>
