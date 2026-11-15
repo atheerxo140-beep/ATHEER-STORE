@@ -28,9 +28,6 @@ export const ProductGrid: React.FC = () => {
   const { content } = useHomepageContent();
   const { addItem } = useCart();
 
-  if (content.showProducts === false) {
-    return null;
-  }
   const [products, setProducts] = useState<Product[]>(mockProducts);
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -107,6 +104,10 @@ export const ProductGrid: React.FC = () => {
       setSelectedProduct(null);
     }, 1200);
   };
+
+  if (content.showProducts === false) {
+    return null;
+  }
 
   return (
     <section id="products" className="py-20 sm:py-28 bg-brand-black text-brand-ivory border-b border-brand-border/60">

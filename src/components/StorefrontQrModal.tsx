@@ -15,11 +15,6 @@ export const StorefrontQrModal: React.FC = () => {
   const [qrDataUrl, setQrDataUrl] = useState('');
   const [copied, setCopied] = useState(false);
 
-  // If hidden by admin in homepage content settings, don't render anything
-  if (content.showQrCode === false) {
-    return null;
-  }
-
   const targetUrl =
     content.qrTargetUrl?.trim() ||
     (typeof window !== 'undefined' ? window.location.origin : 'https://atheer.store');
@@ -43,6 +38,10 @@ export const StorefrontQrModal: React.FC = () => {
     };
     generate();
   }, [targetUrl]);
+
+  if (content.showQrCode === false) {
+    return null;
+  }
 
   const handleCopy = () => {
     if (typeof navigator !== 'undefined') {
