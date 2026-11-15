@@ -67,9 +67,18 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const pathname = usePathname();
   const router = useRouter();
   const { language, setLanguage, isRtl } = useLanguage();
+  const isAr = language === 'ar';
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [showDbInfo, setShowDbInfo] = useState(false);
-  const [supabaseStatus, setSupabaseStatus] = useState<{ configured: boolean }>({ configured: false });
+  const [supabaseStatus, setSupabaseStatus] = useState<{
+    configured: boolean;
+    connected: boolean;
+    host?: string;
+    error?: string;
+  }>({
+    configured: false,
+    connected: false,
+  });
   const [adminEmail, setAdminEmail] = useState<string>('yassinanwar140@gmail.com');
 
   // Real-time Notification State
@@ -83,7 +92,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const isLoginPage = pathname === '/admin/login';
 
   useEffect(() => {
-    // Check if Supabase keys exist in public environment
+    // Initial check from public environment
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const publishableKey =
       process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
@@ -96,7 +105,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       !publishableKey.includes('...') &&
       !publishableKey.includes('<')
     );
-    setSupabaseStatus({ configured: isConfigured });
+    setSupabaseStatus((prev) => ({ ...prev, configured: isConfigured }));
 
     if (isLoginPage) {
       return;
@@ -111,13 +120,27 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         // Unauthenticated or expired session: redirect to login
         router.push('/admin/login?reason=expired');
       } else {
-        // Fetch current active admin email
+        // Fetch current active admin email and diagnostics in parallel
         import('@/lib/adminAuthClient').then(({ adminFetch }) => {
           adminFetch('/api/admin/credentials')
             .then((res) => res.json())
             .then((data) => {
               if (isMounted && data.success && data.email) {
                 setAdminEmail(data.email);
+              }
+            })
+            .catch(() => {});
+
+          adminFetch('/api/admin/diagnostics')
+            .then((res) => res.json())
+            .then((data) => {
+              if (isMounted && data.success) {
+                setSupabaseStatus({
+                  configured: Boolean(data.envAudit?.NEXT_PUBLIC_SUPABASE_URL?.configured),
+                  connected: Boolean(data.connectivity?.reachable),
+                  host: data.envAudit?.NEXT_PUBLIC_SUPABASE_URL?.host || 'zdkpxfxvazwwzemimykc.supabase.co',
+                  error: data.connectivity?.error,
+                });
               }
             })
             .catch(() => {});
@@ -305,16 +328,26 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <button
             onClick={() => setShowDbInfo(!showDbInfo)}
             className={`w-full text-left rtl:text-right p-2.5 border text-[10px] font-mono transition-colors flex items-center justify-between ${
-              supabaseStatus.configured
+              supabaseStatus.connected
                 ? 'border-emerald-600/60 bg-emerald-950/30 text-emerald-300'
-                : 'border-amber-600/60 bg-amber-950/30 text-amber-300'
+                : supabaseStatus.configured
+                ? 'border-amber-600/60 bg-amber-950/30 text-amber-300'
+                : 'border-rose-600/60 bg-rose-950/30 text-rose-300'
             }`}
           >
             <span className="flex items-center space-x-1.5 rtl:space-x-reverse">
               <Database className="w-3.5 h-3.5" />
-              <span>{supabaseStatus.configured ? 'Supabase: Connected' : 'Supabase: Not Configured'}</span>
+              <span>
+                {supabaseStatus.connected
+                  ? 'Supabase: Connected'
+                  : supabaseStatus.configured
+                  ? 'Supabase: Paused / Unreachable'
+                  : 'Supabase: Not Configured'}
+              </span>
             </span>
-            <span className="w-2 h-2 rounded-full bg-current animate-pulse" />
+            <span className={`w-2 h-2 rounded-full animate-pulse ${
+              supabaseStatus.connected ? 'bg-emerald-400' : supabaseStatus.configured ? 'bg-amber-400' : 'bg-rose-400'
+            }`} />
           </button>
 
           {/* View Storefront Link */}
@@ -508,11 +541,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         {/* Database Status Modal */}
         {showDbInfo && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-            <div className="bg-brand-charcoal border border-brand-border w-full max-w-md p-6 rounded-sm shadow-2xl space-y-4">
+            <div className="bg-brand-charcoal border border-brand-border w-full max-w-lg p-6 rounded-sm shadow-2xl space-y-4">
               <div className="flex items-center justify-between border-b border-brand-border/80 pb-3">
                 <div className="flex items-center space-x-2 rtl:space-x-reverse text-brand-gold font-mono text-xs uppercase font-bold">
                   <Database className="w-4 h-4" />
-                  <span>Database & Authentication Status</span>
+                  <span>{isAr ? 'حالة قاعدة بيانات المتجر السحابية (Supabase)' : 'Supabase Cloud Database Diagnostics'}</span>
                 </div>
                 <button onClick={() => setShowDbInfo(false)} className="text-brand-cream/50 hover:text-brand-ivory">
                   <X className="w-4 h-4" />
@@ -520,24 +553,60 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               </div>
 
               <div className="space-y-3 font-mono text-xs leading-relaxed">
-                <div className="p-3 bg-brand-stone/30 border border-brand-border rounded-xs">
-                  <span className="text-brand-cream/60 block text-[10px] uppercase">Supabase Cloud Connection:</span>
-                  <span className="font-bold text-brand-ivory">
-                    {supabaseStatus.configured ? 'Active (Cloud Database)' : 'Not Connected (Missing Credentials)'}
+                <div className="p-3 bg-brand-stone/40 border border-brand-border rounded-xs space-y-1.5">
+                  <span className="text-brand-cream/60 block text-[10px] uppercase">
+                    {isAr ? 'حالة الاتصال المباشر بالسيرفر السحابي:' : 'Live Cloud Database Status:'}
                   </span>
+                  <div className="flex items-center space-x-2 rtl:space-x-reverse">
+                    <span className={`w-2.5 h-2.5 rounded-full ${supabaseStatus.connected ? 'bg-emerald-400' : supabaseStatus.configured ? 'bg-amber-400' : 'bg-rose-400'}`} />
+                    <span className="font-bold text-brand-ivory text-sm">
+                      {supabaseStatus.connected
+                        ? (isAr ? 'متصل بنجاح (PostgreSQL Live)' : 'Connected & Active (PostgreSQL Live)')
+                        : supabaseStatus.configured
+                        ? (isAr ? 'المشروع متوقف مؤقتاً في Supabase (Paused Project)' : 'Project Paused / Inactive on Supabase')
+                        : (isAr ? 'المتغيرات غير مكتملة في Vercel' : 'Missing Environment Variables in Vercel')}
+                    </span>
+                  </div>
                 </div>
 
-                <p className="text-brand-cream/70 text-[11px]">
-                  {supabaseStatus.configured
-                    ? 'All products, inventory logs, and customer orders persist directly in your Supabase PostgreSQL cluster.'
-                    : 'The application is running with in-memory development runtime stores. To achieve production persistence, supply NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY in your .env.local file.'}
-                </p>
+                <div className="p-3 bg-brand-stone/20 border border-brand-border/60 rounded-xs space-y-1 text-[11px] text-brand-cream/80">
+                  <div><strong>Project Host:</strong> {supabaseStatus.host || 'zdkpxfxvazwwzemimykc.supabase.co'}</div>
+                  {supabaseStatus.error && (
+                    <div className="text-rose-300 text-[10px] break-all">
+                      <strong>Diagnostics:</strong> {supabaseStatus.error}
+                    </div>
+                  )}
+                </div>
+
+                {!supabaseStatus.connected && (
+                  <div className="p-3 bg-amber-950/30 border border-amber-600/50 rounded-xs space-y-2 text-[11px] text-amber-200">
+                    <p className="font-bold">
+                      {isAr
+                        ? 'تنبيه الأمان وسلامة البيانات (Data Integrity Alert):'
+                        : 'Data Integrity & Security Notice:'}
+                    </p>
+                    <p>
+                      {isAr
+                        ? 'مشاريع Supabase المجانية تتوقف تلقائياً (Paused) بعد فترة من عدم الاستخدام ويسحب نطاق DNS. لاستعادة قاعدة البيانات وتفعيل استلام وحفظ الطلبات، اضغط على الرابط أدناه ثم اضغط "Restore Project" في لوحة تحكم Supabase.'
+                        : 'Free Supabase projects pause automatically after inactivity. To restore your database, click the button below and click "Restore Project" in Supabase.'}
+                    </p>
+                    <a
+                      href="https://supabase.com/dashboard/project/zdkpxfxvazwwzemimykc"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center space-x-1.5 rtl:space-x-reverse px-3 py-1.5 bg-brand-gold text-brand-black font-bold uppercase tracking-wider text-[10px] rounded-xs hover:bg-brand-gold-light transition-all"
+                    >
+                      <span>{isAr ? 'فتح لوحة تحكم Supabase لاستعادة المشروع' : 'Open Supabase Dashboard to Restore'}</span>
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                  </div>
+                )}
               </div>
 
               <div className="pt-2 flex justify-end">
                 <button
                   onClick={() => setShowDbInfo(false)}
-                  className="px-4 py-2 bg-brand-gold text-brand-black text-xs font-bold uppercase rounded-xs"
+                  className="px-4 py-2 bg-brand-stone/60 text-brand-ivory hover:bg-brand-stone text-xs font-bold uppercase rounded-xs"
                 >
                   Close
                 </button>

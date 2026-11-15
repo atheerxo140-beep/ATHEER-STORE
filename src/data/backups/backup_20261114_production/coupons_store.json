@@ -1,0 +1,46 @@
+[
+  {
+    "id": "coup-01",
+    "code": "ATHEER10",
+    "discountType": "percentage",
+    "discountValue": 10,
+    "minOrderAmount": 1000,
+    "usageLimit": 500,
+    "timesUsed": 42,
+    "isActive": true,
+    "createdAt": "2026-11-14T21:33:26.838Z"
+  },
+  {
+    "id": "coup-02",
+    "code": "FAMILY15",
+    "discountType": "percentage",
+    "discountValue": 15,
+    "minOrderAmount": 1400,
+    "usageLimit": 500,
+    "timesUsed": 24,
+    "isActive": true,
+    "createdAt": "2026-11-14T21:33:26.839Z"
+  },
+  {
+    "id": "coup-03",
+    "code": "WELCOME100",
+    "discountType": "fixed",
+    "discountValue": 100,
+    "minOrderAmount": 1000,
+    "usageLimit": 1000,
+    "timesUsed": 67,
+    "isActive": true,
+    "createdAt": "2026-11-14T21:33:26.839Z"
+  },
+  {
+    "id": "coup-04",
+    "code": "YOUTH15",
+    "discountType": "percentage",
+    "discountValue": 15,
+    "minOrderAmount": 1500,
+    "usageLimit": 200,
+    "timesUsed": 19,
+    "isActive": true,
+    "createdAt": "2026-11-14T21:33:26.839Z"
+  }
+]

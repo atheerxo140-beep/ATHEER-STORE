@@ -20,8 +20,7 @@ export const getSupabaseClient = (): SupabaseClient | null => {
     url.includes('your-project-id') ||
     url.includes('<') ||
     publishableKey.includes('...') ||
-    publishableKey.includes('<') ||
-    url.includes('zdkpxfxvazwwzemimykc')
+    publishableKey.includes('<')
   ) {
     return null;
   }

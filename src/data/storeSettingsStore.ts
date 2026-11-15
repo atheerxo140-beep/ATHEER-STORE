@@ -145,27 +145,24 @@ export const updateStoreSettings = async (
   if (isSupabaseConfigured()) {
     const supabase = getSupabaseServer();
     if (supabase) {
-      try {
-        const updatePromise = supabase
-          .from('store_settings')
-          .update({
-            store_name_en: updated.storeNameEn,
-            store_name_ar: updated.storeNameAr,
-            tagline_en: updated.taglineEn,
-            tagline_ar: updated.taglineAr,
-            whatsapp_number: updated.whatsappNumber,
-            support_email: updated.supportEmail,
-            default_currency: updated.defaultCurrency,
-            cairo_showrooms_en: updated.cairoShowroomsEn,
-            cairo_showrooms_ar: updated.cairoShowroomsAr,
-            updated_at: new Date().toISOString(),
-          })
-          .eq('id', 'main_settings');
+      const { error } = await supabase
+        .from('store_settings')
+        .upsert({
+          id: 'main_settings',
+          store_name_en: updated.storeNameEn,
+          store_name_ar: updated.storeNameAr,
+          tagline_en: updated.taglineEn,
+          tagline_ar: updated.taglineAr,
+          whatsapp_number: updated.whatsappNumber,
+          support_email: updated.supportEmail,
+          default_currency: updated.defaultCurrency,
+          cairo_showrooms_en: updated.cairoShowroomsEn,
+          cairo_showrooms_ar: updated.cairoShowroomsAr,
+          updated_at: new Date().toISOString(),
+        });
 
-        const timeoutPromise = new Promise((resolve) => setTimeout(resolve, 1500));
-        await Promise.race([updatePromise, timeoutPromise]);
-      } catch (err) {
-        console.warn('[StoreSettingsStore] Cloud update fallback:', err);
+      if (error) {
+        throw new Error(`Failed to update store settings in Supabase: ${error.message}`);
       }
     }
   }

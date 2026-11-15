@@ -1,0 +1,23 @@
+[
+  {
+    "id": "sub-01",
+    "email": "vip.client@atheer.store",
+    "locale": "ar",
+    "subscribedAt": "2026-11-14T20:00:00.000Z",
+    "isActive": true
+  },
+  {
+    "id": "sub-1794695454831",
+    "email": "vip_subscriber@example.com",
+    "locale": "ar",
+    "subscribedAt": "2026-11-14T22:30:54.831Z",
+    "isActive": true
+  },
+  {
+    "id": "sub-1794695609806",
+    "email": "drop_1794695609789@example.com",
+    "locale": "ar",
+    "subscribedAt": "2026-11-14T22:33:29.806Z",
+    "isActive": true
+  }
+]

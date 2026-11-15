@@ -23,8 +23,7 @@ export const isSupabaseConfigured = (): boolean => {
     url.includes('your-project-id') ||
     url.includes('<') ||
     key.includes('...') ||
-    key.includes('<') ||
-    url.includes('zdkpxfxvazwwzemimykc')
+    key.includes('<')
   ) {
     return false;
   }

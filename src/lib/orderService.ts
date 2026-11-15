@@ -303,10 +303,96 @@ export const createOrder = async (input: CreateOrderInput): Promise<OrderCreatio
     backendStorage: 'local_database',
   };
 
-  // 9. IMMEDIATELY persist order to local disk storage (0ms - zero data loss)
+  // 9. Persist to Supabase PostgreSQL (Persistent Database of Record)
+  if (isSupabaseConfigured()) {
+    const supabase = getSupabaseServer();
+    if (!supabase) {
+      return {
+        success: false,
+        error: 'CRITICAL: Supabase client could not be initialized.',
+        errorAr: 'خطأ حرج: تعذر تهيئة الاتصال بقاعدة بيانات Supabase السحابية.',
+      };
+    }
+
+    try {
+      const { data: orderData, error: orderError } = await supabase
+        .from('orders')
+        .insert({
+          order_reference: orderReference,
+          customer_name: newOrder.customerName,
+          customer_phone: newOrder.customerPhone,
+          customer_email: newOrder.customerEmail,
+          shipping_country: 'Egypt',
+          shipping_city: newOrder.shippingCity,
+          shipping_address: newOrder.shippingAddress,
+          shipping_postal_code: newOrder.shippingPostalCode,
+          shipping_zone_id: newOrder.shippingZoneId,
+          subtotal: newOrder.subtotal,
+          shipping_fee: newOrder.shippingFee,
+          total_amount: newOrder.totalAmount,
+          currency: 'EGP',
+          payment_method: newOrder.paymentMethod,
+          payment_status: newOrder.paymentStatus,
+          order_status: 'confirmed',
+          notes: newOrder.paymentReference
+            ? `${newOrder.notes ? newOrder.notes + ' · ' : ''}Ref: ${newOrder.paymentReference}`
+            : newOrder.notes,
+        })
+        .select('id')
+        .single();
+
+      if (orderError || !orderData) {
+        console.error('[Supabase Order Insert Error]', orderError);
+        return {
+          success: false,
+          error: `Supabase database error: ${orderError?.message || 'Failed to insert order'}`,
+          errorAr: `فشل حفظ الطلب في قاعدة بيانات Supabase: ${orderError?.message || 'خطأ في الإدراج'}. يرجى استعادة المشروع في Supabase Dashboard.`,
+        };
+      }
+
+      newOrder.id = orderData.id;
+      newOrder.backendStorage = 'supabase';
+
+      // Insert Order Items in Supabase
+      const orderItemsToInsert = validatedItems.map((item) => ({
+        order_id: orderData.id,
+        product_id: item.productId,
+        product_name_en: item.productNameEn,
+        product_name_ar: item.productNameAr,
+        selected_size: item.selectedSize,
+        selected_color: item.selectedColor,
+        unit_price: item.unitPrice,
+        quantity: item.quantity,
+        total_price: item.totalPrice,
+      }));
+
+      const { error: itemsError } = await supabase.from('order_items').insert(orderItemsToInsert);
+      if (itemsError) {
+        console.error('[Supabase Order Items Insert Error]', itemsError);
+      }
+    } catch (networkErr: any) {
+      console.error('[Supabase Order Network Error]', networkErr);
+      return {
+        success: false,
+        error: `Supabase database unreachable: ${networkErr.message}`,
+        errorAr: `تعذر الاتصال بقاعدة بيانات Supabase (${networkErr.message}). يرجى التأكد من أن مشروع Supabase نشط وغير متوقف (Not Paused).`,
+      };
+    }
+  } else {
+    // In production, reject unconfigured database
+    if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
+      return {
+        success: false,
+        error: 'CRITICAL SECURITY: Supabase database is not configured in production environment variables. Orders cannot be accepted.',
+        errorAr: 'خطأ أمني حرج: قاعدة بيانات Supabase غير مهيأة في متغيرات بيئة الإنتاج على Vercel. لا يمكن قبول الطلبات دون قاعدة بيانات دائمة.',
+      };
+    }
+  }
+
+  // 10. Cache order in memory for fast synchronous reading
   saveLocalOrder(newOrder);
 
-  // 9b. Auto-Award Digital Loyalty Stamps to Customer (ATHEER REWARDS)
+  // 10b. Auto-Award Digital Loyalty Stamps to Customer (ATHEER REWARDS)
   if (newOrder.customerEmail) {
     try {
       const { awardStampsForOrder, consumeLoyaltyVoucher } = await import('@/lib/loyaltyService');
@@ -324,7 +410,7 @@ export const createOrder = async (input: CreateOrderInput): Promise<OrderCreatio
     }
   }
 
-  // 10. Deduct Inventory Consistently and record movement logs immediately
+  // 11. Deduct Inventory Consistently and record movement logs
   for (const item of matchedProducts) {
     item.product.inventory = Math.max(0, (item.product.inventory ?? 0) - item.quantity);
     addInventoryLog({
@@ -339,69 +425,11 @@ export const createOrder = async (input: CreateOrderInput): Promise<OrderCreatio
     });
   }
 
-  // 11. Dispatch real-time admin order notification & automated WhatsApp
+  // 12. Dispatch real-time admin order notification & automated WhatsApp
   try {
     notifyAdminOfNewOrder(newOrder);
   } catch (notifErr) {
     console.warn('[Order Notification Trigger Error]', notifErr);
-  }
-
-  // 12. Non-blocking cloud sync to Supabase if configured and online
-  if (isSupabaseConfigured()) {
-    const supabase = getSupabaseServer();
-    if (supabase) {
-      (async () => {
-        try {
-          let { data: orderData, error: orderError } = await supabase
-            .from('orders')
-            .insert({
-              order_reference: orderReference,
-              customer_name: newOrder.customerName,
-              customer_phone: newOrder.customerPhone,
-              customer_email: newOrder.customerEmail,
-              shipping_country: 'Egypt',
-              shipping_city: newOrder.shippingCity,
-              shipping_address: newOrder.shippingAddress,
-              shipping_postal_code: newOrder.shippingPostalCode,
-              shipping_zone_id: newOrder.shippingZoneId,
-              subtotal: newOrder.subtotal,
-              shipping_fee: newOrder.shippingFee,
-              total_amount: newOrder.totalAmount,
-              currency: 'EGP',
-              payment_method: newOrder.paymentMethod,
-              payment_status: newOrder.paymentStatus,
-              order_status: 'confirmed',
-              notes: newOrder.paymentReference
-                ? `${newOrder.notes ? newOrder.notes + ' · ' : ''}Ref: ${newOrder.paymentReference}`
-                : newOrder.notes,
-            })
-            .select('id')
-            .single();
-
-          if (!orderError && orderData) {
-            newOrder.id = orderData.id;
-            newOrder.backendStorage = 'supabase';
-            saveLocalOrder(newOrder);
-
-            const orderItemsToInsert = validatedItems.map((item) => ({
-              order_id: orderData.id,
-              product_id: item.productId,
-              product_name_en: item.productNameEn,
-              product_name_ar: item.productNameAr,
-              selected_size: item.selectedSize,
-              selected_color: item.selectedColor,
-              unit_price: item.unitPrice,
-              quantity: item.quantity,
-              total_price: item.totalPrice,
-            }));
-
-            await supabase.from('order_items').insert(orderItemsToInsert);
-          }
-        } catch (err) {
-          console.warn('[Supabase Order Background Sync Notice]', err);
-        }
-      })();
-    }
   }
 
   return {

@@ -386,125 +386,121 @@ export const getProductById = async (id: string): Promise<Product | undefined> =
 };
 
 export const addProduct = async (product: Product): Promise<Product> => {
-  currentProducts.unshift(product);
-  persistProductsToDisk(currentProducts);
-
   if (isSupabaseConfigured()) {
     const supabase = getSupabaseServer();
     if (supabase) {
-      try {
-        await supabase.from('products').upsert({
-          id: product.id,
-          name_en: product.nameEn,
-          name_ar: product.nameAr,
-          category: product.category,
-          category_label_en: product.categoryLabelEn || product.category,
-          category_label_ar: product.categoryLabelAr || product.category,
-          price: product.price,
-          original_price: product.originalPrice || null,
-          gsm: product.gsm || 500,
-          fit_en: product.fitEn || 'Signature Boxy Oversized',
-          fit_ar: product.fitAr || 'قصّة بوكسي أوفرسايز معتمدة',
-          fabric_en: product.fabricEn || 'Heavyweight Cotton Fleece Blend (500 GSM Spec)',
-          fabric_ar: product.fabricAr || 'مزيج قطن صوف ثقيل فاخر (مواصفات 500 GSM)',
-          description_en: product.descriptionEn || '',
-          description_ar: product.descriptionAr || '',
-          image: product.image,
-          hover_image: product.hoverImage || product.image,
-          badge_en: product.badgeEn || null,
-          badge_ar: product.badgeAr || null,
-          is_active: true,
-          is_coming_soon: Boolean(product.isComingSoon),
-          created_at: new Date().toISOString(),
-        });
+      const { error } = await supabase.from('products').upsert({
+        id: product.id,
+        name_en: product.nameEn,
+        name_ar: product.nameAr,
+        category: product.category,
+        category_label_en: product.categoryLabelEn || product.category,
+        category_label_ar: product.categoryLabelAr || product.category,
+        price: product.price,
+        original_price: product.originalPrice || null,
+        gsm: product.gsm || 500,
+        fit_en: product.fitEn || 'Signature Boxy Oversized',
+        fit_ar: product.fitAr || 'قصّة بوكسي أوفرسايز معتمدة',
+        fabric_en: product.fabricEn || 'Heavyweight Cotton Fleece Blend (500 GSM Spec)',
+        fabric_ar: product.fabricAr || 'مزيج قطن صوف ثقيل فاخر (مواصفات 500 GSM)',
+        description_en: product.descriptionEn || '',
+        description_ar: product.descriptionAr || '',
+        image: product.image,
+        hover_image: product.hoverImage || product.image,
+        badge_en: product.badgeEn || null,
+        badge_ar: product.badgeAr || null,
+        is_active: true,
+        is_coming_soon: Boolean(product.isComingSoon),
+        created_at: new Date().toISOString(),
+      });
 
-        // Seed variants if sizes & colors provided
-        if (product.sizes?.length && product.colors?.length) {
-          const variants = [];
-          for (const s of product.sizes) {
-            for (const c of product.colors) {
-              variants.push({
-                product_id: product.id,
-                size: s,
-                color: c,
-                sku: `${product.id}-${s}-${c}`.replace(/[^a-zA-Z0-9_-]/g, '_').toUpperCase(),
-                inventory_quantity: Math.max(1, Math.floor((product.inventory || 50) / (product.sizes.length * product.colors.length))),
-                is_active: true,
-              });
-            }
+      if (error) {
+        throw new Error(`Supabase product insert failed: ${error.message}`);
+      }
+
+      // Seed variants if sizes & colors provided
+      if (product.sizes?.length && product.colors?.length) {
+        const variants = [];
+        for (const s of product.sizes) {
+          for (const c of product.colors) {
+            variants.push({
+              product_id: product.id,
+              size: s,
+              color: c,
+              sku: `${product.id}-${s}-${c}`.replace(/[^a-zA-Z0-9_-]/g, '_').toUpperCase(),
+              inventory_quantity: Math.max(1, Math.floor((product.inventory || 50) / (product.sizes.length * product.colors.length))),
+              is_active: true,
+            });
           }
-          await supabase.from('product_variants').upsert(variants, { onConflict: 'product_id,size,color' });
         }
-      } catch (err) {
-        console.warn('[ProductsStore] Supabase product insert error:', err);
+        await supabase.from('product_variants').upsert(variants, { onConflict: 'product_id,size,color' });
       }
     }
   }
 
+  currentProducts.unshift(product);
+  persistProductsToDisk(currentProducts);
   return product;
 };
 
 export const updateProduct = async (id: string, updates: Partial<Product>): Promise<Product | null> => {
+  if (isSupabaseConfigured()) {
+    const supabase = getSupabaseServer();
+    if (supabase) {
+      const dbUpdates: any = {};
+      if (updates.nameEn !== undefined) dbUpdates.name_en = updates.nameEn;
+      if (updates.nameAr !== undefined) dbUpdates.name_ar = updates.nameAr;
+      if (updates.category !== undefined) dbUpdates.category = updates.category;
+      if (updates.categoryLabelEn !== undefined) dbUpdates.category_label_en = updates.categoryLabelEn;
+      if (updates.categoryLabelAr !== undefined) dbUpdates.category_label_ar = updates.categoryLabelAr;
+      if (updates.price !== undefined) dbUpdates.price = updates.price;
+      if (updates.originalPrice !== undefined) dbUpdates.original_price = updates.originalPrice;
+      if (updates.gsm !== undefined) dbUpdates.gsm = updates.gsm;
+      if (updates.fitEn !== undefined) dbUpdates.fit_en = updates.fitEn;
+      if (updates.fitAr !== undefined) dbUpdates.fit_ar = updates.fitAr;
+      if (updates.fabricEn !== undefined) dbUpdates.fabric_en = updates.fabricEn;
+      if (updates.fabricAr !== undefined) dbUpdates.fabric_ar = updates.fabricAr;
+      if (updates.descriptionEn !== undefined) dbUpdates.description_en = updates.descriptionEn;
+      if (updates.descriptionAr !== undefined) dbUpdates.description_ar = updates.descriptionAr;
+      if (updates.image !== undefined) dbUpdates.image = updates.image;
+      if (updates.hoverImage !== undefined) dbUpdates.hover_image = updates.hoverImage;
+      if (updates.badgeEn !== undefined) dbUpdates.badge_en = updates.badgeEn;
+      if (updates.badgeAr !== undefined) dbUpdates.badge_ar = updates.badgeAr;
+      if (updates.isComingSoon !== undefined) dbUpdates.is_coming_soon = updates.isComingSoon;
+
+      if (Object.keys(dbUpdates).length > 0) {
+        const { error } = await supabase.from('products').update(dbUpdates).eq('id', id);
+        if (error) {
+          throw new Error(`Supabase product update failed: ${error.message}`);
+        }
+      }
+    }
+  }
+
   const index = currentProducts.findIndex((p) => p.id === id);
   if (index !== -1) {
     currentProducts[index] = { ...currentProducts[index], ...updates };
     persistProductsToDisk(currentProducts);
   }
   const product = index !== -1 ? currentProducts[index] : (updates as Product);
-
-  if (isSupabaseConfigured()) {
-    const supabase = getSupabaseServer();
-    if (supabase) {
-      try {
-        const dbUpdates: any = {};
-        if (updates.nameEn !== undefined) dbUpdates.name_en = updates.nameEn;
-        if (updates.nameAr !== undefined) dbUpdates.name_ar = updates.nameAr;
-        if (updates.category !== undefined) dbUpdates.category = updates.category;
-        if (updates.categoryLabelEn !== undefined) dbUpdates.category_label_en = updates.categoryLabelEn;
-        if (updates.categoryLabelAr !== undefined) dbUpdates.category_label_ar = updates.categoryLabelAr;
-        if (updates.price !== undefined) dbUpdates.price = updates.price;
-        if (updates.originalPrice !== undefined) dbUpdates.original_price = updates.originalPrice;
-        if (updates.gsm !== undefined) dbUpdates.gsm = updates.gsm;
-        if (updates.fitEn !== undefined) dbUpdates.fit_en = updates.fitEn;
-        if (updates.fitAr !== undefined) dbUpdates.fit_ar = updates.fitAr;
-        if (updates.fabricEn !== undefined) dbUpdates.fabric_en = updates.fabricEn;
-        if (updates.fabricAr !== undefined) dbUpdates.fabric_ar = updates.fabricAr;
-        if (updates.descriptionEn !== undefined) dbUpdates.description_en = updates.descriptionEn;
-        if (updates.descriptionAr !== undefined) dbUpdates.description_ar = updates.descriptionAr;
-        if (updates.image !== undefined) dbUpdates.image = updates.image;
-        if (updates.hoverImage !== undefined) dbUpdates.hover_image = updates.hoverImage;
-        if (updates.badgeEn !== undefined) dbUpdates.badge_en = updates.badgeEn;
-        if (updates.badgeAr !== undefined) dbUpdates.badge_ar = updates.badgeAr;
-        if (updates.isComingSoon !== undefined) dbUpdates.is_coming_soon = updates.isComingSoon;
-
-        if (Object.keys(dbUpdates).length > 0) {
-          await supabase.from('products').update(dbUpdates).eq('id', id);
-        }
-      } catch (err) {
-        console.warn('[ProductsStore] Supabase product update error:', err);
-      }
-    }
-  }
-
   return product;
 };
 
 export const deleteProduct = async (id: string): Promise<boolean> => {
+  if (isSupabaseConfigured()) {
+    const supabase = getSupabaseServer();
+    if (supabase) {
+      const { error } = await supabase.from('products').delete().eq('id', id);
+      if (error) {
+        throw new Error(`Supabase product delete failed: ${error.message}`);
+      }
+    }
+  }
+
   const index = currentProducts.findIndex((p) => p.id === id);
   if (index !== -1) {
     currentProducts.splice(index, 1);
     persistProductsToDisk(currentProducts);
-  }
-
-  if (isSupabaseConfigured()) {
-    const supabase = getSupabaseServer();
-    if (supabase) {
-      try {
-        await supabase.from('products').delete().eq('id', id);
-      } catch (err) {
-        console.warn('[ProductsStore] Supabase product delete error:', err);
-      }
-    }
   }
 
   return true;
