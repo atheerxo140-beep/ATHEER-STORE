@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { getStoreFilePath } from '@/lib/storePath';
 
 export interface StoredOrderItem {
   productId: string;
@@ -50,12 +51,19 @@ export interface StoredOrder {
   backendStorage: 'supabase' | 'local_database';
 }
 
-const ORDERS_JSON_PATH = path.join(process.cwd(), 'src', 'data', 'orders_store.json');
+function getOrdersJsonPath(): string {
+  try {
+    return getStoreFilePath('orders_store.json');
+  } catch (e) {
+    return path.join(process.cwd(), 'src', 'data', 'orders_store.json');
+  }
+}
 
 function loadOrdersFromDisk(): StoredOrder[] {
   try {
-    if (fs.existsSync(ORDERS_JSON_PATH)) {
-      const data = fs.readFileSync(ORDERS_JSON_PATH, 'utf8');
+    const filePath = getOrdersJsonPath();
+    if (fs.existsSync(filePath)) {
+      const data = fs.readFileSync(filePath, 'utf8');
       const parsed = JSON.parse(data);
       if (Array.isArray(parsed)) {
         return parsed;
@@ -69,7 +77,8 @@ function loadOrdersFromDisk(): StoredOrder[] {
 
 function persistOrdersToDisk(orders: StoredOrder[]): void {
   try {
-    fs.writeFileSync(ORDERS_JSON_PATH, JSON.stringify(orders, null, 2), 'utf8');
+    const filePath = getOrdersJsonPath();
+    fs.writeFileSync(filePath, JSON.stringify(orders, null, 2), 'utf8');
   } catch (err) {
     console.warn('[OrdersStore] Notice: Could not write orders to disk (read-only environment)');
   }

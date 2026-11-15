@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { getStoreFilePath } from '@/lib/storePath';
 
 export interface LoyaltyConfig {
   programName: string;
@@ -45,7 +46,13 @@ interface LoyaltyStore {
   accounts: LoyaltyAccount[];
 }
 
-const STORE_PATH = path.join(process.cwd(), 'src', 'data', 'loyalty_store.json');
+function getLoyaltyStorePath(): string {
+  try {
+    return getStoreFilePath('loyalty_store.json');
+  } catch (e) {
+    return path.join(process.cwd(), 'src', 'data', 'loyalty_store.json');
+  }
+}
 
 const DEFAULT_LOYALTY: LoyaltyStore = {
   config: {
@@ -63,8 +70,9 @@ const DEFAULT_LOYALTY: LoyaltyStore = {
 
 function readStore(): LoyaltyStore {
   try {
-    if (fs.existsSync(STORE_PATH)) {
-      const data = fs.readFileSync(STORE_PATH, 'utf8');
+    const storePath = getLoyaltyStorePath();
+    if (fs.existsSync(storePath)) {
+      const data = fs.readFileSync(storePath, 'utf8');
       return JSON.parse(data);
     }
   } catch (e) {
@@ -75,7 +83,8 @@ function readStore(): LoyaltyStore {
 
 function writeStore(store: LoyaltyStore) {
   try {
-    fs.writeFileSync(STORE_PATH, JSON.stringify(store, null, 2), 'utf8');
+    const storePath = getLoyaltyStorePath();
+    fs.writeFileSync(storePath, JSON.stringify(store, null, 2), 'utf8');
   } catch (e) {
     console.error('[loyaltyService] Error writing loyalty store:', e);
   }

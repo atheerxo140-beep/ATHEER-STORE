@@ -2,19 +2,25 @@ import { ShippingZone, EgyptianGovernorate } from '@/types';
 import { getSupabaseServer, isSupabaseConfigured } from '@/lib/supabaseServer';
 import fs from 'fs';
 import path from 'path';
+import { getStoreFilePath } from '@/lib/storePath';
 
-const SHIPPING_JSON_PATH =
-  typeof process !== 'undefined' && typeof process.cwd === 'function' && path?.join
-    ? path.join(process.cwd(), 'src', 'data', 'shipping_zones_store.json')
-    : '';
+function getShippingJsonPath(): string {
+  if (typeof window !== 'undefined') return '';
+  try {
+    return getStoreFilePath('shipping_zones_store.json');
+  } catch (e) {
+    return path.join(process.cwd(), 'src', 'data', 'shipping_zones_store.json');
+  }
+}
 
 function loadShippingZonesFromDisk(): ShippingZone[] {
-  if (typeof window !== 'undefined' || !fs || !fs.existsSync || !SHIPPING_JSON_PATH) {
+  const filePath = getShippingJsonPath();
+  if (typeof window !== 'undefined' || !fs || !fs.existsSync || !filePath) {
     return [...defaultEgyptianShippingZones];
   }
   try {
-    if (fs.existsSync(SHIPPING_JSON_PATH)) {
-      const data = fs.readFileSync(SHIPPING_JSON_PATH, 'utf8');
+    if (fs.existsSync(filePath)) {
+      const data = fs.readFileSync(filePath, 'utf8');
       const parsed = JSON.parse(data);
       if (Array.isArray(parsed) && parsed.length > 0) {
         return parsed;
@@ -27,11 +33,12 @@ function loadShippingZonesFromDisk(): ShippingZone[] {
 }
 
 function persistShippingZonesToDisk(zones: ShippingZone[]): void {
-  if (typeof window !== 'undefined' || !fs || !fs.writeFileSync || !SHIPPING_JSON_PATH) {
+  const filePath = getShippingJsonPath();
+  if (typeof window !== 'undefined' || !fs || !fs.writeFileSync || !filePath) {
     return;
   }
   try {
-    fs.writeFileSync(SHIPPING_JSON_PATH, JSON.stringify(zones, null, 2), 'utf8');
+    fs.writeFileSync(filePath, JSON.stringify(zones, null, 2), 'utf8');
   } catch (err) {
     console.warn('[ShippingZonesStore] Notice: Could not write shipping zones to disk');
   }
@@ -168,7 +175,8 @@ export const currentEgyptianShippingZones: ShippingZone[] =
 globalForShipping.currentEgyptianShippingZones = currentEgyptianShippingZones;
 
 try {
-  if (typeof window === 'undefined' && fs?.existsSync && SHIPPING_JSON_PATH && !fs.existsSync(SHIPPING_JSON_PATH)) {
+  const p = getShippingJsonPath();
+  if (typeof window === 'undefined' && fs?.existsSync && p && !fs.existsSync(p)) {
     persistShippingZonesToDisk(currentEgyptianShippingZones);
   }
 } catch (e) {}

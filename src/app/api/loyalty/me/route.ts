@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 import { getLoyaltyAccount, getLoyaltyConfig, validateLoyaltyVoucher } from '@/lib/loyaltyService';
+import { getStoreFilePath } from '@/lib/storePath';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,7 +14,7 @@ export async function GET(req: NextRequest) {
 
     if (!email && customerId) {
       try {
-        const storePath = path.join(process.cwd(), 'src', 'data', 'customers_store.json');
+        const storePath = getStoreFilePath('customers_store.json');
         if (fs.existsSync(storePath)) {
           const list = JSON.parse(fs.readFileSync(storePath, 'utf8'));
           const found = list.find((c: any) => c.id === customerId);

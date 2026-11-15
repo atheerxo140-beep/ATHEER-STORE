@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { getStoreFilePath } from '@/lib/storePath';
 
 export interface InventoryLog {
   id: string;
@@ -12,12 +13,19 @@ export interface InventoryLog {
   timestamp: string;
 }
 
-const LOGS_JSON_PATH = path.join(process.cwd(), 'src', 'data', 'inventory_logs_store.json');
+function getLogsJsonPath(): string {
+  try {
+    return getStoreFilePath('inventory_logs_store.json');
+  } catch (e) {
+    return path.join(process.cwd(), 'src', 'data', 'inventory_logs_store.json');
+  }
+}
 
 function loadLogsFromDisk(): InventoryLog[] {
   try {
-    if (fs.existsSync(LOGS_JSON_PATH)) {
-      const data = fs.readFileSync(LOGS_JSON_PATH, 'utf8');
+    const filePath = getLogsJsonPath();
+    if (fs.existsSync(filePath)) {
+      const data = fs.readFileSync(filePath, 'utf8');
       const parsed = JSON.parse(data);
       if (Array.isArray(parsed)) return parsed;
     }
@@ -29,7 +37,8 @@ function loadLogsFromDisk(): InventoryLog[] {
 
 function persistLogsToDisk(logs: InventoryLog[]): void {
   try {
-    fs.writeFileSync(LOGS_JSON_PATH, JSON.stringify(logs, null, 2), 'utf8');
+    const filePath = getLogsJsonPath();
+    fs.writeFileSync(filePath, JSON.stringify(logs, null, 2), 'utf8');
   } catch (err) {
     console.warn('[InventoryLogsStore] Notice: Could not write logs to disk');
   }

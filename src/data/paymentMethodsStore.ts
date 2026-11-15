@@ -1,6 +1,7 @@
 import { PaymentMethodConfig } from '@/types';
 import fs from 'fs';
 import path from 'path';
+import { getStoreFilePath } from '@/lib/storePath';
 
 export const defaultPaymentMethods: PaymentMethodConfig[] = [
   {
@@ -70,12 +71,19 @@ export const defaultPaymentMethods: PaymentMethodConfig[] = [
   },
 ];
 
-const JSON_PATH = path.join(process.cwd(), 'src', 'data', 'payment_methods.json');
+function getPaymentMethodsJsonPath(): string {
+  try {
+    return getStoreFilePath('payment_methods.json');
+  } catch (e) {
+    return path.join(process.cwd(), 'src', 'data', 'payment_methods.json');
+  }
+}
 
 function loadPersistedMethods(): PaymentMethodConfig[] {
   try {
-    if (fs.existsSync(JSON_PATH)) {
-      const data = fs.readFileSync(JSON_PATH, 'utf8');
+    const filePath = getPaymentMethodsJsonPath();
+    if (fs.existsSync(filePath)) {
+      const data = fs.readFileSync(filePath, 'utf8');
       const parsed = JSON.parse(data);
       if (Array.isArray(parsed) && parsed.length > 0) {
         return parsed;
@@ -89,7 +97,8 @@ function loadPersistedMethods(): PaymentMethodConfig[] {
 
 function persistMethods(methods: PaymentMethodConfig[]) {
   try {
-    fs.writeFileSync(JSON_PATH, JSON.stringify(methods, null, 2), 'utf8');
+    const filePath = getPaymentMethodsJsonPath();
+    fs.writeFileSync(filePath, JSON.stringify(methods, null, 2), 'utf8');
   } catch (err) {
     console.error('[PaymentMethodsStore] Error writing json file:', err);
   }

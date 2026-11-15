@@ -4,10 +4,12 @@ import { BuilderSection, BuilderSnapshot } from '@/types';
 import { getThemeConfig, updateThemeConfig } from '@/lib/themeService';
 import { defaultHomepageContent } from '@/data/defaultHomepageContent';
 import { logAuditEvent } from '@/lib/auditService';
+import { getStoreFilePath } from '@/lib/storePath';
+import { revalidatePath } from 'next/cache';
 
-const VERSIONS_PATH = path.join(process.cwd(), 'src', 'data', 'builder_versions.json');
-const DRAFT_PATH = path.join(process.cwd(), 'src', 'data', 'builder_draft.json');
-const HOMEPAGE_CONTENT_PATH = path.join(process.cwd(), 'src', 'data', 'homepage_content.json');
+const getVersionsPath = () => getStoreFilePath('builder_versions.json');
+const getDraftPath = () => getStoreFilePath('builder_draft.json');
+const getContentPath = () => getStoreFilePath('homepage_content.json');
 
 export const defaultSectionsOrder: BuilderSection[] = [
   { id: 'hero', type: 'hero', nameEn: 'Heavyweight Hero Showcase', nameAr: 'شاشة البانر الرئيسية (الهوديز 500 GSM)', enabled: true, order: 1 },
@@ -23,8 +25,9 @@ export const defaultSectionsOrder: BuilderSection[] = [
 
 export function getSectionsOrder(): BuilderSection[] {
   try {
-    if (fs.existsSync(HOMEPAGE_CONTENT_PATH)) {
-      const data = JSON.parse(fs.readFileSync(HOMEPAGE_CONTENT_PATH, 'utf8'));
+    const filePath = getContentPath();
+    if (fs.existsSync(filePath)) {
+      const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
       if (Array.isArray(data.sectionsOrder) && data.sectionsOrder.length > 0) {
         return data.sectionsOrder;
       }
@@ -37,8 +40,9 @@ export function getSectionsOrder(): BuilderSection[] {
 
 export function getBuilderDraft(): any {
   try {
-    if (fs.existsSync(DRAFT_PATH)) {
-      return JSON.parse(fs.readFileSync(DRAFT_PATH, 'utf8'));
+    const filePath = getDraftPath();
+    if (fs.existsSync(filePath)) {
+      return JSON.parse(fs.readFileSync(filePath, 'utf8'));
     }
   } catch (e) {
     console.error('[BuilderService] Failed to read draft', e);
@@ -48,7 +52,7 @@ export function getBuilderDraft(): any {
 
 export function saveBuilderDraft(draftData: any, authorEmail: string): boolean {
   try {
-    fs.writeFileSync(DRAFT_PATH, JSON.stringify({ ...draftData, savedAt: new Date().toISOString(), authorEmail }, null, 2), 'utf8');
+    fs.writeFileSync(getDraftPath(), JSON.stringify({ ...draftData, savedAt: new Date().toISOString(), authorEmail }, null, 2), 'utf8');
     logAuditEvent(authorEmail, 'SAVE_DRAFT', 'Builder', 'Saved visual builder draft changes');
     return true;
   } catch (e) {
@@ -59,8 +63,9 @@ export function saveBuilderDraft(draftData: any, authorEmail: string): boolean {
 
 export function getBuilderVersions(): any[] {
   try {
-    if (fs.existsSync(VERSIONS_PATH)) {
-      return JSON.parse(fs.readFileSync(VERSIONS_PATH, 'utf8'));
+    const filePath = getVersionsPath();
+    if (fs.existsSync(filePath)) {
+      return JSON.parse(fs.readFileSync(filePath, 'utf8'));
     }
   } catch (e) {
     console.error('[BuilderService] Failed to read versions', e);
@@ -72,8 +77,9 @@ export function publishBuilderContent(payload: { homepageContent: any; themeConf
   try {
     // 1. Update published homepage_content.json
     let currentContent: any = defaultHomepageContent;
-    if (fs.existsSync(HOMEPAGE_CONTENT_PATH)) {
-      currentContent = JSON.parse(fs.readFileSync(HOMEPAGE_CONTENT_PATH, 'utf8'));
+    const contentPath = getContentPath();
+    if (fs.existsSync(contentPath)) {
+      currentContent = JSON.parse(fs.readFileSync(contentPath, 'utf8'));
     }
 
     const mergedContent = {
@@ -83,7 +89,7 @@ export function publishBuilderContent(payload: { homepageContent: any; themeConf
       updatedAt: new Date().toISOString(),
     };
 
-    fs.writeFileSync(HOMEPAGE_CONTENT_PATH, JSON.stringify(mergedContent, null, 2), 'utf8');
+    fs.writeFileSync(contentPath, JSON.stringify(mergedContent, null, 2), 'utf8');
 
     // 2. Update theme config if provided
     if (payload.themeConfig) {
@@ -105,15 +111,21 @@ export function publishBuilderContent(payload: { homepageContent: any; themeConf
     };
     versions.unshift(snapshot);
     // Keep last 30 versions
-    fs.writeFileSync(VERSIONS_PATH, JSON.stringify(versions.slice(0, 30), null, 2), 'utf8');
+    fs.writeFileSync(getVersionsPath(), JSON.stringify(versions.slice(0, 30), null, 2), 'utf8');
 
     // 4. Log audit event
     logAuditEvent(authorEmail, 'PUBLISH_STOREFRONT', 'Builder', `Published website layout v${newVersionNumber}: ${snapshot.summary}`);
 
     // Clean up draft file
-    if (fs.existsSync(DRAFT_PATH)) {
-      try { fs.unlinkSync(DRAFT_PATH); } catch (e) {}
+    const draftPath = getDraftPath();
+    if (fs.existsSync(draftPath)) {
+      try { fs.unlinkSync(draftPath); } catch (e) {}
     }
+
+    // Instant Next.js Cache Invalidation
+    try {
+      revalidatePath('/', 'layout');
+    } catch (e) {}
 
     return true;
   } catch (e) {
@@ -130,7 +142,7 @@ export function rollbackBuilderVersion(versionId: string, authorEmail: string): 
 
     // Restore content
     if (target.homepageContent) {
-      fs.writeFileSync(HOMEPAGE_CONTENT_PATH, JSON.stringify(target.homepageContent, null, 2), 'utf8');
+      fs.writeFileSync(getContentPath(), JSON.stringify(target.homepageContent, null, 2), 'utf8');
     }
     // Restore theme
     if (target.themeConfig) {
@@ -138,6 +150,12 @@ export function rollbackBuilderVersion(versionId: string, authorEmail: string): 
     }
 
     logAuditEvent(authorEmail, 'ROLLBACK_VERSION', 'Builder', `Rolled back website to version ${target.version} (${target.timestamp})`);
+
+    // Instant Next.js Cache Invalidation
+    try {
+      revalidatePath('/', 'layout');
+    } catch (e) {}
+
     return true;
   } catch (e) {
     console.error('[BuilderService] Failed to rollback version', e);

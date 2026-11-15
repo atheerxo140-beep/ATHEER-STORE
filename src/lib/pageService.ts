@@ -1,13 +1,15 @@
 import fs from 'fs';
 import path from 'path';
 import { CustomPage } from '@/types';
+import { getStoreFilePath } from '@/lib/storePath';
 
-const STORE_PATH = path.join(process.cwd(), 'src', 'data', 'pages_store.json');
+const getStorePath = () => getStoreFilePath('pages_store.json');
 
 export function getAllPages(): CustomPage[] {
   try {
-    if (fs.existsSync(STORE_PATH)) {
-      const data = fs.readFileSync(STORE_PATH, 'utf8');
+    const filePath = getStorePath();
+    if (fs.existsSync(filePath)) {
+      const data = fs.readFileSync(filePath, 'utf8');
       return JSON.parse(data);
     }
   } catch (e) {
@@ -52,7 +54,7 @@ export function savePage(pageData: Partial<CustomPage> & { titleEn: string; titl
   }
 
   try {
-    fs.writeFileSync(STORE_PATH, JSON.stringify(pages, null, 2), 'utf8');
+    fs.writeFileSync(getStorePath(), JSON.stringify(pages, null, 2), 'utf8');
   } catch (e) {
     console.error('[PageService] Failed to write pages store', e);
   }
@@ -66,7 +68,7 @@ export function deletePage(id: string): boolean {
   if (filtered.length === pages.length) return false;
 
   try {
-    fs.writeFileSync(STORE_PATH, JSON.stringify(filtered, null, 2), 'utf8');
+    fs.writeFileSync(getStorePath(), JSON.stringify(filtered, null, 2), 'utf8');
     return true;
   } catch (e) {
     console.error('[PageService] Failed to delete page', e);

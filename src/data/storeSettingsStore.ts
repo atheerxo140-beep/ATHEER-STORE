@@ -4,15 +4,23 @@ import path from 'path';
 import { getSupabaseServer, isSupabaseConfigured } from '@/lib/supabaseServer';
 import { defaultStoreSettings } from './defaultStoreSettings';
 import { cleanMojibake } from '@/lib/encodingUtils';
+import { getStoreFilePath } from '@/lib/storePath';
 
 export { defaultStoreSettings };
 
-const JSON_PATH = path.join(process.cwd(), 'src', 'data', 'store_settings.json');
+function getSettingsJsonPath(): string {
+  try {
+    return getStoreFilePath('store_settings.json');
+  } catch (e) {
+    return path.join(process.cwd(), 'src', 'data', 'store_settings.json');
+  }
+}
 
 function loadLocalSettings(): StoreSettings {
   try {
-    if (fs.existsSync(JSON_PATH)) {
-      const data = fs.readFileSync(JSON_PATH, 'utf8');
+    const filePath = getSettingsJsonPath();
+    if (fs.existsSync(filePath)) {
+      const data = fs.readFileSync(filePath, 'utf8');
       const parsed = JSON.parse(data);
       if (parsed && (parsed.storeNameEn || parsed.whatsappNumber)) {
         return { ...defaultStoreSettings, ...parsed };
@@ -26,7 +34,8 @@ function loadLocalSettings(): StoreSettings {
 
 function persistLocalSettings(settings: StoreSettings) {
   try {
-    fs.writeFileSync(JSON_PATH, JSON.stringify(settings, null, 2), 'utf8');
+    const filePath = getSettingsJsonPath();
+    fs.writeFileSync(filePath, JSON.stringify(settings, null, 2), 'utf8');
   } catch (err) {
     console.warn('[StoreSettingsStore] Notice: read-only filesystem on serverless runtime.');
   }
@@ -137,7 +146,7 @@ export const updateStoreSettings = async (
     const supabase = getSupabaseServer();
     if (supabase) {
       try {
-        await supabase
+        const updatePromise = supabase
           .from('store_settings')
           .update({
             store_name_en: updated.storeNameEn,
@@ -152,6 +161,9 @@ export const updateStoreSettings = async (
             updated_at: new Date().toISOString(),
           })
           .eq('id', 'main_settings');
+
+        const timeoutPromise = new Promise((resolve) => setTimeout(resolve, 1500));
+        await Promise.race([updatePromise, timeoutPromise]);
       } catch (err) {
         console.warn('[StoreSettingsStore] Cloud update fallback:', err);
       }

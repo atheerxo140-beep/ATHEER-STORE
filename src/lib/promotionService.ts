@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { getStoreFilePath } from '@/lib/storePath';
 
 export interface PromotionRule {
   id: string;
@@ -21,12 +22,19 @@ export interface PromotionRule {
   timesUsed: number;
 }
 
-const STORE_PATH = path.join(process.cwd(), 'src', 'data', 'promotions_store.json');
+function getPromotionsStorePath(): string {
+  try {
+    return getStoreFilePath('promotions_store.json');
+  } catch (e) {
+    return path.join(process.cwd(), 'src', 'data', 'promotions_store.json');
+  }
+}
 
 function readPromotions(): PromotionRule[] {
   try {
-    if (fs.existsSync(STORE_PATH)) {
-      return JSON.parse(fs.readFileSync(STORE_PATH, 'utf8'));
+    const storePath = getPromotionsStorePath();
+    if (fs.existsSync(storePath)) {
+      return JSON.parse(fs.readFileSync(storePath, 'utf8'));
     }
   } catch (e) {
     console.error('[promotionService] Error reading promotions:', e);
@@ -36,7 +44,8 @@ function readPromotions(): PromotionRule[] {
 
 function writePromotions(promos: PromotionRule[]) {
   try {
-    fs.writeFileSync(STORE_PATH, JSON.stringify(promos, null, 2), 'utf8');
+    const storePath = getPromotionsStorePath();
+    fs.writeFileSync(storePath, JSON.stringify(promos, null, 2), 'utf8');
   } catch (e) {
     console.error('[promotionService] Error writing promotions:', e);
   }

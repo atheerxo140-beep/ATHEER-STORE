@@ -2,6 +2,7 @@ import { StoredOrder } from '@/data/localOrdersStore';
 import { normalizeWhatsAppNumber } from '@/lib/whatsappUtils';
 import fs from 'fs';
 import path from 'path';
+import { getStoreFilePath } from '@/lib/storePath';
 
 export interface WhatsAppGatewayConfig {
   provider: 'callmebot' | 'ultramsg' | 'custom_webhook' | 'none';
@@ -11,7 +12,13 @@ export interface WhatsAppGatewayConfig {
   customWebhookUrl?: string;
 }
 
-const GATEWAY_CONFIG_PATH = path.join(process.cwd(), 'src', 'data', 'whatsapp_gateway.json');
+function getGatewayConfigPath(): string {
+  try {
+    return getStoreFilePath('whatsapp_gateway.json');
+  } catch (e) {
+    return path.join(process.cwd(), 'src', 'data', 'whatsapp_gateway.json');
+  }
+}
 
 export function getWhatsAppGatewayConfig(): WhatsAppGatewayConfig {
   // Check env vars first
@@ -32,8 +39,9 @@ export function getWhatsAppGatewayConfig(): WhatsAppGatewayConfig {
 
   // Check persistent JSON file
   try {
-    if (fs.existsSync(GATEWAY_CONFIG_PATH)) {
-      const data = fs.readFileSync(GATEWAY_CONFIG_PATH, 'utf8');
+    const configPath = getGatewayConfigPath();
+    if (fs.existsSync(configPath)) {
+      const data = fs.readFileSync(configPath, 'utf8');
       const parsed = JSON.parse(data);
       if (parsed) return parsed;
     }
@@ -46,7 +54,8 @@ export function getWhatsAppGatewayConfig(): WhatsAppGatewayConfig {
 
 export function saveWhatsAppGatewayConfig(config: WhatsAppGatewayConfig): void {
   try {
-    fs.writeFileSync(GATEWAY_CONFIG_PATH, JSON.stringify(config, null, 2), 'utf8');
+    const configPath = getGatewayConfigPath();
+    fs.writeFileSync(configPath, JSON.stringify(config, null, 2), 'utf8');
   } catch (e) {
     console.warn('[WhatsAppGateway] Notice: read-only filesystem on serverless.');
   }

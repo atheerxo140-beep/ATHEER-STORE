@@ -1,8 +1,9 @@
 import fs from 'fs';
 import path from 'path';
 import { ThemeConfig } from '@/types';
+import { getStoreFilePath } from '@/lib/storePath';
 
-const STORE_PATH = path.join(process.cwd(), 'src', 'data', 'theme_store.json');
+const getStorePath = () => getStoreFilePath('theme_store.json');
 
 export const defaultThemeConfig: ThemeConfig = {
   brandGold: '#C5A880',
@@ -38,8 +39,9 @@ export const defaultThemeConfig: ThemeConfig = {
 
 export function getThemeConfig(): ThemeConfig {
   try {
-    if (fs.existsSync(STORE_PATH)) {
-      const data = fs.readFileSync(STORE_PATH, 'utf8');
+    const filePath = getStorePath();
+    if (fs.existsSync(filePath)) {
+      const data = fs.readFileSync(filePath, 'utf8');
       return { ...defaultThemeConfig, ...JSON.parse(data) };
     }
   } catch (e) {
@@ -52,7 +54,7 @@ export function updateThemeConfig(updates: Partial<ThemeConfig>): ThemeConfig {
   try {
     const current = getThemeConfig();
     const updated = { ...current, ...updates };
-    fs.writeFileSync(STORE_PATH, JSON.stringify(updated, null, 2), 'utf8');
+    fs.writeFileSync(getStorePath(), JSON.stringify(updated, null, 2), 'utf8');
     return updated;
   } catch (e) {
     console.error('[ThemeService] Failed to update theme config', e);

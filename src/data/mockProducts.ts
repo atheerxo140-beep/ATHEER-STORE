@@ -3,19 +3,25 @@ import { getSupabaseServer, isSupabaseConfigured } from '@/lib/supabaseServer';
 import { cleanMojibake } from '@/lib/encodingUtils';
 import fs from 'fs';
 import path from 'path';
+import { getStoreFilePath } from '@/lib/storePath';
 
-const PRODUCTS_JSON_PATH =
-  typeof process !== 'undefined' && typeof process.cwd === 'function' && path?.join
-    ? path.join(process.cwd(), 'src', 'data', 'products_store.json')
-    : '';
+function getProductsJsonPath(): string {
+  if (typeof window !== 'undefined') return '';
+  try {
+    return getStoreFilePath('products_store.json');
+  } catch (e) {
+    return path.join(process.cwd(), 'src', 'data', 'products_store.json');
+  }
+}
 
 function loadProductsFromDisk(): Product[] {
-  if (typeof window !== 'undefined' || !fs || !fs.existsSync || !PRODUCTS_JSON_PATH) {
+  const filePath = getProductsJsonPath();
+  if (typeof window !== 'undefined' || !fs || !fs.existsSync || !filePath) {
     return [...mockProducts];
   }
   try {
-    if (fs.existsSync(PRODUCTS_JSON_PATH)) {
-      const data = fs.readFileSync(PRODUCTS_JSON_PATH, 'utf8');
+    if (fs.existsSync(filePath)) {
+      const data = fs.readFileSync(filePath, 'utf8');
       const parsed = JSON.parse(data);
       if (Array.isArray(parsed) && parsed.length > 0) {
         return parsed;
@@ -28,11 +34,12 @@ function loadProductsFromDisk(): Product[] {
 }
 
 function persistProductsToDisk(products: Product[]): void {
-  if (typeof window !== 'undefined' || !fs || !fs.writeFileSync || !PRODUCTS_JSON_PATH) {
+  const filePath = getProductsJsonPath();
+  if (typeof window !== 'undefined' || !fs || !fs.writeFileSync || !filePath) {
     return;
   }
   try {
-    fs.writeFileSync(PRODUCTS_JSON_PATH, JSON.stringify(products, null, 2), 'utf8');
+    fs.writeFileSync(filePath, JSON.stringify(products, null, 2), 'utf8');
   } catch (err) {
     console.warn('[ProductsStore] Notice: Could not write products to disk');
   }
@@ -241,7 +248,8 @@ globalForProducts.currentProducts = currentProducts;
 
 // Ensure local JSON exists initially
 try {
-  if (typeof window === 'undefined' && fs?.existsSync && PRODUCTS_JSON_PATH && !fs.existsSync(PRODUCTS_JSON_PATH)) {
+  const p = getProductsJsonPath();
+  if (typeof window === 'undefined' && fs?.existsSync && p && !fs.existsSync(p)) {
     persistProductsToDisk(currentProducts);
   }
 } catch (e) {}

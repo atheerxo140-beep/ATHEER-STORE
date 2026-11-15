@@ -1,6 +1,7 @@
 import { Coupon } from '@/types';
 import fs from 'fs';
 import path from 'path';
+import { getStoreFilePath } from '@/lib/storePath';
 
 export const defaultCoupons: Coupon[] = [
   {
@@ -38,18 +39,23 @@ export const defaultCoupons: Coupon[] = [
   },
 ];
 
-const COUPONS_JSON_PATH =
-  typeof process !== 'undefined' && typeof process.cwd === 'function' && path?.join
-    ? path.join(process.cwd(), 'src', 'data', 'coupons_store.json')
-    : '';
+function getCouponsJsonPath(): string {
+  if (typeof window !== 'undefined') return '';
+  try {
+    return getStoreFilePath('coupons_store.json');
+  } catch (e) {
+    return path.join(process.cwd(), 'src', 'data', 'coupons_store.json');
+  }
+}
 
 function loadCouponsFromDisk(): Coupon[] {
-  if (typeof window !== 'undefined' || !fs || !fs.existsSync || !COUPONS_JSON_PATH) {
+  const filePath = getCouponsJsonPath();
+  if (typeof window !== 'undefined' || !fs || !fs.existsSync || !filePath) {
     return [...defaultCoupons];
   }
   try {
-    if (fs.existsSync(COUPONS_JSON_PATH)) {
-      const data = fs.readFileSync(COUPONS_JSON_PATH, 'utf8');
+    if (fs.existsSync(filePath)) {
+      const data = fs.readFileSync(filePath, 'utf8');
       const parsed = JSON.parse(data);
       if (Array.isArray(parsed) && parsed.length > 0) {
         return parsed;
@@ -62,11 +68,12 @@ function loadCouponsFromDisk(): Coupon[] {
 }
 
 function persistCouponsToDisk(coupons: Coupon[]): void {
-  if (typeof window !== 'undefined' || !fs || !fs.writeFileSync || !COUPONS_JSON_PATH) {
+  const filePath = getCouponsJsonPath();
+  if (typeof window !== 'undefined' || !fs || !fs.writeFileSync || !filePath) {
     return;
   }
   try {
-    fs.writeFileSync(COUPONS_JSON_PATH, JSON.stringify(coupons, null, 2), 'utf8');
+    fs.writeFileSync(filePath, JSON.stringify(coupons, null, 2), 'utf8');
   } catch (err) {
     console.warn('[CouponsStore] Notice: Could not write coupons to disk');
   }
@@ -77,7 +84,8 @@ export const currentCoupons: Coupon[] = globalForCoupons.currentCoupons || loadC
 globalForCoupons.currentCoupons = currentCoupons;
 
 try {
-  if (typeof window === 'undefined' && fs?.existsSync && COUPONS_JSON_PATH && !fs.existsSync(COUPONS_JSON_PATH)) {
+  const p = getCouponsJsonPath();
+  if (typeof window === 'undefined' && fs?.existsSync && p && !fs.existsSync(p)) {
     persistCouponsToDisk(currentCoupons);
   }
 } catch (e) {}

@@ -4,15 +4,17 @@ import path from 'path';
 import { getSupabaseServer, isSupabaseConfigured } from '@/lib/supabaseServer';
 import { defaultHomepageContent } from './defaultHomepageContent';
 import { cleanMojibake } from '@/lib/encodingUtils';
+import { getStoreFilePath } from '@/lib/storePath';
 
 export { defaultHomepageContent };
 
-const JSON_PATH = path.join(process.cwd(), 'src', 'data', 'homepage_content.json');
+const getJsonPath = () => getStoreFilePath('homepage_content.json');
 
 function loadLocalContent(): HomepageContent {
   try {
-    if (fs.existsSync(JSON_PATH)) {
-      const data = fs.readFileSync(JSON_PATH, 'utf8');
+    const filePath = getJsonPath();
+    if (fs.existsSync(filePath)) {
+      const data = fs.readFileSync(filePath, 'utf8');
       const parsed = JSON.parse(data);
       if (parsed && parsed.heroTitleEn) {
         return { ...defaultHomepageContent, ...parsed };
@@ -26,10 +28,10 @@ function loadLocalContent(): HomepageContent {
 
 function persistLocalContent(content: HomepageContent) {
   try {
-    fs.writeFileSync(JSON_PATH, JSON.stringify(content, null, 2), 'utf8');
+    const filePath = getJsonPath();
+    fs.writeFileSync(filePath, JSON.stringify(content, null, 2), 'utf8');
   } catch (err) {
-    // Read-only filesystem on Vercel is expected and safe
-    console.warn('[HomepageContentStore] Notice: read-only filesystem on serverless runtime.');
+    console.warn('[HomepageContentStore] Notice: read-only filesystem on serverless runtime.', err);
   }
 }
 

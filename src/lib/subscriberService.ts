@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { getStoreFilePath } from '@/lib/storePath';
 
 export interface Subscriber {
   id: string;
@@ -9,12 +10,19 @@ export interface Subscriber {
   isActive: boolean;
 }
 
-const STORE_PATH = path.join(process.cwd(), 'src', 'data', 'subscribers_store.json');
+function getSubscribersStorePath(): string {
+  try {
+    return getStoreFilePath('subscribers_store.json');
+  } catch (e) {
+    return path.join(process.cwd(), 'src', 'data', 'subscribers_store.json');
+  }
+}
 
 function readSubscribers(): Subscriber[] {
   try {
-    if (fs.existsSync(STORE_PATH)) {
-      return JSON.parse(fs.readFileSync(STORE_PATH, 'utf8'));
+    const storePath = getSubscribersStorePath();
+    if (fs.existsSync(storePath)) {
+      return JSON.parse(fs.readFileSync(storePath, 'utf8'));
     }
   } catch (e) {
     console.error('[subscriberService] Error reading subscribers:', e);
@@ -24,7 +32,8 @@ function readSubscribers(): Subscriber[] {
 
 function writeSubscribers(subs: Subscriber[]) {
   try {
-    fs.writeFileSync(STORE_PATH, JSON.stringify(subs, null, 2), 'utf8');
+    const storePath = getSubscribersStorePath();
+    fs.writeFileSync(storePath, JSON.stringify(subs, null, 2), 'utf8');
   } catch (e) {
     console.error('[subscriberService] Error writing subscribers:', e);
   }

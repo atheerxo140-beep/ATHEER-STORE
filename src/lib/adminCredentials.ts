@@ -1,6 +1,15 @@
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
+import { getStoreFilePath } from '@/lib/storePath';
+
+function getCredentialsJsonPath(): string {
+  try {
+    return getStoreFilePath('admin_credentials.json');
+  } catch (e) {
+    return path.join(process.cwd(), 'src', 'data', 'admin_credentials.json');
+  }
+}
 
 function getEnvPath(): string {
   const candidates = [
@@ -67,6 +76,15 @@ export function getAdminEmail(): string {
     return process.env.ADMIN_EMAIL.trim();
   }
 
+  // Check persisted JSON first for serverless
+  try {
+    const credPath = getCredentialsJsonPath();
+    if (fs.existsSync(credPath)) {
+      const data = JSON.parse(fs.readFileSync(credPath, 'utf8'));
+      if (data && data.email) return data.email.trim();
+    }
+  } catch (e) {}
+
   // Try reading from .env.local
   const envPath = getEnvPath();
   if (fs.existsSync(envPath)) {
@@ -88,6 +106,15 @@ export function getAdminEmail(): string {
  * Get current configured admin password hash / value
  */
 export function getAdminPasswordHash(): string | null {
+  // Check persisted JSON first for serverless
+  try {
+    const credPath = getCredentialsJsonPath();
+    if (fs.existsSync(credPath)) {
+      const data = JSON.parse(fs.readFileSync(credPath, 'utf8'));
+      if (data && data.passwordHash) return data.passwordHash.trim();
+    }
+  } catch (e) {}
+
   // Prefer process.env only if it contains the full hash with delimiter
   if (process.env.ADMIN_PASSWORD_HASH && (process.env.ADMIN_PASSWORD_HASH.includes(':') || process.env.ADMIN_PASSWORD_HASH.includes('$'))) {
     return process.env.ADMIN_PASSWORD_HASH.trim();
@@ -134,32 +161,52 @@ export function setAdminCredentials(newEmail: string, newPassword?: string): voi
     process.env.ADMIN_PASSWORD_HASH = passwordHash;
   }
 
-  const envPath = getEnvPath();
-  if (!fs.existsSync(envPath)) {
-    fs.writeFileSync(envPath, '', 'utf8');
-  }
-
-  let envContent = fs.readFileSync(envPath, 'utf8');
-
-  // Update or insert ADMIN_EMAIL
-  if (envContent.match(/^ADMIN_EMAIL=/m)) {
-    envContent = envContent.replace(/^ADMIN_EMAIL=[^\r\n]*/m, `ADMIN_EMAIL=${cleanEmail}`);
-  } else {
-    envContent += `\nADMIN_EMAIL=${cleanEmail}`;
-  }
-
-  // Update or insert ADMIN_PASSWORD_HASH
-  if (passwordHash) {
-    if (envContent.match(/^ADMIN_PASSWORD_HASH=/m)) {
-      envContent = envContent.replace(/^ADMIN_PASSWORD_HASH=[^\r\n]*/m, `ADMIN_PASSWORD_HASH=${passwordHash}`);
-    } else {
-      envContent += `\nADMIN_PASSWORD_HASH=${passwordHash}`;
+  // Write to JSON store for serverless resilience
+  try {
+    const credPath = getCredentialsJsonPath();
+    let currentData: any = {};
+    if (fs.existsSync(credPath)) {
+      try {
+        currentData = JSON.parse(fs.readFileSync(credPath, 'utf8'));
+      } catch (e) {}
     }
-    // Remove obsolete plain text ADMIN_PASSWORD if present
-    envContent = envContent.replace(/^ADMIN_PASSWORD=[^\r\n]*[\r\n]?/m, '');
-  }
+    currentData.email = cleanEmail;
+    if (passwordHash) {
+      currentData.passwordHash = passwordHash;
+    }
+    fs.writeFileSync(credPath, JSON.stringify(currentData, null, 2), 'utf8');
+  } catch (e) {}
 
-  fs.writeFileSync(envPath, envContent.trim() + '\n', 'utf8');
+  try {
+    const envPath = getEnvPath();
+    if (!fs.existsSync(envPath)) {
+      fs.writeFileSync(envPath, '', 'utf8');
+    }
+
+    let envContent = fs.readFileSync(envPath, 'utf8');
+
+    // Update or insert ADMIN_EMAIL
+    if (envContent.match(/^ADMIN_EMAIL=/m)) {
+      envContent = envContent.replace(/^ADMIN_EMAIL=[^\r\n]*/m, `ADMIN_EMAIL=${cleanEmail}`);
+    } else {
+      envContent += `\nADMIN_EMAIL=${cleanEmail}`;
+    }
+
+    // Update or insert ADMIN_PASSWORD_HASH
+    if (passwordHash) {
+      if (envContent.match(/^ADMIN_PASSWORD_HASH=/m)) {
+        envContent = envContent.replace(/^ADMIN_PASSWORD_HASH=[^\r\n]*/m, `ADMIN_PASSWORD_HASH=${passwordHash}`);
+      } else {
+        envContent += `\nADMIN_PASSWORD_HASH=${passwordHash}`;
+      }
+      // Remove obsolete plain text ADMIN_PASSWORD if present
+      envContent = envContent.replace(/^ADMIN_PASSWORD=[^\r\n]*[\r\n]?/m, '');
+    }
+
+    fs.writeFileSync(envPath, envContent.trim() + '\n', 'utf8');
+  } catch (e) {
+    console.warn('[AdminCredentials] Notice: Could not write .env.local (serverless runtime)');
+  }
 }
 
 const TOKEN_SECRET = process.env.SUPABASE_SECRET_KEY || 'atheer-store-super-secret-key-2026';

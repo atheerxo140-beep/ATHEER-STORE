@@ -4,10 +4,17 @@ import path from 'path';
 import { verifyAdminRequest } from '@/lib/adminAuth';
 import { getAllLocalOrders } from '@/data/localOrdersStore';
 import { getAllLoyaltyAccounts } from '@/lib/loyaltyService';
+import { getStoreFilePath } from '@/lib/storePath';
 
 export const dynamic = 'force-dynamic';
 
-const CUSTOMERS_PATH = path.join(process.cwd(), 'src', 'data', 'customers_store.json');
+function getCustomersStorePath(): string {
+  try {
+    return getStoreFilePath('customers_store.json');
+  } catch (e) {
+    return path.join(process.cwd(), 'src', 'data', 'customers_store.json');
+  }
+}
 
 export async function GET(req: NextRequest) {
   const auth = await verifyAdminRequest(req);
@@ -17,8 +24,9 @@ export async function GET(req: NextRequest) {
 
   try {
     let registeredCustomers: any[] = [];
-    if (fs.existsSync(CUSTOMERS_PATH)) {
-      registeredCustomers = JSON.parse(fs.readFileSync(CUSTOMERS_PATH, 'utf8'));
+    const custPath = getCustomersStorePath();
+    if (fs.existsSync(custPath)) {
+      registeredCustomers = JSON.parse(fs.readFileSync(custPath, 'utf8'));
     }
 
     const allOrders = getAllLocalOrders();

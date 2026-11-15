@@ -1,13 +1,15 @@
 import fs from 'fs';
 import path from 'path';
 import { AuditLog } from '@/types';
+import { getStoreFilePath } from '@/lib/storePath';
 
-const STORE_PATH = path.join(process.cwd(), 'src', 'data', 'audit_logs_store.json');
+const getStorePath = () => getStoreFilePath('audit_logs_store.json');
 
 export function getAuditLogs(): AuditLog[] {
   try {
-    if (fs.existsSync(STORE_PATH)) {
-      const data = fs.readFileSync(STORE_PATH, 'utf8');
+    const filePath = getStorePath();
+    if (fs.existsSync(filePath)) {
+      const data = fs.readFileSync(filePath, 'utf8');
       return JSON.parse(data);
     }
   } catch (e) {
@@ -31,7 +33,7 @@ export function logAuditEvent(actorEmail: string, action: string, section: strin
     logs.unshift(newLog);
     // Keep last 500 audit logs to prevent unbounded growth
     const trimmed = logs.slice(0, 500);
-    fs.writeFileSync(STORE_PATH, JSON.stringify(trimmed, null, 2), 'utf8');
+    fs.writeFileSync(getStorePath(), JSON.stringify(trimmed, null, 2), 'utf8');
   } catch (e) {
     console.error('[AuditService] Failed to record audit log', e);
   }

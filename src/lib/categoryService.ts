@@ -1,13 +1,15 @@
 import fs from 'fs';
 import path from 'path';
 import { CategoryItem } from '@/types';
+import { getStoreFilePath } from '@/lib/storePath';
 
-const STORE_PATH = path.join(process.cwd(), 'src', 'data', 'categories_store.json');
+const getStorePath = () => getStoreFilePath('categories_store.json');
 
 export function getAllCategories(): CategoryItem[] {
   try {
-    if (fs.existsSync(STORE_PATH)) {
-      const data = fs.readFileSync(STORE_PATH, 'utf8');
+    const filePath = getStorePath();
+    if (fs.existsSync(filePath)) {
+      const data = fs.readFileSync(filePath, 'utf8');
       return JSON.parse(data);
     }
   } catch (e) {
@@ -43,7 +45,7 @@ export function saveCategory(catData: Partial<CategoryItem> & { nameEn: string; 
   }
 
   try {
-    fs.writeFileSync(STORE_PATH, JSON.stringify(categories, null, 2), 'utf8');
+    fs.writeFileSync(getStorePath(), JSON.stringify(categories, null, 2), 'utf8');
   } catch (e) {
     console.error('[CategoryService] Failed to write categories', e);
   }
@@ -57,7 +59,7 @@ export function deleteCategory(id: string): boolean {
   if (filtered.length === categories.length) return false;
 
   try {
-    fs.writeFileSync(STORE_PATH, JSON.stringify(filtered, null, 2), 'utf8');
+    fs.writeFileSync(getStorePath(), JSON.stringify(filtered, null, 2), 'utf8');
     return true;
   } catch (e) {
     console.error('[CategoryService] Failed to delete category', e);

@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { getStoreFilePath } from '@/lib/storePath';
 
 export type StaffRole = 'owner' | 'admin' | 'order_manager' | 'inventory_manager' | 'marketing_manager';
 
@@ -13,7 +14,13 @@ export interface StaffMember {
   createdAt: string;
 }
 
-const STORE_PATH = path.join(process.cwd(), 'src', 'data', 'staff_store.json');
+function getStaffStorePath(): string {
+  try {
+    return getStoreFilePath('staff_store.json');
+  } catch (e) {
+    return path.join(process.cwd(), 'src', 'data', 'staff_store.json');
+  }
+}
 
 const DEFAULT_STAFF: StaffMember[] = [
   {
@@ -38,8 +45,9 @@ const DEFAULT_STAFF: StaffMember[] = [
 
 function readStaff(): StaffMember[] {
   try {
-    if (fs.existsSync(STORE_PATH)) {
-      return JSON.parse(fs.readFileSync(STORE_PATH, 'utf8'));
+    const storePath = getStaffStorePath();
+    if (fs.existsSync(storePath)) {
+      return JSON.parse(fs.readFileSync(storePath, 'utf8'));
     }
   } catch (e) {
     console.error('[staffService] Error reading staff:', e);
@@ -49,7 +57,8 @@ function readStaff(): StaffMember[] {
 
 function writeStaff(staff: StaffMember[]) {
   try {
-    fs.writeFileSync(STORE_PATH, JSON.stringify(staff, null, 2), 'utf8');
+    const storePath = getStaffStorePath();
+    fs.writeFileSync(storePath, JSON.stringify(staff, null, 2), 'utf8');
   } catch (e) {
     console.error('[staffService] Error writing staff:', e);
   }

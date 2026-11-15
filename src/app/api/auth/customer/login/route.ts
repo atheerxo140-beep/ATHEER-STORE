@@ -1,15 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
+import { getStoreFilePath } from '@/lib/storePath';
 
 export const dynamic = 'force-dynamic';
 
-const STORE_PATH = path.join(process.cwd(), 'src', 'data', 'customers_store.json');
+function getCustomersStorePath(): string {
+  try {
+    return getStoreFilePath('customers_store.json');
+  } catch (e) {
+    return path.join(process.cwd(), 'src', 'data', 'customers_store.json');
+  }
+}
 
 function getCustomers(): any[] {
   try {
-    if (fs.existsSync(STORE_PATH)) {
-      return JSON.parse(fs.readFileSync(STORE_PATH, 'utf8'));
+    const storePath = getCustomersStorePath();
+    if (fs.existsSync(storePath)) {
+      return JSON.parse(fs.readFileSync(storePath, 'utf8'));
     }
   } catch (e) {
     console.error('Error reading customers store', e);
@@ -48,7 +56,7 @@ export async function POST(req: NextRequest) {
       };
       customers.push(customer);
       try {
-        fs.writeFileSync(STORE_PATH, JSON.stringify(customers, null, 2), 'utf8');
+        fs.writeFileSync(getCustomersStorePath(), JSON.stringify(customers, null, 2), 'utf8');
       } catch (e) {}
     }
 
