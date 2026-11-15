@@ -14,23 +14,56 @@ function getProductsJsonPath(): string {
   }
 }
 
+function getDeletedProductIdsPath(): string {
+  if (typeof window !== 'undefined') return '';
+  try {
+    return getStoreFilePath('deleted_product_ids.json');
+  } catch (e) {
+    return path.join(process.cwd(), 'src', 'data', 'deleted_product_ids.json');
+  }
+}
+
+export function getDeletedProductIds(): Set<string> {
+  if (typeof window !== 'undefined' || !fs || !fs.existsSync) return new Set();
+  try {
+    const p = getDeletedProductIdsPath();
+    if (p && fs.existsSync(p)) {
+      const data = JSON.parse(fs.readFileSync(p, 'utf8'));
+      if (Array.isArray(data)) return new Set(data);
+    }
+  } catch (e) {}
+  return new Set();
+}
+
+export function recordDeletedProductId(id: string): void {
+  if (typeof window !== 'undefined' || !fs || !fs.writeFileSync) return;
+  try {
+    const p = getDeletedProductIdsPath();
+    if (!p) return;
+    const set = getDeletedProductIds();
+    set.add(id);
+    fs.writeFileSync(p, JSON.stringify(Array.from(set), null, 2), 'utf8');
+  } catch (e) {}
+}
+
 function loadProductsFromDisk(): Product[] {
   const filePath = getProductsJsonPath();
+  const deletedIds = getDeletedProductIds();
   if (typeof window !== 'undefined' || !fs || !fs.existsSync || !filePath) {
-    return [...mockProducts];
+    return mockProducts.filter((p) => !deletedIds.has(p.id));
   }
   try {
     if (fs.existsSync(filePath)) {
       const data = fs.readFileSync(filePath, 'utf8');
       const parsed = JSON.parse(data);
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        return parsed;
+      if (Array.isArray(parsed)) {
+        return parsed.filter((p: any) => !deletedIds.has(p.id));
       }
     }
   } catch (err) {
     console.error('[ProductsStore] Error reading products_store.json:', err);
   }
-  return [...mockProducts];
+  return mockProducts.filter((p) => !deletedIds.has(p.id));
 }
 
 function persistProductsToDisk(products: Product[]): void {
@@ -281,7 +314,10 @@ export const getAllProducts = async (): Promise<Product[]> => {
         lastProductSyncTime = Date.now();
 
         if (!error && dbProducts && dbProducts.length > 0) {
-          const mapped: Product[] = (dbProducts as any[]).map((p: any) => {
+          const deletedIds = getDeletedProductIds();
+          const mapped: Product[] = (dbProducts as any[])
+            .filter((p: any) => !deletedIds.has(p.id))
+            .map((p: any) => {
             const variants = p.product_variants || [];
             const sizes = Array.from(new Set(variants.map((v: any) => v.size).filter(Boolean))) as string[];
             const colors = Array.from(new Set(variants.map((v: any) => v.color).filter(Boolean))) as string[];
@@ -487,53 +523,38 @@ export const updateProduct = async (id: string, updates: Partial<Product>): Prom
 };
 
 export const deleteProduct = async (id: string): Promise<boolean> => {
+  // 1. Permanently record ID in deleted tombstones so it can never reappear
+  recordDeletedProductId(id);
+
+  // 2. Remove from Supabase if connected
   if (isSupabaseConfigured()) {
     const supabase = getSupabaseServer();
     if (supabase) {
       try {
-        // Delete child variants first to avoid FK constraint failure
         await supabase.from('product_variants').delete().eq('product_id', id);
-      } catch (vErr) {
-        // Ignore if variants table or constraint behaves differently
-      }
+      } catch (vErr) {}
 
-      // 1. First attempt to hard delete the product
-      const { error } = await supabase.from('products').delete().eq('id', id);
-      if (error) {
-        // 2. If product is linked to customer orders (foreign key constraint in order_items),
-        // gracefully archive/soft-delete it so it is permanently removed from the storefront
-        // and admin catalog without breaking past order records and receipts.
-        if (
-          error.code === '23503' ||
-          error.message?.includes('foreign key constraint') ||
-          error.message?.includes('order_items') ||
-          error.message?.includes('violates foreign key')
-        ) {
-          const { error: archiveErr } = await supabase
-            .from('products')
-            .update({ is_active: false })
-            .eq('id', id);
-
-          await supabase
-            .from('product_variants')
-            .update({ is_active: false })
-            .eq('product_id', id);
-
-          if (archiveErr) {
-            throw new Error(`Supabase product archive failed: ${archiveErr.message}`);
-          }
-        } else {
-          throw new Error(`Supabase product delete failed: ${error.message}`);
+      try {
+        const { error } = await supabase.from('products').delete().eq('id', id);
+        if (error) {
+          // If foreign key constraint or table rule prevents hard delete, soft-delete it
+          await supabase.from('products').update({ is_active: false }).eq('id', id);
+          await supabase.from('product_variants').update({ is_active: false }).eq('product_id', id);
         }
+      } catch (sbErr) {
+        console.warn('[deleteProduct] Supabase delete notice:', sbErr);
       }
     }
   }
 
+  // 3. Remove from in-memory array
   const index = currentProducts.findIndex((p) => p.id === id);
   if (index !== -1) {
     currentProducts.splice(index, 1);
-    persistProductsToDisk(currentProducts);
   }
+
+  // 4. Persist updated array to disk
+  persistProductsToDisk(currentProducts.filter((p) => p.id !== id));
 
   return true;
 };

@@ -3,6 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import { getLoyaltyAccount, getLoyaltyConfig, validateLoyaltyVoucher } from '@/lib/loyaltyService';
 import { getStoreFilePath } from '@/lib/storePath';
+import { normalizeEgyptianPhone, arePhonesEqual } from '@/lib/phoneUtils';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,10 +19,10 @@ export async function GET(req: NextRequest) {
         const storePath = getStoreFilePath('customers_store.json');
         if (fs.existsSync(storePath)) {
           const list = JSON.parse(fs.readFileSync(storePath, 'utf8'));
-          const cleanPhone = phoneParam ? phoneParam.replace(/[^0-9]/g, '') : '';
+          const normalizedPhone = phoneParam ? normalizeEgyptianPhone(phoneParam) : '';
           const found = list.find((c: any) => {
             if (customerId && c.id === customerId) return true;
-            if (cleanPhone && c.phone && c.phone.replace(/[^0-9]/g, '').endsWith(cleanPhone.slice(-10))) return true;
+            if (normalizedPhone && c.phone && arePhonesEqual(c.phone, normalizedPhone)) return true;
             return false;
           });
           if (found && found.email) email = found.email;
@@ -32,7 +33,7 @@ export async function GET(req: NextRequest) {
     }
 
     if (!email && phoneParam) {
-      email = `${phoneParam.replace(/[^0-9]/g, '')}@customer.atheer.store`;
+      email = `${normalizeEgyptianPhone(phoneParam)}@customer.atheer.store`;
     }
 
     if (!email) {

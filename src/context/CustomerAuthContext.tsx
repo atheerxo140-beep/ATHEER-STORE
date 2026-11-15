@@ -87,7 +87,7 @@ export const CustomerAuthProvider: React.FC<{ children: React.ReactNode }> = ({ 
         saveCustomer(data.customer);
         return { success: true };
       }
-      return { success: false, error: data.error || 'فشل تسجيل الدخول' };
+      return { success: false, error: data.error || 'فشل تسجيل الدخول', code: data.code };
     } catch (err: any) {
       return { success: false, error: err.message || 'خطأ في الاتصال' };
     } finally {
@@ -108,7 +108,7 @@ export const CustomerAuthProvider: React.FC<{ children: React.ReactNode }> = ({ 
         saveCustomer(resData.customer);
         return { success: true };
       }
-      return { success: false, error: resData.error || 'فشل إنشاء الحساب' };
+      return { success: false, error: resData.error || 'فشل إنشاء الحساب', code: resData.code };
     } catch (err: any) {
       return { success: false, error: err.message || 'خطأ في الاتصال' };
     } finally {

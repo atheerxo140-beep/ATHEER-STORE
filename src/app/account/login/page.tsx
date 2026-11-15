@@ -25,6 +25,7 @@ function CustomerLoginForm() {
   const [phone, setPhone] = useState('');
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [errorCode, setErrorCode] = useState<string | null>(null);
 
   const redirectUrl = explicitRedirect || (activeTab === 'register' ? '/account/loyalty' : '/account');
 
@@ -39,14 +40,16 @@ function CustomerLoginForm() {
     e.preventDefault();
     setLoading(true);
     setErrorMsg(null);
+    setErrorCode(null);
 
     try {
       if (activeTab === 'login') {
-        const res = await login(identifier || email, password);
+        const res: any = await login(identifier || email, password);
         if (res.success) {
           router.push(redirectUrl);
         } else {
           setErrorMsg(res.error || (isAr ? 'بيانات الدخول غير صحيحة' : 'Invalid login credentials'));
+          setErrorCode(res.code || null);
         }
       } else {
         if (!phone && !email) {
@@ -54,11 +57,12 @@ function CustomerLoginForm() {
           setLoading(false);
           return;
         }
-        const res = await register({ email, pass: password || '123456', fullName, phone });
+        const res: any = await register({ email, pass: password || '123456', fullName, phone });
         if (res.success) {
           router.push(redirectUrl);
         } else {
           setErrorMsg(res.error || (isAr ? 'فشل إنشاء الحساب' : 'Failed to register'));
+          setErrorCode(res.code || null);
         }
       }
     } catch (err: any) {
@@ -143,8 +147,57 @@ function CustomerLoginForm() {
           )}
 
           {errorMsg && (
-            <div className="p-3 mb-4 bg-rose-950/40 border border-rose-500/50 text-rose-400 text-xs font-mono rounded-xs">
-              {errorMsg}
+            <div className="p-3.5 mb-4 bg-rose-950/50 border border-rose-500/60 text-rose-300 text-xs font-mono rounded-xs space-y-2.5 animate-fade-in">
+              <div className="flex items-start space-x-2 rtl:space-x-reverse">
+                <span className="text-rose-400 font-bold shrink-0">✕</span>
+                <p className="leading-relaxed font-sans">{errorMsg}</p>
+              </div>
+
+              {/* Direct 1-Click Transition to Login when account already exists */}
+              {(errorCode === 'PHONE_EXISTS' || errorCode === 'EMAIL_EXISTS') && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveTab('login');
+                    setIdentifier(phone || email);
+                    setErrorMsg(null);
+                    setErrorCode(null);
+                  }}
+                  className="w-full py-2 px-3 bg-brand-gold text-brand-black text-xs font-mono font-bold uppercase rounded-xs hover:bg-brand-gold-hover transition-colors flex items-center justify-center space-x-1.5 rtl:space-x-reverse shadow-gold"
+                >
+                  <Award className="w-3.5 h-3.5" />
+                  <span>
+                    {isAr
+                      ? 'هذا الحساب موجود بالفعل — اضغط هنا لتسجيل الدخول مباشرة'
+                      : 'Account Already Exists — Click to Sign In Now'}
+                  </span>
+                </button>
+              )}
+
+              {/* Direct 1-Click Transition to Register when account not found */}
+              {errorCode === 'NOT_FOUND' && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveTab('register');
+                    if (identifier && /^[0-9+ ]+$/.test(identifier)) {
+                      setPhone(identifier);
+                    } else if (identifier) {
+                      setEmail(identifier);
+                    }
+                    setErrorMsg(null);
+                    setErrorCode(null);
+                  }}
+                  className="w-full py-2 px-3 bg-brand-gold text-brand-black text-xs font-mono font-bold uppercase rounded-xs hover:bg-brand-gold-hover transition-colors flex items-center justify-center space-x-1.5 rtl:space-x-reverse shadow-gold"
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>
+                    {isAr
+                      ? 'إنشاء حساب جديد واستلام كارت الولاء VIP بضغطة زر'
+                      : 'Create New Account & Claim VIP Pass Now'}
+                  </span>
+                </button>
+              )}
             </div>
           )}
 

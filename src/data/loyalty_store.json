@@ -46,14 +46,30 @@
       ]
     },
     {
-      "id": "loyalty-1794695609602-ojsho",
-      "customerEmail": "streetwear_1794695609529@atheer.store",
-      "stampsCount": 0,
-      "totalStampsEarned": 0,
+      "id": "loyalty-vip-01015993802",
+      "customerEmail": "01015993802@customer.atheer.store",
+      "customerName": "عميل أثير الدائم",
+      "stampsCount": 1,
+      "totalStampsEarned": 1,
       "stampsRedeemed": 0,
       "tier": "Bronze",
-      "activeVouchers": [],
-      "history": []
+      "activeVouchers": [
+        {
+          "code": "ATH-VIP-WELCOME",
+          "discountAmount": 100,
+          "isUsed": false,
+          "expiresAt": "2027-11-15T22:00:00.000Z"
+        }
+      ],
+      "history": [
+        {
+          "id": "hist-welcome-01",
+          "type": "earn",
+          "stamps": 1,
+          "date": "2026-11-15T12:00:00.000Z",
+          "notes": "ختم ترحيبي مجاني + قسيمة 100 ج.م كاش بمناسبة استلام كارت الولاء VIP"
+        }
+      ]
     }
   ]
 }

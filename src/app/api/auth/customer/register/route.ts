@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 import { getStoreFilePath } from '@/lib/storePath';
+import { normalizeEgyptianPhone, arePhonesEqual } from '@/lib/phoneUtils';
 
 export const dynamic = 'force-dynamic';
 
@@ -29,11 +30,10 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     let email = (body.email || '').trim().toLowerCase();
-    const password = body.password || body.pass || '123456';
     const fullName = (body.fullName || '').trim();
-    let phone = (body.phone || '').trim().replace(/[^0-9]/g, '');
+    const rawPhone = (body.phone || '').trim();
+    const normalizedPhone = normalizeEgyptianPhone(rawPhone);
 
-    // Allow phone-based registration if email is not provided
     if (!fullName) {
       return NextResponse.json(
         { success: false, error: 'يرجى إدخال اسمك بالكامل' },
@@ -41,49 +41,78 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (!email && !phone) {
+    if (!email && !normalizedPhone) {
       return NextResponse.json(
         { success: false, error: 'يرجى إدخال رقم هاتفك المحمول أو بريدك الإلكتروني' },
         { status: 400 }
       );
     }
 
-    // Auto-generate clean synthetic email if registered via phone
-    if (!email && phone) {
-      email = `${phone}@customer.atheer.store`;
+    // Auto-generate clean synthetic email if registered via phone only
+    const isSyntheticEmail = !email && Boolean(normalizedPhone);
+    if (isSyntheticEmail) {
+      email = `${normalizedPhone}@customer.atheer.store`;
     }
 
     const customers = getCustomers();
 
-    // Check if customer exists by email or phone
-    let customer = customers.find((c) => {
-      if (email && c.email && c.email.toLowerCase() === email) return true;
-      if (phone && c.phone && c.phone.replace(/[^0-9]/g, '') === phone) return true;
-      return false;
-    });
-
-    if (customer) {
-      customer.fullName = fullName;
-      if (phone) customer.phone = phone;
-    } else {
-      customer = {
-        id: `cust-${Date.now()}`,
-        email,
-        fullName,
-        phone: phone || '',
-        preferredLanguage: 'ar',
-        tier: 'Bronze',
-        addresses: [],
-        createdAt: new Date().toISOString(),
-      };
-      customers.push(customer);
+    // 1. Check if phone is already registered with any customer
+    if (normalizedPhone) {
+      const existingByPhone = customers.find(
+        (c) => c.phone && arePhonesEqual(c.phone, normalizedPhone)
+      );
+      if (existingByPhone) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: 'رقم الهاتف هذا مسجل بالفعل لدينا. يرجى تسجيل الدخول بحسابك مباشرة للمحافظة على كارت الولاء والمكافآت الخاصة بك.',
+            code: 'PHONE_EXISTS',
+            existingPhone: normalizedPhone,
+          },
+          { status: 409 }
+        );
+      }
     }
+
+    // 2. Check if real email is already registered
+    if (!isSyntheticEmail && email) {
+      const existingByEmail = customers.find(
+        (c) => c.email && c.email.toLowerCase() === email
+      );
+      if (existingByEmail) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: 'هذا البريد الإلكتروني مسجل بالفعل لدينا. يرجى تسجيل الدخول بحسابك مباشرة للمحافظة على كارت الولاء والمكافآت الخاصة بك.',
+            code: 'EMAIL_EXISTS',
+            existingEmail: email,
+          },
+          { status: 409 }
+        );
+      }
+    }
+
+    // 3. Create fresh new customer
+    const newCustomer = {
+      id: `cust-${Date.now()}`,
+      email,
+      fullName,
+      phone: normalizedPhone,
+      preferredLanguage: 'ar',
+      tier: 'Bronze',
+      addresses: [],
+      createdAt: new Date().toISOString(),
+    };
+
+    customers.push(newCustomer);
 
     try {
       fs.writeFileSync(getCustomersStorePath(), JSON.stringify(customers, null, 2), 'utf8');
-    } catch (e) {}
+    } catch (e) {
+      console.error('Error writing to customers store', e);
+    }
 
-    // Initialize loyalty account with welcome perks
+    // 4. Initialize loyalty account with welcome perks and 1 stamp
     try {
       const { getLoyaltyAccount } = await import('@/lib/loyaltyService');
       getLoyaltyAccount(email, fullName);
@@ -93,7 +122,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      customer,
+      customer: newCustomer,
       message: 'تم إنشاء الحساب وتفعيل كارت الولاء بنجاح',
     });
   } catch (err: any) {

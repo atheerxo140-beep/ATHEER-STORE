@@ -56,7 +56,7 @@ export const Header: React.FC = () => {
     fetch('/api/products', { cache: 'no-store' })
       .then((res) => res.json())
       .then((data) => {
-        if (data.success && Array.isArray(data.products) && data.products.length > 0) {
+        if (data.success && Array.isArray(data.products)) {
           setProducts(data.products);
         }
       })

@@ -141,29 +141,34 @@ export const updateStoreSettings = async (
 
   Object.assign(currentStoreSettings, updated);
   persistLocalSettings(updated);
+  lastSettingsSyncTime = Date.now();
 
   if (isSupabaseConfigured()) {
-    const supabase = getSupabaseServer();
-    if (supabase) {
-      const { error } = await supabase
-        .from('store_settings')
-        .upsert({
-          id: 'main_settings',
-          store_name_en: updated.storeNameEn,
-          store_name_ar: updated.storeNameAr,
-          tagline_en: updated.taglineEn,
-          tagline_ar: updated.taglineAr,
-          whatsapp_number: updated.whatsappNumber,
-          support_email: updated.supportEmail,
-          default_currency: updated.defaultCurrency,
-          cairo_showrooms_en: updated.cairoShowroomsEn,
-          cairo_showrooms_ar: updated.cairoShowroomsAr,
-          updated_at: new Date().toISOString(),
-        });
+    try {
+      const supabase = getSupabaseServer();
+      if (supabase) {
+        const { error } = await supabase
+          .from('store_settings')
+          .upsert({
+            id: 'main_settings',
+            store_name_en: updated.storeNameEn,
+            store_name_ar: updated.storeNameAr,
+            tagline_en: updated.taglineEn,
+            tagline_ar: updated.taglineAr,
+            whatsapp_number: updated.whatsappNumber,
+            support_email: updated.supportEmail,
+            default_currency: updated.defaultCurrency,
+            cairo_showrooms_en: updated.cairoShowroomsEn,
+            cairo_showrooms_ar: updated.cairoShowroomsAr,
+            updated_at: new Date().toISOString(),
+          });
 
-      if (error) {
-        throw new Error(`Failed to update store settings in Supabase: ${error.message}`);
+        if (error) {
+          console.warn('[storeSettingsStore] Supabase sync warning:', error.message);
+        }
       }
+    } catch (sbErr: any) {
+      console.warn('[storeSettingsStore] Supabase sync exception:', sbErr?.message);
     }
   }
 
