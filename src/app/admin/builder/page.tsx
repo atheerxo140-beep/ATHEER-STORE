@@ -619,24 +619,87 @@ export default function VisualBuilderPage() {
             )}
 
             {activeSection?.id === 'story' && (
-              <div className="space-y-3 text-xs font-mono">
-                <div>
-                  <label className="block text-brand-cream/80 mb-1">{isAr ? 'عنوان قصة الدار (عربي)' : 'Story Title (Arabic)'}</label>
-                  <input
-                    type="text"
-                    value={content.storyTitleAr || ''}
-                    onChange={(e) => setContent({ ...content, storyTitleAr: e.target.value })}
-                    className="w-full bg-brand-stone/40 border border-brand-border px-3 py-2 text-brand-ivory rounded-xs text-right focus:border-brand-gold focus:outline-none"
-                  />
+              <div className="space-y-4 text-xs font-mono">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-brand-cream/80 mb-1">
+                      {isAr ? 'شارة قصة الدار (عربي)' : 'Story Badge (Arabic)'}
+                    </label>
+                    <input
+                      type="text"
+                      value={content.storyBadgeAr || ''}
+                      onChange={(e) => setContent({ ...content, storyBadgeAr: e.target.value })}
+                      placeholder="فلسفة أثير في أزياء الشارع"
+                      className="w-full bg-brand-stone/40 border border-brand-border px-3 py-2 text-brand-ivory rounded-xs text-right focus:border-brand-gold focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-brand-cream/80 mb-1">
+                      {isAr ? 'العنوان الرئيسي (عربي)' : 'Story Title (Arabic)'}
+                    </label>
+                    <input
+                      type="text"
+                      value={content.storyTitleAr || ''}
+                      onChange={(e) => setContent({ ...content, storyTitleAr: e.target.value })}
+                      placeholder="ثقل حقيقي مصمم لتحمل الحركة اليومية"
+                      className="w-full bg-brand-stone/40 border border-brand-border px-3 py-2 text-brand-ivory rounded-xs text-right focus:border-brand-gold focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-brand-cream/80 mb-1">
+                      {isAr ? 'الفقرة الأولى (عربي)' : 'Paragraph 1 (Arabic)'}
+                    </label>
+                    <textarea
+                      rows={3}
+                      value={content.storyParagraph1Ar || ''}
+                      onChange={(e) => setContent({ ...content, storyParagraph1Ar: e.target.value })}
+                      className="w-full bg-brand-stone/40 border border-brand-border p-2.5 text-brand-ivory rounded-xs text-right focus:border-brand-gold focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-brand-cream/80 mb-1">
+                      {isAr ? 'الفقرة الثانية (عربي)' : 'Paragraph 2 (Arabic)'}
+                    </label>
+                    <textarea
+                      rows={3}
+                      value={content.storyParagraph2Ar || ''}
+                      onChange={(e) => setContent({ ...content, storyParagraph2Ar: e.target.value })}
+                      className="w-full bg-brand-stone/40 border border-brand-border p-2.5 text-brand-ivory rounded-xs text-right focus:border-brand-gold focus:outline-none"
+                    />
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-brand-cream/80 mb-1">{isAr ? 'الفقرة الرئيسية (عربي)' : 'Story Paragraph (Arabic)'}</label>
-                  <textarea
-                    rows={3}
-                    value={content.storyParagraph1Ar || ''}
-                    onChange={(e) => setContent({ ...content, storyParagraph1Ar: e.target.value })}
-                    className="w-full bg-brand-stone/40 border border-brand-border p-3 text-brand-ivory rounded-xs text-right focus:border-brand-gold focus:outline-none"
-                  />
+
+                {/* Photo & Specs Section */}
+                <div className="border-t border-brand-border/60 pt-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    {content.storyImage ? (
+                      <img
+                        src={content.storyImage}
+                        alt="Story Visual"
+                        className="w-12 h-14 object-cover rounded-xs border border-brand-gold/50 shadow-sm"
+                      />
+                    ) : (
+                      <div className="w-12 h-14 bg-brand-stone/40 rounded-xs border border-brand-border" />
+                    )}
+                    <div>
+                      <div className="text-[11px] font-bold text-brand-ivory">
+                        {isAr ? 'صورة الموديل المرفقة بالقسم' : 'Story Model Image'}
+                      </div>
+                      <div className="text-[10px] text-brand-cream/60">
+                        {isAr ? 'يمكنك رفع صورة جديدة من الاستوديو أو استبدالها' : 'Upload or replace from studio'}
+                      </div>
+                    </div>
+                  </div>
+
+                  <a
+                    href="/admin/content?tab=story"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-shrink-0 px-3 py-1.5 bg-brand-gold text-brand-black text-[11px] font-bold rounded-xs hover:bg-brand-gold-hover transition-colors flex items-center gap-1 shadow-gold"
+                  >
+                    <span>{isAr ? 'رفع وتعديل صورة الموديل والمقاييس ←' : 'Upload Image & Specs →'}</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
                 </div>
               </div>
             )}

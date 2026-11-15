@@ -474,7 +474,7 @@ export default function AdminContentPage() {
           }`}
         >
           <BookOpen className="w-3.5 h-3.5" />
-          <span>{isAr ? '5. قصة البراند وعن أثير' : '5. Brand Story & Quality'}</span>
+          <span>{isAr ? '5. فلسفة أثير وقصة البراند (ثقل حقيقي وصورة الموديل)' : '5. Atelier Story & Manifesto'}</span>
         </button>
 
         <button
@@ -1952,6 +1952,21 @@ export default function AdminContentPage() {
       {/* TAB 3: BRAND STORY & MANIFESTO */}
       {activeTab === 'story' && (
         <div className="space-y-8 animate-fade-in">
+          {/* Informative Help Banner for Story Section */}
+          <div className="bg-brand-stone/30 border border-brand-gold/40 rounded-sm p-4 flex items-start gap-3">
+            <Sparkles className="w-5 h-5 text-brand-gold flex-shrink-0 mt-0.5" />
+            <div className="text-xs space-y-1">
+              <div className="font-bold text-brand-gold">
+                {isAr ? 'التحكم في قسم (فلسفة أثير في أزياء الشارع - ثقل حقيقي مصمم لتحمل الحركة اليومية)' : 'Brand Philosophy & Story Control'}
+              </div>
+              <p className="text-brand-cream/80 leading-relaxed font-sans">
+                {isAr
+                  ? 'من هنا يمكنك رفع صورة الموديل أو تصوير الاستوديو، تعديل الشارة والعنوان والفقرتين، وتعديل بطاقة ميثاق دار أثير المعلقة والمقاييس الثلاثة (500 GSM و 0% و 100%).'
+                  : 'Customize the model photograph, headlines, manifesto paragraphs, quote card, and technical specs.'}
+              </p>
+            </div>
+          </div>
+
           {/* Section Overview & Visibility */}
           <div className="bg-brand-charcoal border border-brand-border/80 rounded-sm p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
