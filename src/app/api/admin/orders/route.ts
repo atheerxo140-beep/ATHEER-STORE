@@ -171,9 +171,22 @@ export async function PUT(req: NextRequest) {
 
       order.orderStatus = target;
 
-      // Automatically sync payment if delivered
-      if (target === 'delivered' && order.paymentStatus === 'pending_cod') {
-        order.paymentStatus = 'paid_on_delivery';
+      // Automatically sync payment and loyalty if delivered
+      if (target === 'delivered') {
+        if (order.paymentStatus === 'pending_cod') {
+          order.paymentStatus = 'paid_on_delivery';
+        }
+        try {
+          const { awardStampsForOrder } = await import('@/lib/loyaltyService');
+          awardStampsForOrder(
+            order.customerEmail || `${order.customerPhone}@customer.atheer.store`,
+            order.customerName,
+            order.orderReference,
+            order.totalAmount
+          );
+        } catch (loyaltyErr) {
+          console.warn('[AdminOrders] Loyalty stamp award notice on delivery:', loyaltyErr);
+        }
       } else if (target === 'cancelled' && order.paymentStatus === 'pending_cod') {
         order.paymentStatus = 'cancelled';
       }

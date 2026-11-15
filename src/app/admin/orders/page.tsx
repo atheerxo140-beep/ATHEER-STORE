@@ -113,10 +113,18 @@ export default function AdminOrdersPage() {
       });
       const data = await res.json();
       if (data.success) {
+        const statusLabel = isAr
+          ? (newStatus === 'shipped' ? 'تم الشحن' : newStatus === 'delivered' ? 'وصل للعميل' : newStatus === 'confirmed' ? 'تم التأكيد' : newStatus === 'processing' ? 'قيد التجهيز' : newStatus === 'cancelled' ? 'ملغي' : 'قيد الانتظار')
+          : newStatus;
         setFeedbackMsg({
           type: 'success',
-          text: isAr ? `تم تحديث حالة الطلب إلى "${newStatus}"` : `Order status updated to "${newStatus}"`,
+          text: isAr ? `تم تحديث حالة الطلب إلى "${statusLabel}" بنجاح` : `Order status updated to "${statusLabel}" successfully`,
         });
+        setSelectedOrder((prev) =>
+          prev && prev.id === orderId
+            ? { ...prev, orderStatus: newStatus, paymentStatus: newStatus === 'delivered' ? 'paid_on_delivery' : prev.paymentStatus }
+            : prev
+        );
         fetchOrders();
         setTimeout(() => setFeedbackMsg(null), 3000);
       } else {
@@ -189,7 +197,7 @@ export default function AdminOrdersPage() {
         return (
           <span className="inline-flex items-center space-x-1 rtl:space-x-reverse px-2.5 py-1 bg-emerald-950/40 text-emerald-400 border border-emerald-500/40 rounded-xs text-[10px] font-mono uppercase font-bold">
             <CheckCircle2 className="w-3 h-3" />
-            <span>{isAr ? 'تم التوصيل' : 'Delivered'}</span>
+            <span>{isAr ? 'تم التوصيل (وصل للعميل)' : 'Delivered'}</span>
           </span>
         );
       case 'cancelled':
@@ -411,38 +419,69 @@ export default function AdminOrdersPage() {
                     </div>
                   </div>
 
-                  {/* Mobile Quick Action Buttons */}
-                  <div className="flex items-center gap-2 pt-2 border-t border-brand-border/40">
-                    <a
-                      href={getAdminToCustomerWhatsAppUrl(order, isAr ? 'ar' : 'en')}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex-1 py-2 px-2.5 bg-emerald-950/40 hover:bg-emerald-900/60 border border-emerald-500/50 text-emerald-300 text-xs font-mono font-bold rounded-xs flex items-center justify-center space-x-1.5 rtl:space-x-reverse transition-colors shadow-sm"
-                    >
-                      <MessageCircle className="w-4 h-4 text-emerald-400 shrink-0" />
-                      <span>{isAr ? 'واتساب العميل' : 'WhatsApp'}</span>
-                    </a>
+                  {/* Mobile Quick Action Buttons & 1-Tap Pipeline Switcher */}
+                  <div className="space-y-2 pt-2 border-t border-brand-border/40">
+                    {/* 1-Tap Quick Pipeline Actions (تم الشحن / وصل للعميل) */}
+                    <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 font-mono">
+                      <span className="text-[10px] text-brand-cream/60 shrink-0">{isAr ? 'تحديث سريع:' : 'Quick Set:'}</span>
+                      {order.orderStatus !== 'shipped' && order.orderStatus !== 'delivered' && (
+                        <button
+                          type="button"
+                          disabled={isUpdatingStatus}
+                          onClick={() => handleUpdateStatus(order.id, 'shipped')}
+                          className="flex-1 py-1 px-2 bg-blue-950/70 hover:bg-blue-900 border border-blue-500/60 text-blue-300 text-[11px] font-bold rounded-xs flex items-center justify-center space-x-1 rtl:space-x-reverse transition-all active:scale-95 shadow-sm"
+                          title={isAr ? 'تحديد كـ تم الشحن' : 'Mark as Shipped'}
+                        >
+                          <Truck className="w-3.5 h-3.5 shrink-0" />
+                          <span>{isAr ? 'تم الشحن 🚚' : 'Shipped 🚚'}</span>
+                        </button>
+                      )}
+                      {order.orderStatus !== 'delivered' && (
+                        <button
+                          type="button"
+                          disabled={isUpdatingStatus}
+                          onClick={() => handleUpdateStatus(order.id, 'delivered')}
+                          className="flex-1 py-1 px-2 bg-emerald-950/70 hover:bg-emerald-900 border border-emerald-500/60 text-emerald-300 text-[11px] font-bold rounded-xs flex items-center justify-center space-x-1 rtl:space-x-reverse transition-all active:scale-95 shadow-sm"
+                          title={isAr ? 'تحديد كـ وصل للعميل' : 'Mark as Delivered'}
+                        >
+                          <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                          <span>{isAr ? 'وصل للعميل ✓' : 'Delivered ✓'}</span>
+                        </button>
+                      )}
+                    </div>
 
-                    <button
-                      type="button"
-                      onClick={() => setSelectedOrder(order)}
-                      className="flex-1 py-2 px-2.5 bg-brand-stone/40 hover:bg-brand-stone border border-brand-border text-brand-ivory text-xs font-mono font-bold rounded-xs flex items-center justify-center space-x-1.5 rtl:space-x-reverse transition-colors"
-                    >
-                      <Eye className="w-4 h-4 text-brand-gold shrink-0" />
-                      <span>{isAr ? 'تفاصيل الطلب' : 'Details'}</span>
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <a
+                        href={getAdminToCustomerWhatsAppUrl(order, isAr ? 'ar' : 'en')}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex-1 py-2 px-2.5 bg-emerald-950/40 hover:bg-emerald-900/60 border border-emerald-500/50 text-emerald-300 text-xs font-mono font-bold rounded-xs flex items-center justify-center space-x-1.5 rtl:space-x-reverse transition-colors shadow-sm"
+                      >
+                        <MessageCircle className="w-4 h-4 text-emerald-400 shrink-0" />
+                        <span>{isAr ? 'واتساب العميل' : 'WhatsApp'}</span>
+                      </a>
 
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSelectedOrder(order);
-                        setIsInvoiceModalOpen(true);
-                      }}
-                      className="p-2 border border-brand-border bg-brand-stone/30 text-brand-cream/80 hover:text-brand-gold rounded-xs transition-colors shrink-0"
-                      title={isAr ? 'طباعة الفاتورة' : 'Print Invoice'}
-                    >
-                      <Printer className="w-4 h-4" />
-                    </button>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedOrder(order)}
+                        className="flex-1 py-2 px-2.5 bg-brand-stone/40 hover:bg-brand-stone border border-brand-border text-brand-ivory text-xs font-mono font-bold rounded-xs flex items-center justify-center space-x-1.5 rtl:space-x-reverse transition-colors"
+                      >
+                        <Eye className="w-4 h-4 text-brand-gold shrink-0" />
+                        <span>{isAr ? 'تفاصيل الطلب' : 'Details'}</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedOrder(order);
+                          setIsInvoiceModalOpen(true);
+                        }}
+                        className="p-2 border border-brand-border bg-brand-stone/30 text-brand-cream/80 hover:text-brand-gold rounded-xs transition-colors shrink-0"
+                        title={isAr ? 'طباعة الفاتورة' : 'Print Invoice'}
+                      >
+                        <Printer className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
                 </div>
               );
@@ -535,7 +574,35 @@ export default function AdminOrdersPage() {
                       </td>
 
                       {/* Status */}
-                      <td className="py-3.5 px-4">{getStatusBadge(order.orderStatus)}</td>
+                      <td className="py-3.5 px-4">
+                        <div className="space-y-1.5">
+                          <div>{getStatusBadge(order.orderStatus)}</div>
+                          <div className="flex items-center gap-1 font-mono">
+                            {order.orderStatus !== 'shipped' && order.orderStatus !== 'delivered' && (
+                              <button
+                                type="button"
+                                disabled={isUpdatingStatus}
+                                onClick={() => handleUpdateStatus(order.id, 'shipped')}
+                                className="px-1.5 py-0.5 bg-blue-950/60 hover:bg-blue-900 border border-blue-500/40 text-blue-300 rounded-xs text-[10px] font-bold transition-all hover:scale-105 active:scale-95"
+                                title={isAr ? 'تحديد كـ تم الشحن' : 'Mark as Shipped'}
+                              >
+                                {isAr ? 'تم الشحن 🚚' : 'Shipped 🚚'}
+                              </button>
+                            )}
+                            {order.orderStatus !== 'delivered' && (
+                              <button
+                                type="button"
+                                disabled={isUpdatingStatus}
+                                onClick={() => handleUpdateStatus(order.id, 'delivered')}
+                                className="px-1.5 py-0.5 bg-emerald-950/60 hover:bg-emerald-900 border border-emerald-500/40 text-emerald-300 rounded-xs text-[10px] font-bold transition-all hover:scale-105 active:scale-95"
+                                title={isAr ? 'تحديد كـ وصل للعميل' : 'Mark as Delivered'}
+                              >
+                                {isAr ? 'وصل للعميل ✓' : 'Delivered ✓'}
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </td>
 
                       {/* Payment */}
                       <td className="py-3.5 px-4">{getPaymentBadge(order.paymentStatus)}</td>
@@ -631,8 +698,8 @@ export default function AdminOrdersPage() {
                   { status: 'pending', label: isAr ? 'قيد الانتظار' : 'Pending' },
                   { status: 'confirmed', label: isAr ? 'تم التأكيد' : 'Confirmed' },
                   { status: 'processing', label: isAr ? 'قيد التجهيز' : 'Processing' },
-                  { status: 'shipped', label: isAr ? 'تم الشحن' : 'Shipped' },
-                  { status: 'delivered', label: isAr ? 'تم التوصيل' : 'Delivered' },
+                  { status: 'shipped', label: isAr ? 'تم الشحن 🚚' : 'Shipped' },
+                  { status: 'delivered', label: isAr ? 'وصل للعميل (تم التوصيل) ✓' : 'Delivered' },
                   { status: 'cancelled', label: isAr ? 'ملغي' : 'Cancelled' },
                 ].map((s) => {
                   const isCurrent = selectedOrder.orderStatus === s.status;

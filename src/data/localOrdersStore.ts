@@ -137,17 +137,17 @@ export const deleteLocalOrder = (idOrRef: string): boolean => {
   return false;
 };
 
-// Safe status transition validator
+// Safe status transition validator - Allows store owner full control to advance or adjust order state
 export const VALID_STATUS_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
-  pending: ['confirmed', 'cancelled'],
-  confirmed: ['processing', 'cancelled'],
-  processing: ['shipped', 'cancelled'],
-  shipped: ['delivered', 'cancelled'],
-  delivered: [],
-  cancelled: [],
+  pending: ['confirmed', 'processing', 'shipped', 'delivered', 'cancelled'],
+  confirmed: ['pending', 'processing', 'shipped', 'delivered', 'cancelled'],
+  processing: ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'],
+  shipped: ['pending', 'confirmed', 'processing', 'delivered', 'cancelled'],
+  delivered: ['shipped', 'processing', 'confirmed', 'pending', 'cancelled'],
+  cancelled: ['pending', 'confirmed', 'processing', 'shipped', 'delivered'],
 };
 
 export const isValidStatusTransition = (from: OrderStatus, to: OrderStatus): boolean => {
-  if (from === to) return true;
-  return VALID_STATUS_TRANSITIONS[from]?.includes(to) ?? false;
+  const validStatuses: OrderStatus[] = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'];
+  return validStatuses.includes(to);
 };
