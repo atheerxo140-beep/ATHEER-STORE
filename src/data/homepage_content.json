@@ -71,6 +71,8 @@
     }
   ],
   "showPromoOffers": false,
+  "showHeroSubtitle": false,
+  "showHeroChips": false,
   "promoOffersSubtitleEn": "SEASONAL WINTER OFFERS",
   "promoOffersSubtitleAr": "عروض أيام أثير الحصرية",
   "promoOffersTitleEn": "Choose Your Drop Offer",

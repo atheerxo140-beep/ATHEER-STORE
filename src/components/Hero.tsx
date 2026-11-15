@@ -74,23 +74,27 @@ export const Hero: React.FC = () => {
           {title}
         </h1>
 
-        {/* Hero Subtitle */}
-        <p className="mt-6 sm:mt-8 max-w-2xl text-sm sm:text-base md:text-lg text-brand-cream/90 font-sans leading-relaxed tracking-wide font-light whitespace-pre-line">
-          {subtitle}
-        </p>
+        {/* Hero Subtitle (shown only if enabled) */}
+        {content.showHeroSubtitle === true && subtitle && (
+          <p className="mt-6 sm:mt-8 max-w-2xl text-sm sm:text-base md:text-lg text-brand-cream/90 font-sans leading-relaxed tracking-wide font-light whitespace-pre-line">
+            {subtitle}
+          </p>
+        )}
 
-        {/* Flagship Hoodie Specification Chips */}
-        <div className="mt-8 flex flex-wrap items-center justify-center gap-2 sm:gap-3 text-[11px] font-mono text-brand-gold uppercase tracking-wider">
-          <span className="px-3 py-1 bg-brand-charcoal/90 border border-brand-gold/40">
-            {language === 'ar' ? 'مواصفات النسيج: 500 GSM' : 'Fabric: 500 GSM Spec Fleece'}
-          </span>
-          <span className="px-3 py-1 bg-brand-charcoal/90 border border-brand-border">
-            {language === 'ar' ? 'قصّة: بوكسي أكتاف ساقطة' : 'Fit: Drop-Shoulder Boxy'}
-          </span>
-          <span className="px-3 py-1 bg-brand-charcoal/90 border border-brand-border">
-            {language === 'ar' ? 'توصيل ودفع عند الاستلام في مصر' : 'COD Delivery Across Egypt'}
-          </span>
-        </div>
+        {/* Flagship Hoodie Specification Chips (shown only if enabled) */}
+        {content.showHeroChips === true && (
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-2 sm:gap-3 text-[11px] font-mono text-brand-gold uppercase tracking-wider">
+            <span className="px-3 py-1 bg-brand-charcoal/90 border border-brand-gold/40">
+              {language === 'ar' ? 'مواصفات النسيج: 500 GSM' : 'Fabric: 500 GSM Spec Fleece'}
+            </span>
+            <span className="px-3 py-1 bg-brand-charcoal/90 border border-brand-border">
+              {language === 'ar' ? 'قصّة: بوكسي أكتاف ساقطة' : 'Fit: Drop-Shoulder Boxy'}
+            </span>
+            <span className="px-3 py-1 bg-brand-charcoal/90 border border-brand-border">
+              {language === 'ar' ? 'توصيل ودفع عند الاستلام في مصر' : 'COD Delivery Across Egypt'}
+            </span>
+          </div>
+        )}
 
         {/* CTAs */}
         <div className="mt-10 sm:mt-12 flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 w-full max-w-md sm:max-w-none">

@@ -4,6 +4,8 @@ export const defaultHomepageContent: HomepageContent = {
   // Section Visibility
   showAnnouncement: true,
   showHero: true,
+  showHeroSubtitle: false,
+  showHeroChips: false,
   showPromoOffers: false,
   showCategories: true,
   showProducts: true,

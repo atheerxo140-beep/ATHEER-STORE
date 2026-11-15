@@ -162,6 +162,8 @@ export interface HomepageContent {
   // Visibility toggles for complete control over customer storefront
   showAnnouncement?: boolean;
   showHero?: boolean;
+  showHeroSubtitle?: boolean;
+  showHeroChips?: boolean;
   showPromoOffers?: boolean;
   showCategories?: boolean;
   showProducts?: boolean;

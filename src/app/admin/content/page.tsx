@@ -673,6 +673,40 @@ export default function AdminContentPage() {
               </button>
             </div>
 
+            {/* 2b. Hero Subtitle & Specification Chips */}
+            <div className="p-5 bg-brand-charcoal border border-brand-border/80 rounded-sm flex items-center justify-between">
+              <div className="space-y-1">
+                <span className="text-xs font-mono font-bold text-brand-ivory block">
+                  {isAr ? '2-ب. وصف البانر ومربعات المواصفات' : '2-b. Hero Subtitle & Spec Chips'}
+                </span>
+                <p className="text-[11px] text-brand-cream/60">
+                  {isAr ? 'النص التفصيلي أسفل العنوان ومربعات (مواصفات النسيج / القصة / التوصيل)' : 'Detailed subtitle paragraph and spec chips below main title'}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setContent({
+                  ...content,
+                  showHeroSubtitle: !content.showHeroSubtitle,
+                  showHeroChips: !content.showHeroChips,
+                })}
+                className={`px-4 py-2 text-xs font-mono font-bold rounded-xs transition-colors flex items-center space-x-1.5 rtl:space-x-reverse ${
+                  content.showHeroSubtitle || content.showHeroChips
+                    ? 'bg-emerald-600 text-white'
+                    : 'bg-brand-stone/60 text-brand-cream/40 border border-brand-border'
+                }`}
+              >
+                {content.showHeroSubtitle || content.showHeroChips ? (
+                  <>
+                    <Check className="w-3.5 h-3.5" />
+                    <span>{isAr ? 'ظاهر للعميل' : 'Visible'}</span>
+                  </>
+                ) : (
+                  <span>{isAr ? 'مخفي' : 'Hidden'}</span>
+                )}
+              </button>
+            </div>
+
             {/* 3. Promotional Offers & Bundles */}
             <div className="p-5 bg-brand-charcoal border border-brand-border/80 rounded-sm flex items-center justify-between">
               <div className="space-y-1">
@@ -1596,9 +1630,29 @@ export default function AdminContentPage() {
 
             {/* Hero Subtitle / Description */}
             <div className="bg-brand-charcoal border border-brand-border/80 rounded-sm p-6 space-y-4 md:col-span-2">
-              <div className="flex items-center space-x-2 rtl:space-x-reverse text-sm font-bold text-brand-ivory">
-                <Layout className="w-4 h-4 text-brand-gold" />
-                <span>{isAr ? 'النص التعريفي للبانر (Subtitle)' : 'Hero Subtitle / Description'}</span>
+              <div className="flex items-center justify-between pb-2 border-b border-brand-border/40">
+                <div className="flex items-center space-x-2 rtl:space-x-reverse text-sm font-bold text-brand-ivory">
+                  <Layout className="w-4 h-4 text-brand-gold" />
+                  <span>{isAr ? 'النص التعريفي للبانر (Subtitle)' : 'Hero Subtitle / Description'}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setContent({ ...content, showHeroSubtitle: !content.showHeroSubtitle })}
+                  className={`px-3 py-1 text-xs font-mono font-bold rounded-xs transition-colors flex items-center space-x-1 rtl:space-x-reverse ${
+                    content.showHeroSubtitle
+                      ? 'bg-emerald-600 text-white'
+                      : 'bg-brand-stone/60 text-brand-cream/40 border border-brand-border'
+                  }`}
+                >
+                  {content.showHeroSubtitle ? (
+                    <>
+                      <Check className="w-3.5 h-3.5" />
+                      <span>{isAr ? 'ظاهر للعميل' : 'Visible'}</span>
+                    </>
+                  ) : (
+                    <span>{isAr ? 'مخفي (معطل)' : 'Hidden'}</span>
+                  )}
+                </button>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
