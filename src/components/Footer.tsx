@@ -5,7 +5,19 @@ import { useLanguage } from '@/context/LanguageContext';
 import { useStoreSettings } from '@/hooks/useStoreSettings';
 import { useHomepageContent } from '@/hooks/useHomepageContent';
 import QRCode from 'qrcode';
-import { Flame, ArrowRight, ArrowLeft, Check, MapPin, Phone, QrCode, ShieldCheck, Truck, Sparkles } from 'lucide-react';
+import {
+  Flame,
+  ArrowRight,
+  ArrowLeft,
+  Check,
+  MapPin,
+  Phone,
+  Mail,
+  QrCode,
+  ShieldCheck,
+  Truck,
+  Sparkles,
+} from 'lucide-react';
 import Link from 'next/link';
 
 export const Footer: React.FC = () => {
@@ -13,6 +25,8 @@ export const Footer: React.FC = () => {
   const { settings } = useStoreSettings();
   const { content } = useHomepageContent();
   const ArrowIcon = isRtl ? ArrowLeft : ArrowRight;
+  const isAr = language === 'ar';
+
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
   const [footerQrUrl, setFooterQrUrl] = useState('');
@@ -51,26 +65,43 @@ export const Footer: React.FC = () => {
       const data = await res.json();
       if (res.ok && data.success) {
         setSubscribed(true);
-        setSubMsg(language === 'ar' ? 'تم اشتراكك بنجاح في نادي النخبة!' : 'Welcome to the ATHEER Drop Club!');
+        setSubMsg(isAr ? 'تم اشتراكك بنجاح في نادي النخبة!' : 'Welcome to the ATHEER Drop Club!');
         setTimeout(() => {
           setEmail('');
           setSubscribed(false);
           setSubMsg(null);
         }, 5000);
       } else {
-        setSubMsg(data.error || (language === 'ar' ? 'حدث خطأ، حاول ثانية' : 'Error subscribing'));
+        setSubMsg(data.error || (isAr ? 'حدث خطأ، حاول ثانية' : 'Error subscribing'));
       }
     } catch {
-      setSubMsg(language === 'ar' ? 'تعذر الاتصال بالخادم' : 'Connection failed');
+      setSubMsg(isAr ? 'تعذر الاتصال بالخادم' : 'Connection failed');
     } finally {
       setSubscribing(false);
     }
   };
 
+  const formatPhoneNumber = (num?: string) => {
+    if (!num) return '+20 101 599 3802';
+    const clean = num.replace(/[^0-9+]/g, '');
+    if (clean.startsWith('+20') && clean.length === 13) {
+      return `${clean.slice(0, 3)} ${clean.slice(3, 6)} ${clean.slice(6, 9)} ${clean.slice(9)}`;
+    }
+    if (clean.startsWith('20') && clean.length === 12) {
+      return `+20 ${clean.slice(2, 5)} ${clean.slice(5, 8)} ${clean.slice(8)}`;
+    }
+    return clean.startsWith('+') ? clean : `+${clean}`;
+  };
+
+  const primaryPhone = formatPhoneNumber(settings.whatsappNumber || '201015993802');
+  const secondaryPhone = formatPhoneNumber(settings.supportPhone || '+201015993802');
+  const supportEmail = settings.supportEmail || 'atheerxo140@gmail.com';
+  const whatsappRaw = (settings.whatsappNumber || '201015993802').replace(/[^0-9]/g, '');
+
   return (
     <footer className="bg-brand-black text-brand-ivory border-t border-brand-border/60 font-sans pb-24 sm:pb-8">
-      {/* Drop Club VIP Signup */}
-      <div className="border-b border-brand-border/40 py-16 sm:py-20 bg-brand-charcoal/40">
+      {/* 1. Drop Club VIP Signup */}
+      <div className="border-b border-brand-border/40 py-14 sm:py-18 bg-brand-charcoal/40">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
           <div className="inline-flex items-center space-x-2 rtl:space-x-reverse text-brand-gold text-[10px] sm:text-xs uppercase tracking-[0.25em] font-mono font-bold mb-3">
             <Flame className="w-3.5 h-3.5" />
@@ -98,12 +129,12 @@ export const Footer: React.FC = () => {
             </div>
             <button
               type="submit"
-              className="px-6 py-3.5 bg-brand-gold text-brand-black text-xs uppercase tracking-widest font-bold hover:bg-brand-gold-hover transition-colors shadow-gold flex items-center justify-center space-x-2 rtl:space-x-reverse"
+              className="px-6 py-3.5 bg-brand-gold text-brand-black text-xs uppercase tracking-widest font-bold hover:bg-brand-gold-hover transition-colors shadow-gold flex items-center justify-center space-x-2 rtl:space-x-reverse shrink-0"
             >
               {subscribed ? (
                 <>
                   <Check className="w-4 h-4 stroke-[2.5]" />
-                  <span>{language === 'ar' ? 'تم الانضمام' : 'Subscribed'}</span>
+                  <span>{isAr ? 'تم الانضمام' : 'Subscribed'}</span>
                 </>
               ) : (
                 <>
@@ -113,276 +144,278 @@ export const Footer: React.FC = () => {
               )}
             </button>
           </form>
+
+          {subMsg && (
+            <p className="mt-3 text-xs font-mono text-brand-gold animate-fade-in">{subMsg}</p>
+          )}
         </div>
       </div>
 
-      {/* Main Footer Directory */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 lg:gap-12">
-          {/* Brand Column (Span 2) */}
-          <div className="lg:col-span-2 space-y-5">
-            <div className="flex items-center space-x-2 rtl:space-x-reverse">
-              {language === 'ar' ? (
-                <>
-                  <span className="font-arabic font-bold text-2xl text-brand-ivory">أثير</span>
-                  <span className="text-brand-gold text-xl font-light">/</span>
-                  <span className="font-english font-black text-2xl tracking-[0.2em] text-brand-gold uppercase">
-                    ATHEER
-                  </span>
-                </>
-              ) : (
-                <>
-                  <span className="font-english font-black text-2xl tracking-[0.2em] text-brand-ivory uppercase">
-                    ATHEER
-                  </span>
-                  <span className="text-brand-gold text-xl font-light">/</span>
-                  <span className="font-arabic font-bold text-2xl text-brand-gold">أثير</span>
-                </>
-              )}
+      {/* 2. Caesar Trust & Guarantee Strip */}
+      <div className="border-b border-brand-border/40 bg-brand-charcoal/70 py-6 sm:py-8 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8 text-center sm:text-start">
+            <div className="flex items-center space-x-3.5 rtl:space-x-reverse justify-center sm:justify-start">
+              <ShieldCheck className="w-6 h-6 text-brand-gold flex-shrink-0" />
+              <div className="text-xs">
+                <span className="font-bold text-brand-ivory block text-sm">
+                  {isAr ? 'معاينة قبل الاستلام والدفع' : 'Open Box Inspection'}
+                </span>
+                <span className="text-[11px] text-brand-cream/60">
+                  {isAr ? 'افتح الأوردر مع المندوب وتأكد من الخامة' : 'Check fabric & finishing with courier'}
+                </span>
+              </div>
             </div>
 
-            <p className="text-xs text-brand-cream/70 font-light leading-relaxed max-w-sm">
-              {t('footerDesc')}
-            </p>
+            <div className="flex items-center space-x-3.5 rtl:space-x-reverse justify-center sm:justify-start">
+              <Truck className="w-6 h-6 text-brand-gold flex-shrink-0" />
+              <div className="text-xs">
+                <span className="font-bold text-brand-ivory block text-sm">
+                  {isAr ? 'شحن سريع لجميع محافظات مصر' : 'Fast Delivery Across Egypt'}
+                </span>
+                <span className="text-[11px] text-brand-cream/60">
+                  {isAr ? 'توصيل لباب بيتك خلال 48 إلى 72 ساعة' : 'To your doorstep in 48-72 hours'}
+                </span>
+              </div>
+            </div>
 
-            <div className="pt-2 text-xs text-brand-gold space-y-1.5 font-mono">
-              <p className="flex items-center space-x-2 rtl:space-x-reverse">
-                <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
-                <span>
-                  {language === 'ar'
-                    ? 'الأتيليه الرقمي (القاهرة، مصر) · مواقع المعارض المؤقتة تُعلن مع كل إصدار موسمي'
-                    : 'Digital Flagship Atelier (Cairo, Egypt) · Seasonal Pop-up Locations Announced Per Drop'}
+            <div className="flex items-center space-x-3.5 rtl:space-x-reverse justify-center sm:justify-start">
+              <Sparkles className="w-6 h-6 text-brand-gold flex-shrink-0" />
+              <div className="text-xs">
+                <span className="font-bold text-brand-ivory block text-sm">
+                  {isAr ? 'استبدال واسترجاع سهل 14 يوم' : '14-Day Free Exchange'}
                 </span>
+                <span className="text-[11px] text-brand-cream/60">
+                  {isAr ? 'تغيير المقاس متاح مجاناً وبكل سلاسة' : 'Hassle-free size swaps anytime'}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 3. Main Architectural 3-Column Footer Directory */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 sm:pt-20 pb-10">
+        {/* Brand Hallmark Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-brand-border/40 pb-8 mb-12">
+          <div className="flex items-center space-x-2.5 rtl:space-x-reverse">
+            {isAr ? (
+              <>
+                <span className="font-arabic font-bold text-2xl sm:text-3xl text-brand-ivory">أثير</span>
+                <span className="text-brand-gold text-xl sm:text-2xl font-light">/</span>
+                <span className="font-english font-black text-2xl sm:text-3xl tracking-[0.2em] text-brand-gold uppercase">
+                  ATHEER
+                </span>
+              </>
+            ) : (
+              <>
+                <span className="font-english font-black text-2xl sm:text-3xl tracking-[0.2em] text-brand-ivory uppercase">
+                  ATHEER
+                </span>
+                <span className="text-brand-gold text-xl sm:text-2xl font-light">/</span>
+                <span className="font-arabic font-bold text-2xl sm:text-3xl text-brand-gold">أثير</span>
+              </>
+            )}
+          </div>
+
+          <p className="text-xs sm:text-sm text-brand-cream/70 font-light max-w-xl leading-relaxed">
+            {isAr
+              ? 'دار أزياء الستريتوير المصرية الراقية · نسيج شتوي ثقيل ٥٠٠ جم/م² مصمم بأعلى معايير الإتقان والفخامة'
+              : 'Egyptian Luxury Heavyweight Streetwear Atelier · 500 GSM custom milled luxury fleece'}
+          </p>
+        </div>
+
+        {/* 3 Columns Layout matching reference design */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-14 lg:gap-20">
+          {/* Column 1 (Right in RTL, Left in LTR): Contact Us / اتصل بنا */}
+          <div className="space-y-4">
+            <h4 className="font-sans font-bold text-xs sm:text-sm uppercase tracking-widest text-brand-gold mb-5 pb-1 border-b border-brand-gold/30 inline-block">
+              {isAr ? 'اتصل بنا' : 'CONTACT US'}
+            </h4>
+            <div className="space-y-3.5 text-xs sm:text-sm text-brand-cream/80 font-light">
+              <p>
+                <a
+                  href={`mailto:${supportEmail}`}
+                  className="hover:text-brand-gold transition-colors font-mono block text-brand-ivory hover:underline"
+                  dir="ltr"
+                >
+                  {supportEmail}
+                </a>
               </p>
-              <p className="flex items-center space-x-2 rtl:space-x-reverse">
-                <Phone className="w-3.5 h-3.5 flex-shrink-0" />
-                <span>
-                  {settings.whatsappNumber && !settings.whatsappNumber.includes('0000')
-                    ? `+${settings.whatsappNumber} | ${settings.supportEmail || 'concierge@atheer.store'}`
-                    : (settings.supportEmail || 'concierge@atheer.store')}
-                </span>
+              <p>
+                <a
+                  href={`tel:${primaryPhone.replace(/\s+/g, '')}`}
+                  className="hover:text-brand-gold transition-colors font-mono block text-brand-cream/90"
+                  dir="ltr"
+                >
+                  {primaryPhone}
+                </a>
+              </p>
+              <p>
+                <a
+                  href={`https://wa.me/${whatsappRaw}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-brand-gold transition-colors font-mono block text-brand-gold hover:underline"
+                  dir="ltr"
+                >
+                  {secondaryPhone}
+                </a>
+              </p>
+              <p className="text-brand-cream/70 leading-relaxed pt-1">
+                {isAr
+                  ? 'الأتيليه الرقمي، القاهرة، مصر'
+                  : 'Digital Atelier, Cairo, Egypt'}
+              </p>
+              <p className="text-[11px] font-mono text-brand-gold/80 pt-0.5">
+                {isAr
+                  ? 'خدمة العملاء: يومياً من ١٠ ص حتى ١٠ م'
+                  : 'Customer Care: Daily 10 AM – 10 PM'}
               </p>
             </div>
           </div>
 
-          {/* Links 1: Collections */}
-          <div>
-            <h4 className="font-sans font-bold text-xs uppercase tracking-widest text-brand-gold mb-5">
-              {t('footerCol1')}
+          {/* Column 2 (Middle): Capabilities / القدرات */}
+          <div className="space-y-4">
+            <h4 className="font-sans font-bold text-xs sm:text-sm uppercase tracking-widest text-brand-gold mb-5 pb-1 border-b border-brand-gold/30 inline-block">
+              {isAr ? 'القدرات' : 'CAPABILITIES'}
             </h4>
-            <ul className="space-y-3 text-xs text-brand-cream/70 font-light">
+            <ul className="space-y-3.5 text-xs sm:text-sm text-brand-cream/80 font-light">
               <li>
-                <a href="/#products" className="hover:text-brand-gold transition-colors font-medium text-brand-ivory">
-                  {language === 'ar' ? 'الهوديز الثقيلة ٥٠٠ جم/م² (الأساسي)' : 'Core 500 GSM Hoodies'}
+                <Link href="/p/about" className="hover:text-brand-gold transition-colors block">
+                  {isAr ? 'عملية الإنتاج ومعايير النسيج ٥٠٠ جم/م²' : 'Production Process & 500 GSM Spec'}
+                </Link>
+              </li>
+              <li>
+                <Link href="/p/return-policy" className="hover:text-brand-gold transition-colors block">
+                  {isAr ? 'ضمان الجودة وفحص الشحنة مع المندوب' : 'Quality Guarantee & Open Box Check'}
+                </Link>
+              </li>
+              <li>
+                <Link href="/p/shipping-policy" className="hover:text-brand-gold transition-colors block">
+                  {isAr ? 'التصدير والخدمات اللوجستية والشحن' : 'Nationwide Delivery & Logistics'}
+                </Link>
+              </li>
+              <li>
+                <a href="/#fabric-fit" className="hover:text-brand-gold transition-colors block">
+                  {isAr ? 'الأبعاد القياسية ودليل المقاسات' : 'Standard Dimensions & Size Guide'}
                 </a>
               </li>
               <li>
-                <a href="/#products" className="hover:text-brand-gold transition-colors">
-                  {language === 'ar' ? 'سويت شيرتات الكرو نيك' : 'Atelier Crewneck Sweatshirts'}
-                </a>
-              </li>
-              <li>
-                <a href="/#products" className="hover:text-brand-gold transition-colors">
-                  {language === 'ar' ? 'سويت شيرتات الهاف زيب' : 'Quarter-Zip Pullovers'}
-                </a>
-              </li>
-              <li>
-                <a href="/#future-drop" className="hover:text-brand-gold transition-colors text-brand-gold/90 font-mono">
-                  {language === 'ar' ? 'تي شيرتات ٣٢٠ جم/م² (قريباً)' : '320 GSM Tees (Coming Soon)'}
-                </a>
+                <Link href="/p/faq" className="hover:text-brand-gold transition-colors block text-brand-cream/60">
+                  {isAr ? 'الأسئلة الشائعة وإرشادات العناية بالقطعة' : 'FAQ & Garment Care Instructions'}
+                </Link>
               </li>
             </ul>
           </div>
 
-          {/* Links 2: Customer Support & COD */}
-          <div>
-            <h4 className="font-sans font-bold text-xs uppercase tracking-widest text-brand-gold mb-5">
-              {t('footerCol2')}
+          {/* Column 3 (Left in RTL, Right in LTR): Explore / استكشف */}
+          <div className="space-y-4">
+            <h4 className="font-sans font-bold text-xs sm:text-sm uppercase tracking-widest text-brand-gold mb-5 pb-1 border-b border-brand-gold/30 inline-block">
+              {isAr ? 'استكشف' : 'EXPLORE'}
             </h4>
-            <ul className="space-y-3 text-xs text-brand-cream/70 font-light">
+            <ul className="space-y-3.5 text-xs sm:text-sm text-brand-cream/80 font-light">
               <li>
-                <Link href="/track-order" className="hover:text-brand-gold transition-colors font-medium text-brand-gold">
-                  {language === 'ar' ? 'تتبع شحنتك المباشر' : 'Track Your Shipment'}
-                </Link>
-              </li>
-              <li>
-                <Link href="/account" className="hover:text-brand-gold transition-colors">
-                  {language === 'ar' ? 'حساب العميل والطلبات' : 'Customer Account & Orders'}
-                </Link>
-              </li>
-              <li>
-                <Link href="/account/loyalty" className="hover:text-brand-gold transition-colors">
-                  {language === 'ar' ? 'بطاقة ولاء أثير الرقمية' : 'ATHEER Rewards Digital Pass'}
-                </Link>
-              </li>
-              <li>
-                <Link href="/account/wishlist" className="hover:text-brand-gold transition-colors">
-                  {language === 'ar' ? 'قائمة الأمنيات المحفوظة' : 'Saved Wishlist'}
-                </Link>
-              </li>
-              <li>
-                <a href="/#fabric-fit" className="hover:text-brand-gold transition-colors">
-                  {language === 'ar' ? 'دليل مقاسات البوكسي أوفرسايز' : 'Boxy Oversized Size Guide'}
+                <a href="/#products" className="hover:text-brand-gold transition-colors block font-medium text-brand-ivory">
+                  {isAr ? 'جميع القطع (الإصدار الأساسي)' : 'All Pieces (Core Drop)'}
                 </a>
               </li>
               <li>
-                <span className="text-brand-gold block font-mono">
-                  {t('footerCodBadge')}
-                </span>
+                <a href="/#products" className="hover:text-brand-gold transition-colors block">
+                  {isAr ? 'مجموعة الهوديز الثقيلة (٥٠٠ جم/م²)' : 'Heavyweight Hoodies Collection'}
+                </a>
               </li>
-            </ul>
-          </div>
-
-          {/* Links 3: The Brand & Policies */}
-          <div>
-            <h4 className="font-sans font-bold text-xs uppercase tracking-widest text-brand-gold mb-5">
-              {language === 'ar' ? 'الدار والسياسات الرسمية' : 'The Brand & Policies'}
-            </h4>
-            <ul className="space-y-3 text-xs text-brand-cream/70 font-light">
               <li>
-                <Link href="/p/about" className="hover:text-brand-gold transition-colors font-medium text-brand-ivory">
-                  {language === 'ar' ? 'عن دار أثير وهوية الستريتوير' : 'About ATHEER Heritage'}
+                <a href="/#products" className="hover:text-brand-gold transition-colors block">
+                  {isAr ? 'مجموعة السويت شيرتات الأوفرسايز' : 'Oversized Sweatshirts Collection'}
+                </a>
+              </li>
+              <li>
+                <a href="/#products" className="hover:text-brand-gold transition-colors block">
+                  {isAr ? 'تشكيلات الهاف زيب بول أوفر' : 'Quarter-Zip Pullovers Drop'}
+                </a>
+              </li>
+              <li>
+                <Link href="/account/loyalty" className="hover:text-brand-gold transition-colors block text-brand-gold font-mono">
+                  {isAr ? 'كارت الولاء ومكافآت أثير الرقمي' : 'ATHEER Loyalty Pass & Rewards'}
                 </Link>
               </li>
               <li>
-                <Link href="/p/faq" className="hover:text-brand-gold transition-colors">
-                  {language === 'ar' ? 'الأسئلة الشائعة وإرشادات المقاس' : 'Frequently Asked Questions'}
-                </Link>
-              </li>
-              <li>
-                <Link href="/p/shipping-policy" className="hover:text-brand-gold transition-colors">
-                  {language === 'ar' ? 'سياسة الشحن لكافة المحافظات' : 'Egypt Shipping Policy'}
-                </Link>
-              </li>
-              <li>
-                <Link href="/p/return-policy" className="hover:text-brand-gold transition-colors">
-                  {language === 'ar' ? 'ضمان المعاينة والاستبدال' : 'Open Box & Exchange Policy'}
-                </Link>
-              </li>
-              <li>
-                <Link href="/p/contact" className="hover:text-brand-gold transition-colors text-brand-gold font-mono">
-                  {language === 'ar' ? 'تواصل مع الكونسيرج بالقاهرة' : 'Cairo Concierge Contact'}
+                <Link href="/track-order" className="hover:text-brand-gold transition-colors block text-brand-cream/60">
+                  {isAr ? 'تتبع حالة شحنتك المباشر' : 'Live Shipment Tracking'}
                 </Link>
               </li>
             </ul>
           </div>
         </div>
 
-        {/* Permanent Store QR Code Showcase in Footer */}
+        {/* Permanent Store QR Code Showcase in Footer (Subtle & Elegant) */}
         {content.showQrCode !== false && (
-          <div className="mt-12 p-6 sm:p-8 bg-brand-charcoal/50 border border-brand-gold/40 rounded-xs flex flex-col md:flex-row items-center justify-between gap-6 shadow-2xl">
-            <div className="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-5 rtl:space-x-reverse text-center sm:text-right rtl:sm:text-right">
-              {/* QR Image */}
-              <div className="p-2.5 bg-brand-black border border-brand-gold/60 rounded-xs shrink-0 shadow-gold relative">
+          <div className="mt-14 p-5 sm:p-7 bg-brand-charcoal/50 border border-brand-gold/30 rounded-xs flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl">
+            <div className="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-5 rtl:space-x-reverse text-center sm:text-start rtl:sm:text-start">
+              <div className="p-2 bg-brand-black border border-brand-gold/50 rounded-xs shrink-0 shadow-gold relative">
                 {footerQrUrl ? (
                   <div className="relative">
                     <img
                       src={footerQrUrl}
                       alt="ATHEER Permanent Store QR"
-                      className="w-28 h-28 object-contain"
+                      className="w-24 h-24 sm:w-28 sm:h-28 object-contain"
                     />
-                    <div className="absolute inset-0 m-auto w-7 h-7 rounded-xs bg-brand-black border border-brand-gold text-brand-gold flex items-center justify-center font-bold text-xs shadow-md">
+                    <div className="absolute inset-0 m-auto w-6 h-6 rounded-xs bg-brand-black border border-brand-gold text-brand-gold flex items-center justify-center font-bold text-xs shadow-md">
                       أ
                     </div>
                   </div>
                 ) : (
-                  <div className="w-28 h-28 bg-brand-charcoal animate-pulse flex items-center justify-center">
-                    <QrCode className="w-8 h-8 text-brand-gold" />
+                  <div className="w-24 h-24 sm:w-28 sm:h-28 bg-brand-charcoal animate-pulse flex items-center justify-center">
+                    <QrCode className="w-7 h-7 text-brand-gold" />
                   </div>
                 )}
               </div>
 
-              {/* Text Info */}
               <div className="space-y-1.5">
                 <div className="flex items-center justify-center sm:justify-start space-x-2 rtl:space-x-reverse">
                   <span className="text-[10px] font-mono uppercase tracking-widest text-brand-gold font-bold">
-                    {language === 'ar' ? 'رمز المتجر الدائم' : 'Permanent Store QR Code'}
+                    {isAr ? 'رمز المتجر الدائم' : 'Permanent Store QR Code'}
                   </span>
                   <span className="bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 text-[9px] font-mono px-2 py-0.5 rounded-full">
-                    {language === 'ar' ? 'مدى الحياة' : 'Lifetime'}
+                    {isAr ? 'مدى الحياة' : 'Lifetime'}
                   </span>
                 </div>
                 <h4 className="text-base sm:text-lg font-bold text-brand-ivory font-serif">
-                  {language === 'ar'
+                  {isAr
                     ? 'امسح الرمز بكاميرا هاتفك لزيارة متجر أثير ومشاركة الكتالوج'
                     : 'Scan to Visit & Share ATHEER Streetwear'}
                 </h4>
                 <p className="text-xs text-brand-cream/70 font-sans max-w-lg leading-relaxed">
-                  {language === 'ar'
+                  {isAr
                     ? 'وجّه كاميرا هاتفك المحمول نحو الرمز لفتح المتجر مباشرة والاطلاع على تشكيلة الهوديز وطلب القطع من الموبايل في أي وقت.'
                     : 'Point your mobile camera to instantly explore our heavyweight hoodie drop and place COD orders directly.'}
                 </p>
               </div>
             </div>
 
-            {/* Direct Link Action */}
             <div className="flex items-center space-x-2 rtl:space-x-reverse shrink-0">
               <a
                 href={targetQr}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-6 py-3 bg-brand-gold text-brand-black text-xs font-mono font-bold uppercase tracking-wider rounded-xs hover:bg-brand-gold-hover transition-colors shadow-gold flex items-center space-x-2 rtl:space-x-reverse"
+                className="px-5 py-2.5 bg-brand-gold text-brand-black text-xs font-mono font-bold uppercase tracking-wider rounded-xs hover:bg-brand-gold-hover transition-colors shadow-gold flex items-center space-x-2 rtl:space-x-reverse"
               >
                 <QrCode className="w-4 h-4" />
-                <span>{language === 'ar' ? 'فتح الرابط المباشر' : 'Open Direct URL'}</span>
+                <span>{isAr ? 'فتح الرابط المباشر' : 'Open Direct URL'}</span>
               </a>
             </div>
           </div>
         )}
 
-
-        {/* Caesar Trust & Guarantee Strip (Positioned at bottom above credits) */}
-        <div className="mt-12 border-t border-b border-brand-border/60 bg-brand-charcoal/70 py-6 sm:py-8 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-7xl mx-auto">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8 text-center sm:text-start">
-              <div className="flex items-center space-x-3.5 rtl:space-x-reverse justify-center sm:justify-start">
-                <ShieldCheck className="w-6 h-6 text-brand-gold flex-shrink-0" />
-                <div className="text-xs">
-                  <span className="font-bold text-brand-ivory block text-sm">
-                    {language === 'ar' ? 'معاينة قبل الاستلام والدفع' : 'Open Box Inspection'}
-                  </span>
-                  <span className="text-[11px] text-brand-cream/60">
-                    {language === 'ar' ? 'افتح الأوردر مع المندوب وتأكد من الخامة' : 'Check fabric & finishing with courier'}
-                  </span>
-                </div>
-              </div>
-
-              <div className="flex items-center space-x-3.5 rtl:space-x-reverse justify-center sm:justify-start">
-                <Truck className="w-6 h-6 text-brand-gold flex-shrink-0" />
-                <div className="text-xs">
-                  <span className="font-bold text-brand-ivory block text-sm">
-                    {language === 'ar' ? 'شحن سريع لجميع محافظات مصر' : 'Fast Delivery Across Egypt'}
-                  </span>
-                  <span className="text-[11px] text-brand-cream/60">
-                    {language === 'ar' ? 'توصيل لباب بيتك خلال 48 إلى 72 ساعة' : 'To your doorstep in 48-72 hours'}
-                  </span>
-                </div>
-              </div>
-
-              <div className="flex items-center space-x-3.5 rtl:space-x-reverse justify-center sm:justify-start">
-                <Sparkles className="w-6 h-6 text-brand-gold flex-shrink-0" />
-                <div className="text-xs">
-                  <span className="font-bold text-brand-ivory block text-sm">
-                    {language === 'ar' ? 'استبدال واسترجاع سهل 14 يوم' : '14-Day Free Exchange'}
-                  </span>
-                  <span className="text-[11px] text-brand-cream/60">
-                    {language === 'ar' ? 'تغيير المقاس متاح مجاناً وبكل سلاسة' : 'Hassle-free size swaps anytime'}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Bottom Credits & Brand Trust Note */}
-        <div className="mt-8 pt-6 border-t border-brand-border/30 flex flex-col sm:flex-row items-center justify-between text-[11px] text-brand-muted space-y-4 sm:space-y-0">
-          <div>
-            <p>© 2026 ATHEER | أثير. {t('footerRights')}</p>
+        {/* 4. Elegant Thin Divider Line & Bottom Bar matching reference design */}
+        <div className="border-t border-brand-border/60 mt-14 pt-6 flex flex-col sm:flex-row items-center justify-between text-xs sm:text-sm text-brand-cream/70 font-mono gap-4">
+          <div className="text-center sm:text-start text-brand-cream/80">
+            {isAr ? 'تم التصميم والتطوير بواسطة دار أثير' : 'Designed & Developed by ATHEER Atelier'}
           </div>
 
-          <div className="flex items-center space-x-2.5 rtl:space-x-reverse text-[11px] sm:text-xs font-mono uppercase tracking-[0.25em] text-brand-gold font-bold">
-            <span className="w-1.5 h-1.5 rounded-full bg-brand-gold/80 inline-block animate-pulse" />
-            <span>{language === 'ar' ? 'نُقدّر ثقتكم بنا' : 'WE APPRECIATE YOUR TRUST'}</span>
+          <div className="text-center sm:text-end text-brand-cream/60">
+            © 2026 {isAr ? 'دار أثير' : 'ATHEER'} — {isAr ? 'جميع الحقوق محفوظة' : 'All Rights Reserved'}
           </div>
         </div>
       </div>
