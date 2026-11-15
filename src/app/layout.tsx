@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { ThemeModeProvider } from '@/context/ThemeModeContext';
 import { LanguageProvider } from '@/context/LanguageContext';
@@ -14,6 +14,18 @@ export const metadata: Metadata = {
   icons: {
     icon: '/favicon.ico',
   },
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+  userScalable: true,
+  viewportFit: 'cover',
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#F8F6F0' },
+    { media: '(prefers-color-scheme: dark)', color: '#0A0A0A' },
+  ],
 };
 
 export default function RootLayout({
@@ -45,7 +57,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="min-h-screen bg-brand-black text-brand-ivory antialiased">
+      <body className="min-h-screen bg-brand-black text-brand-ivory antialiased overflow-x-hidden selection:bg-brand-gold selection:text-brand-black">
         <ThemeModeProvider>
           <LanguageProvider>
             <CustomerAuthProvider>

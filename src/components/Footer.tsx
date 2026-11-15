@@ -70,7 +70,7 @@ export const Footer: React.FC = () => {
   };
 
   return (
-    <footer className="bg-brand-black text-brand-ivory border-t border-brand-border/60 font-sans">
+    <footer className="bg-brand-black text-brand-ivory border-t border-brand-border/60 font-sans pb-24 sm:pb-8">
       {/* Caesar Trust & Guarantee Strip */}
       <div className="border-b border-brand-border/60 bg-brand-charcoal/70 py-6 sm:py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

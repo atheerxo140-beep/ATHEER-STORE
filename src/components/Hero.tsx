@@ -70,7 +70,7 @@ export const Hero: React.FC = () => {
         </div>
 
         {/* Hero Title */}
-        <h1 className="font-sans font-black text-4xl sm:text-6xl md:text-7xl lg:text-8xl tracking-tight leading-[1.05] text-brand-ivory uppercase max-w-5xl whitespace-pre-line">
+        <h1 className="font-sans font-black text-3xl xs:text-4xl sm:text-6xl md:text-7xl lg:text-8xl tracking-tight leading-[1.05] text-brand-ivory uppercase max-w-5xl whitespace-pre-line">
           {title}
         </h1>
 
@@ -115,30 +115,30 @@ export const Hero: React.FC = () => {
         </div>
 
         {/* 3 Pillars of ATHEER Heavyweight Streetwear in Egypt */}
-        <div className="mt-16 sm:mt-20 pt-10 border-t border-brand-border/40 grid grid-cols-3 gap-6 sm:gap-12 w-full max-w-3xl">
+        <div className="mt-14 sm:mt-20 pt-8 sm:pt-10 border-t border-brand-border/40 grid grid-cols-3 gap-2 sm:gap-6 md:gap-12 w-full max-w-3xl">
           <div className="flex flex-col items-center text-center">
-            <span className="font-sans font-black text-xl sm:text-3xl text-brand-gold tracking-tight">
+            <span className="font-sans font-black text-lg xs:text-xl sm:text-3xl text-brand-gold tracking-tight">
               {stat1Val}
             </span>
-            <span className="mt-1 text-[10px] sm:text-xs text-brand-cream/80 tracking-wider uppercase font-sans">
+            <span className="mt-1 text-[9px] xs:text-[10px] sm:text-xs text-brand-cream/80 tracking-wider uppercase font-sans">
               {stat1Label}
             </span>
           </div>
 
-          <div className="flex flex-col items-center text-center border-x border-brand-border/40 px-2 sm:px-4">
-            <span className="font-sans font-black text-xl sm:text-3xl text-brand-ivory tracking-tight">
+          <div className="flex flex-col items-center text-center border-x border-brand-border/40 px-1 xs:px-2 sm:px-4">
+            <span className="font-sans font-black text-lg xs:text-xl sm:text-3xl text-brand-ivory tracking-tight">
               {stat2Val}
             </span>
-            <span className="mt-1 text-[10px] sm:text-xs text-brand-cream/80 tracking-wider uppercase font-sans">
+            <span className="mt-1 text-[9px] xs:text-[10px] sm:text-xs text-brand-cream/80 tracking-wider uppercase font-sans">
               {stat2Label}
             </span>
           </div>
 
           <div className="flex flex-col items-center text-center">
-            <span className="font-sans font-black text-xl sm:text-3xl text-brand-gold tracking-tight">
+            <span className="font-sans font-black text-lg xs:text-xl sm:text-3xl text-brand-gold tracking-tight">
               {stat3Val}
             </span>
-            <span className="mt-1 text-[10px] sm:text-xs text-brand-cream/80 tracking-wider uppercase font-sans">
+            <span className="mt-1 text-[9px] xs:text-[10px] sm:text-xs text-brand-cream/80 tracking-wider uppercase font-sans">
               {stat3Label}
             </span>
           </div>

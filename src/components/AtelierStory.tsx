@@ -85,25 +85,25 @@ export const AtelierStory: React.FC = () => {
             </div>
 
             {/* Technical Streetwear Metrics */}
-            <div id="fabric-fit" className="mt-10 pt-8 border-t border-brand-border/60 grid grid-cols-3 gap-4">
-              <div className="border-l-2 rtl:border-l-0 rtl:border-r-2 border-brand-gold pl-3 rtl:pl-0 rtl:pr-3">
-                <span className="font-mono text-2xl sm:text-3xl text-brand-gold font-bold">{m1Val}</span>
-                <span className="text-xs text-brand-gold font-mono ml-1">GSM</span>
-                <p className="text-[11px] text-brand-cream/70 uppercase tracking-wider mt-1 font-sans">
+            <div id="fabric-fit" className="mt-8 sm:mt-10 pt-6 sm:pt-8 border-t border-brand-border/60 grid grid-cols-3 gap-2 sm:gap-4">
+              <div className="border-l-2 rtl:border-l-0 rtl:border-r-2 border-brand-gold pl-2 sm:pl-3 rtl:pl-0 rtl:pr-2 sm:rtl:pr-3">
+                <span className="font-mono text-xl sm:text-2xl md:text-3xl text-brand-gold font-bold">{m1Val}</span>
+                <span className="text-[10px] sm:text-xs text-brand-gold font-mono ml-1">GSM</span>
+                <p className="text-[9px] xs:text-[10px] sm:text-[11px] text-brand-cream/70 uppercase tracking-wider mt-1 font-sans">
                   {m1Label}
                 </p>
               </div>
 
-              <div className="border-l-2 rtl:border-l-0 rtl:border-r-2 border-brand-gold pl-3 rtl:pl-0 rtl:pr-3">
-                <span className="font-mono text-2xl sm:text-3xl text-brand-ivory font-bold">{m2Val}</span>
-                <p className="text-[11px] text-brand-cream/70 uppercase tracking-wider mt-1 font-sans">
+              <div className="border-l-2 rtl:border-l-0 rtl:border-r-2 border-brand-gold pl-2 sm:pl-3 rtl:pl-0 rtl:pr-2 sm:rtl:pr-3">
+                <span className="font-mono text-xl sm:text-2xl md:text-3xl text-brand-ivory font-bold">{m2Val}</span>
+                <p className="text-[9px] xs:text-[10px] sm:text-[11px] text-brand-cream/70 uppercase tracking-wider mt-1 font-sans">
                   {m2Label}
                 </p>
               </div>
 
-              <div className="border-l-2 rtl:border-l-0 rtl:border-r-2 border-brand-gold pl-3 rtl:pl-0 rtl:pr-3">
-                <span className="font-mono text-2xl sm:text-3xl text-brand-gold font-bold">{m3Val}</span>
-                <p className="text-[11px] text-brand-cream/70 uppercase tracking-wider mt-1 font-sans">
+              <div className="border-l-2 rtl:border-l-0 rtl:border-r-2 border-brand-gold pl-2 sm:pl-3 rtl:pl-0 rtl:pr-2 sm:rtl:pr-3">
+                <span className="font-mono text-xl sm:text-2xl md:text-3xl text-brand-gold font-bold">{m3Val}</span>
+                <p className="text-[9px] xs:text-[10px] sm:text-[11px] text-brand-cream/70 uppercase tracking-wider mt-1 font-sans">
                   {m3Label}
                 </p>
               </div>

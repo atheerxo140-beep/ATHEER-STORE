@@ -50,7 +50,7 @@ export const FutureTeaser: React.FC = () => {
   return (
     <section id="future-drop" className="py-20 sm:py-28 bg-brand-charcoal text-brand-ivory border-b border-brand-border/60 relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="relative bg-brand-black border border-brand-gold/40 p-8 sm:p-14 overflow-hidden shadow-2xl">
+        <div className="relative bg-brand-black border border-brand-gold/40 p-5 sm:p-10 md:p-14 overflow-hidden shadow-2xl">
           {/* Background Streetwear Accent Glow */}
           <div className="absolute top-0 right-0 w-80 h-80 bg-brand-gold/10 rounded-full blur-3xl pointer-events-none" />
 

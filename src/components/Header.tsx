@@ -230,76 +230,76 @@ export const Header: React.FC = () => {
             </div>
 
             {/* Center: Brand Identity */}
-            <div className="text-center flex-1 lg:flex-none">
+            <div className="text-center flex-1 lg:flex-none px-1">
               <Link href="/" className="inline-block group">
-                <div className="flex items-center justify-center space-x-2.5 rtl:space-x-reverse">
+                <div className="flex items-center justify-center space-x-1.5 xs:space-x-2 sm:space-x-2.5 rtl:space-x-reverse whitespace-nowrap">
                   {isAr ? (
                     <>
-                      <span className="font-arabic font-bold text-2xl sm:text-3xl text-brand-ivory group-hover:text-brand-gold transition-colors">
+                      <span className="font-arabic font-bold text-xl xs:text-2xl sm:text-3xl text-brand-ivory group-hover:text-brand-gold transition-colors">
                         أثير
                       </span>
-                      <span className="text-brand-gold text-xl sm:text-2xl font-light">/</span>
-                      <span className="font-english font-black text-2xl sm:text-3xl tracking-[0.2em] text-brand-gold uppercase">
+                      <span className="text-brand-gold text-lg xs:text-xl sm:text-2xl font-light">/</span>
+                      <span className="font-english font-black text-xl xs:text-2xl sm:text-3xl tracking-[0.14em] xs:tracking-[0.18em] sm:tracking-[0.2em] text-brand-gold uppercase">
                         ATHEER
                       </span>
                     </>
                   ) : (
                     <>
-                      <span className="font-english font-black text-2xl sm:text-3xl tracking-[0.2em] text-brand-ivory uppercase group-hover:text-brand-gold transition-colors">
+                      <span className="font-english font-black text-xl xs:text-2xl sm:text-3xl tracking-[0.14em] xs:tracking-[0.18em] sm:tracking-[0.2em] text-brand-ivory uppercase group-hover:text-brand-gold transition-colors">
                         ATHEER
                       </span>
-                      <span className="text-brand-gold text-xl sm:text-2xl font-light">/</span>
-                      <span className="font-arabic font-bold text-2xl sm:text-3xl text-brand-gold">
+                      <span className="text-brand-gold text-lg xs:text-xl sm:text-2xl font-light">/</span>
+                      <span className="font-arabic font-bold text-xl xs:text-2xl sm:text-3xl text-brand-gold">
                         أثير
                       </span>
                     </>
                   )}
                 </div>
-                <p className="text-[9px] sm:text-[10px] tracking-[0.3em] uppercase text-brand-cream/70 font-sans font-medium mt-0.5">
+                <p className="text-[8px] xs:text-[9px] sm:text-[10px] tracking-[0.2em] xs:tracking-[0.3em] uppercase text-brand-cream/70 font-sans font-medium mt-0.5 truncate max-w-[220px] xs:max-w-none mx-auto">
                   {t('brandTagline')}
                 </p>
               </Link>
             </div>
 
             {/* Right: Actions */}
-            <div className="flex items-center space-x-2 sm:space-x-4 rtl:space-x-reverse">
+            <div className="flex items-center space-x-1 xs:space-x-2 sm:space-x-3 lg:space-x-4 rtl:space-x-reverse">
               {/* Theme Mode Toggle (Sun/Moon Button) */}
               <button
                 type="button"
                 onClick={toggleMode}
-                className="p-2 text-brand-ivory/80 hover:text-brand-gold transition-colors rounded-xs hover:bg-brand-stone/30"
+                className="p-1.5 xs:p-2 text-brand-ivory/80 hover:text-brand-gold transition-colors rounded-xs hover:bg-brand-stone/30"
                 aria-label={isDark ? (isAr ? 'التبديل إلى الوضع الفاتح' : 'Switch to Light Mode') : (isAr ? 'التبديل إلى الوضع الداكن' : 'Switch to Dark Mode')}
                 title={isDark ? (isAr ? 'التبديل إلى الوضع الفاتح ☀️' : 'Switch to Light Mode ☀️') : (isAr ? 'التبديل إلى الوضع الداكن 🌙' : 'Switch to Dark Mode 🌙')}
               >
                 {isDark ? (
-                  <Sun className="w-5 h-5 stroke-[1.5] text-brand-gold hover:rotate-45 transition-transform duration-300" />
+                  <Sun className="w-4 h-4 xs:w-5 xs:h-5 stroke-[1.5] text-brand-gold hover:rotate-45 transition-transform duration-300" />
                 ) : (
-                  <Moon className="w-5 h-5 stroke-[1.5] text-brand-gold hover:-rotate-12 transition-transform duration-300" />
+                  <Moon className="w-4 h-4 xs:w-5 xs:h-5 stroke-[1.5] text-brand-gold hover:-rotate-12 transition-transform duration-300" />
                 )}
               </button>
 
               {/* Search Toggle */}
               <button
                 onClick={() => setSearchOpen(!searchOpen)}
-                className="p-2 text-brand-ivory/80 hover:text-brand-gold transition-colors"
+                className="p-1.5 xs:p-2 text-brand-ivory/80 hover:text-brand-gold transition-colors"
                 aria-label="Search"
               >
-                <Search className="w-5 h-5 stroke-[1.5]" />
+                <Search className="w-4 h-4 xs:w-5 xs:h-5 stroke-[1.5]" />
               </button>
 
               {/* Language Switcher (Always visible on Desktop & Mobile) */}
               <button
                 type="button"
                 onClick={() => setLanguage(language === 'en' ? 'ar' : 'en')}
-                className="flex items-center space-x-1.5 rtl:space-x-reverse px-2.5 py-1 text-xs text-brand-ivory font-mono font-medium border border-brand-border/80 hover:border-brand-gold hover:text-brand-gold transition-colors rounded-xs bg-brand-charcoal/50"
+                className="flex items-center space-x-1 rtl:space-x-reverse px-2 py-0.5 xs:px-2.5 xs:py-1 text-[11px] xs:text-xs text-brand-ivory font-mono font-medium border border-brand-border/80 hover:border-brand-gold hover:text-brand-gold transition-colors rounded-xs bg-brand-charcoal/50"
                 aria-label={language === 'en' ? 'التحويل للغة العربية' : 'Switch to English'}
                 title={language === 'en' ? 'التحويل للغة العربية (عربي)' : 'Switch to English (EN)'}
               >
-                <Globe className="w-3.5 h-3.5 text-brand-gold opacity-90" />
+                <Globe className="w-3 h-3 xs:w-3.5 xs:h-3.5 text-brand-gold opacity-90" />
                 <span className="font-bold tracking-wider">{language === 'en' ? 'عربي' : 'EN'}</span>
               </button>
 
-              {/* Wishlist Link with Live Badge */}
+              {/* Wishlist Link with Live Badge (Tablet & Desktop) */}
               <Link
                 href="/account/wishlist"
                 className="hidden sm:inline-flex p-2 text-brand-ivory/80 hover:text-brand-gold transition-colors relative"
@@ -314,10 +314,10 @@ export const Header: React.FC = () => {
                 )}
               </Link>
 
-              {/* Customer Account Button */}
+              {/* Customer Account Button (Tablet & Desktop — on Mobile available in Bottom Nav & Drawer) */}
               <Link
                 href={customer ? '/account' : '/account/login'}
-                className="p-2 text-brand-ivory/80 hover:text-brand-gold transition-colors flex items-center space-x-1 rtl:space-x-reverse"
+                className="hidden sm:inline-flex p-2 text-brand-ivory/80 hover:text-brand-gold transition-colors items-center space-x-1 rtl:space-x-reverse"
                 aria-label="Customer Account"
                 title={customer ? (isAr ? `حسابي (${customer.fullName})` : `My Account (${customer.fullName})`) : (isAr ? 'دخول الحساب' : 'Sign In')}
               >
@@ -332,12 +332,12 @@ export const Header: React.FC = () => {
               {/* Shopping Bag Button with Badge */}
               <button
                 onClick={() => setIsCartOpen(true)}
-                className="p-2 text-brand-ivory hover:text-brand-gold transition-colors relative flex items-center"
+                className="p-1.5 xs:p-2 text-brand-ivory hover:text-brand-gold transition-colors relative flex items-center"
                 aria-label="Open Shopping Bag"
               >
-                <ShoppingBag className="w-5 h-5 stroke-[1.5]" />
+                <ShoppingBag className="w-4 h-4 xs:w-5 xs:h-5 stroke-[1.5]" />
                 {totalCount > 0 && (
-                  <span className="absolute -top-1 -right-1 rtl:-left-1 rtl:right-auto bg-brand-gold text-brand-black text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center animate-fade-in shadow-gold font-mono">
+                  <span className="absolute -top-1 -right-1 rtl:-left-1 rtl:right-auto bg-brand-gold text-brand-black text-[9px] xs:text-[10px] font-bold w-3.5 h-3.5 xs:w-4 xs:h-4 rounded-full flex items-center justify-center animate-fade-in shadow-gold font-mono">
                     {totalCount}
                   </span>
                 )}

@@ -94,18 +94,18 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView, 
         <div className="absolute inset-0 bg-gradient-to-t from-brand-black/85 via-transparent to-black/30 pointer-events-none" />
 
         {/* GSM, Fit & Discount Top Badges */}
-        <div className="absolute top-3 left-3 rtl:left-auto rtl:right-3 z-10 flex flex-col space-y-1">
+        <div className="absolute top-2 left-2 sm:top-3 sm:left-3 rtl:left-auto rtl:right-2 sm:rtl:right-3 z-10 flex flex-col space-y-1">
           {discountPercent && (
-            <span className="inline-block bg-rose-600/95 text-white border border-rose-500/80 text-[10px] font-mono font-bold px-2 py-0.5 rounded-xs shadow-md">
+            <span className="inline-block bg-rose-600/95 text-white border border-rose-500/80 text-[8px] xs:text-[9px] sm:text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-xs shadow-md">
               {language === 'ar' ? `خصم ${discountPercent}%` : `${discountPercent}% OFF`}
             </span>
           )}
           {badge && (
-            <span className="inline-block bg-brand-black/90 backdrop-blur-md text-brand-gold border border-brand-gold/50 text-[9px] uppercase tracking-wider font-mono font-semibold px-2 py-0.5">
+            <span className="inline-block bg-brand-black/90 backdrop-blur-md text-brand-gold border border-brand-gold/50 text-[8px] xs:text-[9px] uppercase tracking-wider font-mono font-semibold px-1.5 py-0.5">
               {badge}
             </span>
           )}
-          <span className="inline-block bg-brand-charcoal/95 backdrop-blur-md text-brand-ivory text-[9px] font-mono tracking-wider px-2 py-0.5 border border-brand-border">
+          <span className="inline-block bg-brand-charcoal/95 backdrop-blur-md text-brand-ivory text-[8px] xs:text-[9px] font-mono tracking-wider px-1.5 py-0.5 border border-brand-border">
             {product.gsm} GSM
           </span>
         </div>
@@ -117,11 +117,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView, 
             e.stopPropagation();
             toggleWishlist(product.id);
           }}
-          className="absolute top-3 right-3 rtl:right-auto rtl:left-3 z-10 w-8 h-8 rounded-full bg-brand-black/75 backdrop-blur-md border border-brand-border/80 flex items-center justify-center text-brand-ivory hover:text-brand-gold hover:border-brand-gold transition-colors"
+          className="absolute top-2 right-2 sm:top-3 sm:right-3 rtl:right-auto rtl:left-2 sm:rtl:left-3 z-10 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-brand-black/75 backdrop-blur-md border border-brand-border/80 flex items-center justify-center text-brand-ivory hover:text-brand-gold hover:border-brand-gold transition-colors"
           aria-label="Add to wishlist"
         >
           <Heart
-            className={`w-4 h-4 transition-colors ${
+            className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-colors ${
               isWishlisted ? 'fill-brand-gold text-brand-gold' : 'text-brand-ivory'
             }`}
           />
@@ -146,10 +146,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView, 
           <button
             type="button"
             onClick={handleQuickAction}
-            className="sm:hidden absolute bottom-3 right-3 rtl:right-auto rtl:left-3 z-20 px-3 py-1.5 rounded-full bg-brand-gold text-brand-black flex items-center space-x-1.5 rtl:space-x-reverse text-[11px] font-mono font-bold shadow-gold active:scale-90 transition-transform"
+            className="sm:hidden absolute bottom-2 right-2 rtl:right-auto rtl:left-2 z-20 px-2 py-1 xs:px-2.5 xs:py-1.5 rounded-full bg-brand-gold text-brand-black flex items-center space-x-1 rtl:space-x-reverse text-[10px] xs:text-[11px] font-mono font-bold shadow-gold active:scale-90 transition-transform"
             aria-label="Quick order"
           >
-            <ShoppingBag className="w-3.5 h-3.5" />
+            <ShoppingBag className="w-3 h-3 xs:w-3.5 xs:h-3.5" />
             <span>{language === 'ar' ? 'طلب سريع' : 'Quick Order'}</span>
           </button>
         )}
@@ -215,28 +215,28 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView, 
       </div>
 
       {/* Product Information */}
-      <div className="p-4 sm:p-5 flex flex-col flex-1 justify-between">
+      <div className="p-2.5 xs:p-3 sm:p-4 md:p-5 flex flex-col flex-1 justify-between">
         <div>
-          <div className="flex items-center justify-between text-[11px] text-brand-gold tracking-wider uppercase mb-1 font-mono">
+          <div className="flex items-center justify-between text-[9px] xs:text-[10px] sm:text-[11px] text-brand-gold tracking-wider uppercase mb-1 font-mono">
             <span>{categoryLabel}</span>
-            <span className="text-[10px] text-brand-cream/60">{fit}</span>
+            <span className="text-[8px] xs:text-[9px] sm:text-[10px] text-brand-cream/60">{fit}</span>
           </div>
 
           <Link href={`/products/${product.id}`} className="block">
-            <h3 className="font-sans font-bold text-base sm:text-lg text-brand-ivory hover:text-brand-gold transition-colors leading-snug line-clamp-1">
+            <h3 className="font-sans font-bold text-xs xs:text-sm sm:text-base lg:text-lg text-brand-ivory hover:text-brand-gold transition-colors leading-snug line-clamp-1">
               {title}
             </h3>
           </Link>
         </div>
 
         {/* Pricing and Stock */}
-        <div className="mt-4 pt-3 border-t border-brand-border/40 flex items-center justify-between">
-          <div className="flex items-baseline space-x-2 rtl:space-x-reverse">
-            <span className="font-mono text-lg sm:text-xl font-bold text-brand-gold">
+        <div className="mt-3 sm:mt-4 pt-2.5 sm:pt-3 border-t border-brand-border/40 flex items-center justify-between">
+          <div className="flex items-baseline space-x-1.5 xs:space-x-2 rtl:space-x-reverse">
+            <span className="font-mono text-sm xs:text-base sm:text-lg lg:text-xl font-bold text-brand-gold">
               {formatPrice(product.price)}
             </span>
             {product.originalPrice && (
-              <span className="text-xs text-brand-muted line-through font-mono">
+              <span className="text-[9px] xs:text-[10px] sm:text-xs text-brand-muted line-through font-mono">
                 {formatPrice(product.originalPrice)}
               </span>
             )}
@@ -244,9 +244,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView, 
 
           <Link
             href={`/products/${product.id}`}
-            className="text-[10px] uppercase tracking-wider text-brand-gold hover:underline font-mono"
+            className="text-[9px] sm:text-[10px] uppercase tracking-wider text-brand-gold hover:underline font-mono hidden xs:inline-block"
           >
-            {language === 'ar' ? 'عرض التفاصيل' : 'View Piece'}
+            {language === 'ar' ? 'عرض القطعة' : 'View Piece'}
           </Link>
         </div>
       </div>

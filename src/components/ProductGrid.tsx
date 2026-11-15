@@ -130,12 +130,12 @@ export const ProductGrid: React.FC = () => {
         {/* Filter Category Tabs & Quick Search Bar */}
         <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-8 border-b border-brand-border/40 pb-6">
           {/* Category Tabs */}
-          <div className="flex items-center justify-center flex-wrap gap-2">
+          <div className="flex items-center justify-center flex-wrap gap-1.5 sm:gap-2 w-full md:w-auto">
             {categories.map((cat) => (
               <button
                 key={cat.id}
                 onClick={() => setActiveCategory(cat.id)}
-                className={`px-4 sm:px-5 py-2.5 text-xs uppercase tracking-widest transition-all duration-300 font-semibold font-mono ${
+                className={`px-3 py-2 sm:px-5 sm:py-2.5 text-[11px] sm:text-xs uppercase tracking-wider sm:tracking-widest transition-all duration-300 font-semibold font-mono rounded-xs ${
                   activeCategory === cat.id
                     ? 'bg-brand-gold text-brand-black shadow-gold'
                     : 'text-brand-ivory/70 hover:text-brand-gold hover:bg-brand-charcoal/60 border border-brand-border/40'
@@ -143,7 +143,7 @@ export const ProductGrid: React.FC = () => {
               >
                 {cat.label}
                 {cat.isMain && (
-                  <span className="ml-1.5 rtl:mr-1.5 rtl:ml-0 text-[10px] opacity-80">★</span>
+                  <span className="ml-1 rtl:mr-1 rtl:ml-0 text-[10px] opacity-80">★</span>
                 )}
               </button>
             ))}
@@ -203,7 +203,7 @@ export const ProductGrid: React.FC = () => {
 
         {/* Products Grid or Empty State */}
         {filteredProducts.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 animate-fade-in">
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6 lg:gap-8 animate-fade-in">
             {filteredProducts.map((product, idx) => (
               <ProductCard
                 key={product.id}

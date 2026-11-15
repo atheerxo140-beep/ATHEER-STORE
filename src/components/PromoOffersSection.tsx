@@ -167,7 +167,7 @@ export const PromoOffersSection: React.FC = () => {
             return (
               <div
                 key={offer.id}
-                className={`relative flex flex-col justify-between p-6 rounded-xs transition-all duration-300 group ${
+                className={`relative flex flex-col justify-between p-4 sm:p-6 rounded-xs transition-all duration-300 group ${
                   offer.isPrimary
                     ? 'bg-gradient-to-b from-brand-charcoal to-brand-stone/40 border-2 border-brand-gold shadow-gold'
                     : 'bg-brand-charcoal/80 hover:bg-brand-charcoal border border-brand-border/80 hover:border-brand-gold/60 shadow-luxury-dark'
