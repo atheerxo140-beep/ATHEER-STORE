@@ -6,6 +6,7 @@ import { getStoreFilePath } from '@/lib/storePath';
 
 export interface WhatsAppGatewayConfig {
   provider: 'callmebot' | 'ultramsg' | 'custom_webhook' | 'none';
+  targetPhone?: string;
   callmebotApiKey?: string;
   ultramsgInstanceId?: string;
   ultramsgToken?: string;
@@ -69,8 +70,8 @@ export async function sendAutomatedOrderWhatsApp(
   order: StoredOrder,
   ownerPhone: string
 ): Promise<{ success: boolean; provider?: string; error?: string }> {
-  const cleanPhone = normalizeWhatsAppNumber(ownerPhone) || '201015993802';
   const config = getWhatsAppGatewayConfig();
+  const cleanPhone = normalizeWhatsAppNumber(config.targetPhone || ownerPhone) || '201021483802';
 
   const itemsSummary = order.items
     .map((i) => `• ${i.quantity}x ${i.productNameAr || i.productNameEn} (${i.selectedSize} | ${i.selectedColor})`)

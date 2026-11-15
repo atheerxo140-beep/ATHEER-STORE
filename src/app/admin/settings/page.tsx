@@ -137,7 +137,7 @@ export default function AdminSettingsPage() {
       const res = await adminFetch('/api/admin/whatsapp-gateway', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ config: waGateway, testPhone: settings?.whatsappNumber || '201015993802' }),
+        body: JSON.stringify({ config: waGateway, testPhone: waGateway.targetPhone || settings?.whatsappNumber || '201021483802' }),
       });
       const data = await res.json();
       if (data.testResult?.success) {
@@ -848,37 +848,79 @@ export default function AdminSettingsPage() {
 
             {/* CallMeBot Settings & Guide */}
             {(!waGateway.provider || waGateway.provider === 'callmebot') && (
-              <div className="p-4 bg-brand-stone/20 border border-brand-border/60 rounded-xs space-y-3">
-                <div className="flex items-start justify-between gap-3">
+              <div className="p-4 bg-brand-stone/20 border border-brand-border/60 rounded-xs space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-brand-ivory mb-1 font-bold">
-                      {isAr ? 'كود الـ API Key الخاص بك من CallMeBot:' : 'CallMeBot Personal API Key:'}
+                      {isAr ? '1. رقم هاتفك المستلم للإشعارات (مع كود مصر 20):' : '1. Recipient WhatsApp Number (with country code):'}
+                    </label>
+                    <input
+                      type="text"
+                      value={waGateway.targetPhone || settings.whatsappNumber || ''}
+                      onChange={(e) => setWaGateway({ ...waGateway, targetPhone: e.target.value.trim() })}
+                      placeholder="201021483802"
+                      className="w-full bg-brand-charcoal border border-brand-border px-3 py-2 text-brand-ivory font-mono rounded-sm focus:border-brand-gold focus:outline-none"
+                    />
+                    <p className="text-[10px] text-brand-cream/60 mt-1">
+                      {isAr ? 'يجب أن يكون نفس الرقم الذي تستخدمه في الواتساب لمراسلة البوت.' : 'Must match the phone number you use on WhatsApp.'}
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="block text-brand-ivory mb-1 font-bold">
+                      {isAr ? '2. كود الـ API Key المستلم من البوت:' : '2. API Key received from bot:'}
                     </label>
                     <input
                       type="text"
                       value={waGateway.callmebotApiKey || ''}
                       onChange={(e) => setWaGateway({ ...waGateway, callmebotApiKey: e.target.value.trim() })}
-                      placeholder={isAr ? 'مثال: 123456' : 'e.g. 123456'}
-                      className="w-full sm:w-80 bg-brand-charcoal border border-brand-border px-3 py-2 text-brand-gold font-bold rounded-sm focus:border-brand-gold focus:outline-none"
+                      placeholder={isAr ? 'مثال: 1234567' : 'e.g. 1234567'}
+                      className="w-full bg-brand-charcoal border border-brand-border px-3 py-2 text-brand-gold font-mono font-bold rounded-sm focus:border-brand-gold focus:outline-none"
                     />
+                    <p className="text-[10px] text-brand-cream/60 mt-1">
+                      {isAr ? 'الكود الرقمي الذي سيرسله لك البوت في رسالة الرد.' : 'The numeric key replied by CallMeBot.'}
+                    </p>
                   </div>
-                  <a
-                    href={`https://wa.me/34644444444?text=${encodeURIComponent('I allow callmebot to send me messages')}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="px-3 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xs text-[11px] font-bold flex items-center space-x-1.5 rtl:space-x-reverse transition-colors flex-shrink-0"
-                  >
-                    <MessageCircle className="w-3.5 h-3.5" />
-                    <span>{isAr ? 'احصل على كود التفعيل المجاني (10 ثوانٍ)' : 'Get Free Activation Key'}</span>
-                  </a>
+                </div>
+
+                <div className="p-3 bg-brand-charcoal/80 border border-brand-border/80 rounded-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                  <div>
+                    <p className="text-xs font-bold text-brand-ivory">
+                      {isAr ? 'الخطوة الأولى: فتح المحادثة مع بوت التفعيل' : 'Step 1: Open chat with activation bot'}
+                    </p>
+                    <p className="text-[11px] text-brand-cream/60">
+                      {isAr ? 'اضغط الزر الأخضر وسيفتح لك واتساب تلقائياً مع الرسالة الجاهزة: "I allow callmebot to send me messages".' : 'Click the button to open WhatsApp with the pre-filled message.'}
+                    </p>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row gap-2 flex-shrink-0 w-full sm:w-auto">
+                    <a
+                      href={`https://wa.me/34621062163?text=${encodeURIComponent('I allow callmebot to send me messages')}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xs text-xs font-bold flex items-center justify-center space-x-1.5 rtl:space-x-reverse transition-colors shadow-sm"
+                    >
+                      <MessageCircle className="w-4 h-4" />
+                      <span>{isAr ? 'اضغط هنا لمراسلة البوت الأساسي' : 'Message Primary Bot'}</span>
+                    </a>
+                    <a
+                      href={`https://wa.me/34698288973?text=${encodeURIComponent('I allow callmebot to send me messages')}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-3 py-2 bg-brand-stone/60 hover:bg-brand-stone text-brand-cream border border-brand-border/60 rounded-xs text-[11px] flex items-center justify-center space-x-1 rtl:space-x-reverse transition-colors"
+                      title={isAr ? 'سيرفر بديل في حال كان السيرفر الأول مشغولاً' : 'Alternative bot if primary is busy'}
+                    >
+                      <span>{isAr ? 'بوت بديل 2' : 'Backup Bot 2'}</span>
+                    </a>
+                  </div>
                 </div>
 
                 <div className="text-[11px] text-brand-cream/80 font-sans leading-relaxed pt-2 border-t border-brand-border/40">
-                  <p className="font-bold text-brand-gold mb-1">{isAr ? 'طريقة التفعيل المجاني في 3 خطوات بسيطة:' : 'Easy 3-step Activation:'}</p>
-                  <ol className="list-decimal list-inside space-y-0.5 text-brand-cream/70">
-                    <li>{isAr ? 'اضغط على الزر الأخضر بالأعلى لفتح محادثة الواتساب مع بوت التفعيل.' : 'Click the button above to message the activation bot on WhatsApp.'}</li>
-                    <li>{isAr ? 'اضغط إرسال (Send) للرسالة الجاهزة؛ سيرد عليك البوت بكود الـ API Key في ثوانٍ.' : 'Send the pre-filled message; the bot responds with your API Key instantly.'}</li>
-                    <li>{isAr ? 'الصق الكود هنا واضغط "حفظ وتجربة الإرسال". من الآن ستصلك رسالة مع كل طلب جديد!' : 'Paste the key above and click Save & Test. New orders will now ping your phone automatically!'}</li>
+                  <p className="font-bold text-brand-gold mb-1">{isAr ? 'خطوات التفعيل في 30 ثانية:' : 'Easy 30-second Activation:'}</p>
+                  <ol className="list-decimal list-inside space-y-1 text-brand-cream/80">
+                    <li>{isAr ? 'اضغط على الزر الأخضر بالأعلى لفتح محادثة الواتساب مع بوت CallMeBot.' : 'Click the green button above to message the activation bot on WhatsApp.'}</li>
+                    <li>{isAr ? 'اضغط إرسال (Send) للرسالة الجاهزة؛ سيرد عليك البوت في ثوانٍ برسالة: "Your APIKEY is: 1234567".' : 'Send the pre-filled message; the bot responds with your API Key in seconds.'}</li>
+                    <li>{isAr ? 'انسخ هذا الرقم وضعه في خانة (كود الـ API Key) أعلاه، ثم اضغط بالأسفل "حفظ إعدادات البوابة" ثم "تجربة إرسال رسالة لهاتفي الآن".' : 'Paste that key into the box above, click Save then Test!'}</li>
                   </ol>
                 </div>
               </div>
