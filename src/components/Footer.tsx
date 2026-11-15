@@ -10,13 +10,16 @@ import {
   ArrowRight,
   ArrowLeft,
   Check,
-  MapPin,
-  Phone,
-  Mail,
-  QrCode,
   ShieldCheck,
   Truck,
   Sparkles,
+  QrCode,
+  Instagram,
+  Facebook,
+  Phone,
+  MessageCircle,
+  Mail,
+  Send,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -81,27 +84,29 @@ export const Footer: React.FC = () => {
     }
   };
 
-  const formatPhoneNumber = (num?: string) => {
-    if (!num) return '+20 101 599 3802';
-    const clean = num.replace(/[^0-9+]/g, '');
-    if (clean.startsWith('+20') && clean.length === 13) {
-      return `${clean.slice(0, 3)} ${clean.slice(3, 6)} ${clean.slice(6, 9)} ${clean.slice(9)}`;
-    }
+  // Format local Egyptian phone number like the reference image (e.g. 01015993802)
+  const formatLocalEgyptianPhone = (num?: string) => {
+    if (!num) return '01015993802';
+    const clean = num.replace(/[^0-9]/g, '');
     if (clean.startsWith('20') && clean.length === 12) {
-      return `+20 ${clean.slice(2, 5)} ${clean.slice(5, 8)} ${clean.slice(8)}`;
+      return `0${clean.slice(2)}`;
     }
-    return clean.startsWith('+') ? clean : `+${clean}`;
+    if (clean.startsWith('0') && clean.length === 11) {
+      return clean;
+    }
+    return clean || '01015993802';
   };
 
-  const primaryPhone = formatPhoneNumber(settings.whatsappNumber || '201015993802');
-  const secondaryPhone = formatPhoneNumber(settings.supportPhone || '+201015993802');
-  const supportEmail = settings.supportEmail || 'atheerxo140@gmail.com';
-  const whatsappRaw = (settings.whatsappNumber || '201015993802').replace(/[^0-9]/g, '');
+  const displayPhone = formatLocalEgyptianPhone(settings.whatsappNumber || settings.supportPhone || '01015993802');
+  const rawWhatsApp = (settings.whatsappNumber || '201015993802').replace(/[^0-9]/g, '');
+  const waLink = `https://wa.me/${rawWhatsApp}?text=${encodeURIComponent(
+    isAr ? 'مرحباً دار أثير، أرغب بالاستفسار عن القطع المتاحة وطلب أوردر' : 'Hello ATHEER, I would like to inquire about available drops'
+  )}`;
 
   return (
-    <footer className="bg-brand-black text-brand-ivory border-t border-brand-border/60 font-sans pb-24 sm:pb-8">
+    <footer className="bg-brand-black text-brand-ivory border-t border-brand-border/60 font-sans pb-24 sm:pb-8 relative overflow-hidden">
       {/* 1. Drop Club VIP Signup */}
-      <div className="border-b border-brand-border/40 py-14 sm:py-18 bg-brand-charcoal/40">
+      <div className="border-b border-brand-border/40 py-12 sm:py-16 bg-brand-charcoal/40">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
           <div className="inline-flex items-center space-x-2 rtl:space-x-reverse text-brand-gold text-[10px] sm:text-xs uppercase tracking-[0.25em] font-mono font-bold mb-3">
             <Flame className="w-3.5 h-3.5" />
@@ -152,9 +157,9 @@ export const Footer: React.FC = () => {
       </div>
 
       {/* 2. Caesar Trust & Guarantee Strip */}
-      <div className="border-b border-brand-border/40 bg-brand-charcoal/70 py-6 sm:py-8 px-4 sm:px-6 lg:px-8">
+      <div className="border-b border-brand-border/40 bg-brand-charcoal/70 py-6 sm:py-7 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8 text-center sm:text-start">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center sm:text-start">
             <div className="flex items-center space-x-3.5 rtl:space-x-reverse justify-center sm:justify-start">
               <ShieldCheck className="w-6 h-6 text-brand-gold flex-shrink-0" />
               <div className="text-xs">
@@ -194,164 +199,200 @@ export const Footer: React.FC = () => {
         </div>
       </div>
 
-      {/* 3. Main Architectural 3-Column Footer Directory */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 sm:pt-20 pb-10">
-        {/* Brand Hallmark Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-brand-border/40 pb-8 mb-12">
-          <div className="flex items-center space-x-2.5 rtl:space-x-reverse">
-            {isAr ? (
-              <>
-                <span className="font-arabic font-bold text-2xl sm:text-3xl text-brand-ivory">أثير</span>
-                <span className="text-brand-gold text-xl sm:text-2xl font-light">/</span>
-                <span className="font-english font-black text-2xl sm:text-3xl tracking-[0.2em] text-brand-gold uppercase">
-                  ATHEER
-                </span>
-              </>
-            ) : (
-              <>
-                <span className="font-english font-black text-2xl sm:text-3xl tracking-[0.2em] text-brand-ivory uppercase">
-                  ATHEER
-                </span>
-                <span className="text-brand-gold text-xl sm:text-2xl font-light">/</span>
-                <span className="font-arabic font-bold text-2xl sm:text-3xl text-brand-gold">أثير</span>
-              </>
-            )}
-          </div>
+      {/* 3. Main Footer Directory Matching User Screenshot Layout */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 sm:pt-20 pb-10 relative">
+        {/* Subtle Ambient Curved Golden Arc in Top-Right Corner (like reference image) */}
+        <div className="absolute top-0 right-0 w-80 h-80 rounded-full border border-brand-gold/15 pointer-events-none -mr-20 -mt-20 hidden md:block" />
+        <div className="absolute top-0 right-0 w-[420px] h-[420px] rounded-full border border-brand-gold/10 pointer-events-none -mr-32 -mt-32 hidden md:block" />
 
-          <p className="text-xs sm:text-sm text-brand-cream/70 font-light max-w-xl leading-relaxed">
-            {isAr
-              ? 'دار أزياء الستريتوير المصرية الراقية · نسيج شتوي ثقيل ٥٠٠ جم/م² مصمم بأعلى معايير الإتقان والفخامة'
-              : 'Egyptian Luxury Heavyweight Streetwear Atelier · 500 GSM custom milled luxury fleece'}
-          </p>
-        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10 lg:gap-8 items-start">
+          {/* Brand Column (Right side in RTL, Span 4) */}
+          <div className="lg:col-span-5 space-y-4 text-start">
+            {/* Logo Emblem Matching Reference Layout */}
+            <div className="flex items-center space-x-3 rtl:space-x-reverse">
+              {/* Luxury Monogram Badge */}
+              <div className="w-12 h-12 rounded-sm bg-gradient-to-br from-brand-gold/25 to-brand-gold/10 border-2 border-brand-gold flex items-center justify-center shrink-0 shadow-gold">
+                <span className="font-serif font-black text-xl text-brand-gold">أ</span>
+              </div>
 
-        {/* 3 Columns Layout matching reference design */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-14 lg:gap-20">
-          {/* Column 1 (Right in RTL, Left in LTR): Contact Us / اتصل بنا */}
-          <div className="space-y-4">
-            <h4 className="font-sans font-bold text-xs sm:text-sm uppercase tracking-widest text-brand-gold mb-5 pb-1 border-b border-brand-gold/30 inline-block">
-              {isAr ? 'اتصل بنا' : 'CONTACT US'}
-            </h4>
-            <div className="space-y-3.5 text-xs sm:text-sm text-brand-cream/80 font-light">
-              <p>
-                <a
-                  href={`mailto:${supportEmail}`}
-                  className="hover:text-brand-gold transition-colors font-mono block text-brand-ivory hover:underline"
-                  dir="ltr"
-                >
-                  {supportEmail}
-                </a>
-              </p>
-              <p>
-                <a
-                  href={`tel:${primaryPhone.replace(/\s+/g, '')}`}
-                  className="hover:text-brand-gold transition-colors font-mono block text-brand-cream/90"
-                  dir="ltr"
-                >
-                  {primaryPhone}
-                </a>
-              </p>
-              <p>
-                <a
-                  href={`https://wa.me/${whatsappRaw}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-brand-gold transition-colors font-mono block text-brand-gold hover:underline"
-                  dir="ltr"
-                >
-                  {secondaryPhone}
-                </a>
-              </p>
-              <p className="text-brand-cream/70 leading-relaxed pt-1">
-                {isAr
-                  ? 'الأتيليه الرقمي، القاهرة، مصر'
-                  : 'Digital Atelier, Cairo, Egypt'}
-              </p>
-              <p className="text-[11px] font-mono text-brand-gold/80 pt-0.5">
-                {isAr
-                  ? 'خدمة العملاء: يومياً من ١٠ ص حتى ١٠ م'
-                  : 'Customer Care: Daily 10 AM – 10 PM'}
-              </p>
+              <div className="flex flex-col">
+                <span className="font-arabic font-black text-2xl sm:text-3xl text-brand-gold tracking-wide leading-none">
+                  أثير
+                </span>
+                <span className="font-english font-black text-xs sm:text-sm tracking-[0.28em] text-brand-ivory uppercase leading-relaxed">
+                  ATHEER ATELIER
+                </span>
+              </div>
             </div>
+
+            {/* Concise Mission / Slogan (matching screenshot sentence structure) */}
+            <p className="text-xs sm:text-sm text-brand-cream/75 font-light leading-relaxed max-w-md pt-2">
+              {isAr
+                ? 'شريكك في التميز يجمع جودة النسيج الثقيل والتصميم العصري حول هدف واحد: أناقتك وثقتك.'
+                : 'Strategic fashion atelier uniting 500 GSM heavy craftsmanship and bespoke streetwear around one goal: your distinct presence.'}
+            </p>
           </div>
 
-          {/* Column 2 (Middle): Capabilities / القدرات */}
-          <div className="space-y-4">
-            <h4 className="font-sans font-bold text-xs sm:text-sm uppercase tracking-widest text-brand-gold mb-5 pb-1 border-b border-brand-gold/30 inline-block">
-              {isAr ? 'القدرات' : 'CAPABILITIES'}
+          {/* Column 1: روابط سريعة (Span 2) */}
+          <div className="lg:col-span-2 space-y-4 text-start">
+            <h4 className="font-bold text-sm sm:text-base text-brand-ivory font-sans">
+              {isAr ? 'روابط سريعة' : 'QUICK LINKS'}
             </h4>
-            <ul className="space-y-3.5 text-xs sm:text-sm text-brand-cream/80 font-light">
+            <ul className="space-y-3 text-xs sm:text-sm text-brand-cream/80 font-light">
               <li>
-                <Link href="/p/about" className="hover:text-brand-gold transition-colors block">
-                  {isAr ? 'عملية الإنتاج ومعايير النسيج ٥٠٠ جم/م²' : 'Production Process & 500 GSM Spec'}
+                <Link href="/" className="hover:text-brand-gold transition-colors block">
+                  {isAr ? 'الرئيسية' : 'Home'}
                 </Link>
               </li>
               <li>
+                <Link href="/p/about" className="hover:text-brand-gold transition-colors block">
+                  {isAr ? 'عن دار أثير' : 'About ATHEER'}
+                </Link>
+              </li>
+              <li>
+                <a href="/#products" className="hover:text-brand-gold transition-colors block">
+                  {isAr ? 'تشكيلات المتجر' : 'Collections'}
+                </a>
+              </li>
+              <li>
+                <Link href="/account/loyalty" className="hover:text-brand-gold transition-colors block text-brand-gold">
+                  {isAr ? 'كارت الولاء ومكافآت أثير' : 'ATHEER Loyalty Pass'}
+                </Link>
+              </li>
+              <li>
+                <Link href="/track-order" className="hover:text-brand-gold transition-colors block">
+                  {isAr ? 'تتبع حالة الطلب' : 'Track Order'}
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Column 2: خدماتنا (Span 2) */}
+          <div className="lg:col-span-2 space-y-4 text-start">
+            <h4 className="font-bold text-sm sm:text-base text-brand-ivory font-sans">
+              {isAr ? 'خدماتنا' : 'OUR SERVICES'}
+            </h4>
+            <ul className="space-y-3 text-xs sm:text-sm text-brand-cream/80 font-light">
+              <li>
+                <a href="/#products" className="hover:text-brand-gold transition-colors block">
+                  {isAr ? 'هوديز وسويت شيرتات ٥٠٠ جم/م²' : '500 GSM Heavyweight Drops'}
+                </a>
+              </li>
+              <li>
                 <Link href="/p/return-policy" className="hover:text-brand-gold transition-colors block">
-                  {isAr ? 'ضمان الجودة وفحص الشحنة مع المندوب' : 'Quality Guarantee & Open Box Check'}
+                  {isAr ? 'معاينة الشحنة قبل الاستلام والدفع' : 'Open Box Inspection Guarantee'}
                 </Link>
               </li>
               <li>
                 <Link href="/p/shipping-policy" className="hover:text-brand-gold transition-colors block">
-                  {isAr ? 'التصدير والخدمات اللوجستية والشحن' : 'Nationwide Delivery & Logistics'}
+                  {isAr ? 'شحن سريع لكافة محافظات مصر' : 'Fast Delivery Across Egypt'}
+                </Link>
+              </li>
+              <li>
+                <Link href="/p/return-policy" className="hover:text-brand-gold transition-colors block">
+                  {isAr ? 'استبدال واسترجاع سهل مجاناً' : '14-Day Free Exchange'}
                 </Link>
               </li>
               <li>
                 <a href="/#fabric-fit" className="hover:text-brand-gold transition-colors block">
-                  {isAr ? 'الأبعاد القياسية ودليل المقاسات' : 'Standard Dimensions & Size Guide'}
+                  {isAr ? 'إرشادات القياس والأوفرسايز' : 'Boxy Oversized Sizing Guide'}
                 </a>
-              </li>
-              <li>
-                <Link href="/p/faq" className="hover:text-brand-gold transition-colors block text-brand-cream/60">
-                  {isAr ? 'الأسئلة الشائعة وإرشادات العناية بالقطعة' : 'FAQ & Garment Care Instructions'}
-                </Link>
               </li>
             </ul>
           </div>
 
-          {/* Column 3 (Left in RTL, Right in LTR): Explore / استكشف */}
-          <div className="space-y-4">
-            <h4 className="font-sans font-bold text-xs sm:text-sm uppercase tracking-widest text-brand-gold mb-5 pb-1 border-b border-brand-gold/30 inline-block">
-              {isAr ? 'استكشف' : 'EXPLORE'}
+          {/* Column 3: تواصل معنا (Span 3 - Phone + Quick Action + Social Icons) */}
+          <div className="lg:col-span-3 space-y-4 text-start">
+            <h4 className="font-bold text-sm sm:text-base text-brand-ivory font-sans">
+              {isAr ? 'تواصل معنا' : 'CONTACT US'}
             </h4>
-            <ul className="space-y-3.5 text-xs sm:text-sm text-brand-cream/80 font-light">
-              <li>
-                <a href="/#products" className="hover:text-brand-gold transition-colors block font-medium text-brand-ivory">
-                  {isAr ? 'جميع القطع (الإصدار الأساسي)' : 'All Pieces (Core Drop)'}
-                </a>
-              </li>
-              <li>
-                <a href="/#products" className="hover:text-brand-gold transition-colors block">
-                  {isAr ? 'مجموعة الهوديز الثقيلة (٥٠٠ جم/م²)' : 'Heavyweight Hoodies Collection'}
-                </a>
-              </li>
-              <li>
-                <a href="/#products" className="hover:text-brand-gold transition-colors block">
-                  {isAr ? 'مجموعة السويت شيرتات الأوفرسايز' : 'Oversized Sweatshirts Collection'}
-                </a>
-              </li>
-              <li>
-                <a href="/#products" className="hover:text-brand-gold transition-colors block">
-                  {isAr ? 'تشكيلات الهاف زيب بول أوفر' : 'Quarter-Zip Pullovers Drop'}
-                </a>
-              </li>
-              <li>
-                <Link href="/account/loyalty" className="hover:text-brand-gold transition-colors block text-brand-gold font-mono">
-                  {isAr ? 'كارت الولاء ومكافآت أثير الرقمي' : 'ATHEER Loyalty Pass & Rewards'}
-                </Link>
-              </li>
-              <li>
-                <Link href="/track-order" className="hover:text-brand-gold transition-colors block text-brand-cream/60">
-                  {isAr ? 'تتبع حالة شحنتك المباشر' : 'Live Shipment Tracking'}
-                </Link>
-              </li>
-            </ul>
+
+            {/* Large Bold Phone Number (matching screenshot style) */}
+            <div className="pt-1">
+              <a
+                href={`tel:${displayPhone}`}
+                className="text-lg sm:text-2xl font-bold font-mono text-brand-ivory hover:text-brand-gold transition-colors tracking-wider block"
+                dir="ltr"
+              >
+                {displayPhone}
+              </a>
+            </div>
+
+            {/* Quick Action Link / Button (matching "طلب استشارة سريعة" in screenshot) */}
+            <div>
+              <a
+                href={waLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs sm:text-sm font-medium text-brand-cream hover:text-brand-gold transition-colors inline-block pb-0.5 border-b border-brand-cream/30 hover:border-brand-gold"
+              >
+                {isAr ? 'طلب استفسار أو طلب سريع' : 'Quick Inquiry & Fast Order'}
+              </a>
+            </div>
+
+            {/* Circular Social Icons Matching Screenshot */}
+            <div className="pt-3 flex items-center space-x-2.5 rtl:space-x-reverse">
+              {/* WhatsApp */}
+              <a
+                href={waLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="WhatsApp"
+                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#181818] border border-brand-border/80 hover:border-brand-gold hover:text-brand-gold hover:bg-brand-black transition-all flex items-center justify-center text-brand-cream/80 shadow-md"
+              >
+                <MessageCircle className="w-4 h-4" />
+              </a>
+
+              {/* Instagram */}
+              <a
+                href={settings.socialInstagram || 'https://instagram.com/atheer.store'}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Instagram"
+                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#181818] border border-brand-border/80 hover:border-brand-gold hover:text-brand-gold hover:bg-brand-black transition-all flex items-center justify-center text-brand-cream/80 shadow-md"
+              >
+                <Instagram className="w-4 h-4" />
+              </a>
+
+              {/* TikTok */}
+              <a
+                href={settings.socialTiktok || 'https://tiktok.com/@atheer.store'}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="TikTok"
+                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#181818] border border-brand-border/80 hover:border-brand-gold hover:text-brand-gold hover:bg-brand-black transition-all flex items-center justify-center text-brand-cream/80 shadow-md"
+              >
+                <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                  <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 3 15.68 6.34 6.34 0 0 0 9.34 22a6.34 6.34 0 0 0 6.34-6.32V8.92a8.28 8.28 0 0 0 4.91 1.6V7.07a4.8 4.8 0 0 1-1-.38z" />
+                </svg>
+              </a>
+
+              {/* Facebook */}
+              <a
+                href={settings.socialFacebook || 'https://facebook.com/atheer.store'}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Facebook"
+                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#181818] border border-brand-border/80 hover:border-brand-gold hover:text-brand-gold hover:bg-brand-black transition-all flex items-center justify-center text-brand-cream/80 shadow-md"
+              >
+                <Facebook className="w-4 h-4" />
+              </a>
+
+              {/* Mail */}
+              <a
+                href={`mailto:${settings.supportEmail || 'atheerxo140@gmail.com'}`}
+                aria-label="Email"
+                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#181818] border border-brand-border/80 hover:border-brand-gold hover:text-brand-gold hover:bg-brand-black transition-all flex items-center justify-center text-brand-cream/80 shadow-md"
+              >
+                <Mail className="w-4 h-4" />
+              </a>
+            </div>
           </div>
         </div>
 
-        {/* Permanent Store QR Code Showcase in Footer (Subtle & Elegant) */}
+        {/* Permanent Store QR Code Showcase (Sleek card above copyright) */}
         {content.showQrCode !== false && (
-          <div className="mt-14 p-5 sm:p-7 bg-brand-charcoal/50 border border-brand-gold/30 rounded-xs flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl">
+          <div className="mt-14 p-5 sm:p-6 bg-brand-charcoal/50 border border-brand-gold/30 rounded-xs flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl">
             <div className="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-5 rtl:space-x-reverse text-center sm:text-start rtl:sm:text-start">
               <div className="p-2 bg-brand-black border border-brand-gold/50 rounded-xs shrink-0 shadow-gold relative">
                 {footerQrUrl ? (
@@ -359,37 +400,37 @@ export const Footer: React.FC = () => {
                     <img
                       src={footerQrUrl}
                       alt="ATHEER Permanent Store QR"
-                      className="w-24 h-24 sm:w-28 sm:h-28 object-contain"
+                      className="w-24 h-24 object-contain"
                     />
                     <div className="absolute inset-0 m-auto w-6 h-6 rounded-xs bg-brand-black border border-brand-gold text-brand-gold flex items-center justify-center font-bold text-xs shadow-md">
                       أ
                     </div>
                   </div>
                 ) : (
-                  <div className="w-24 h-24 sm:w-28 sm:h-28 bg-brand-charcoal animate-pulse flex items-center justify-center">
+                  <div className="w-24 h-24 bg-brand-charcoal animate-pulse flex items-center justify-center">
                     <QrCode className="w-7 h-7 text-brand-gold" />
                   </div>
                 )}
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-1">
                 <div className="flex items-center justify-center sm:justify-start space-x-2 rtl:space-x-reverse">
                   <span className="text-[10px] font-mono uppercase tracking-widest text-brand-gold font-bold">
-                    {isAr ? 'رمز المتجر الدائم' : 'Permanent Store QR Code'}
+                    {isAr ? 'رمز المتجر الدائم' : 'Permanent Store QR'}
                   </span>
                   <span className="bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 text-[9px] font-mono px-2 py-0.5 rounded-full">
                     {isAr ? 'مدى الحياة' : 'Lifetime'}
                   </span>
                 </div>
-                <h4 className="text-base sm:text-lg font-bold text-brand-ivory font-serif">
+                <h4 className="text-sm sm:text-base font-bold text-brand-ivory font-serif">
                   {isAr
-                    ? 'امسح الرمز بكاميرا هاتفك لزيارة متجر أثير ومشاركة الكتالوج'
+                    ? 'امسح الرمز بكاميرا هاتفك لزيارة متجر أثير والطلب مباشرة'
                     : 'Scan to Visit & Share ATHEER Streetwear'}
                 </h4>
                 <p className="text-xs text-brand-cream/70 font-sans max-w-lg leading-relaxed">
                   {isAr
-                    ? 'وجّه كاميرا هاتفك المحمول نحو الرمز لفتح المتجر مباشرة والاطلاع على تشكيلة الهوديز وطلب القطع من الموبايل في أي وقت.'
-                    : 'Point your mobile camera to instantly explore our heavyweight hoodie drop and place COD orders directly.'}
+                    ? 'وجّه كاميرا هاتفك نحو الرمز لفتح المتجر والاطلاع على تشكيلة الهوديز وطلب القطع من الموبايل في أي وقت.'
+                    : 'Point your camera to instantly explore our heavyweight collection and order.'}
                 </p>
               </div>
             </div>
@@ -408,7 +449,7 @@ export const Footer: React.FC = () => {
           </div>
         )}
 
-        {/* 4. Elegant Thin Divider Line & Bottom Bar matching reference design */}
+        {/* 4. Elegant Bottom Bar */}
         <div className="border-t border-brand-border/60 mt-14 pt-6 flex flex-col sm:flex-row items-center justify-between text-xs sm:text-sm text-brand-cream/70 font-mono gap-4">
           <div className="text-center sm:text-start text-brand-cream/80">
             {isAr ? 'تم التصميم والتطوير بواسطة دار أثير' : 'Designed & Developed by ATHEER Atelier'}

@@ -123,6 +123,7 @@ export interface StoreSettings {
   cairoShowroomsAr: string;
   socialInstagram: string;
   socialTiktok: string;
+  socialFacebook?: string;
   showQrCode?: boolean;
   qrTargetUrl?: string;
 }
