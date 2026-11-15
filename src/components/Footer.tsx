@@ -318,12 +318,6 @@ export const Footer: React.FC = () => {
           </div>
         )}
 
-        {/* Egypt Delivery Coverage Banner */}
-        <div className="mt-12 pt-8 border-t border-brand-border/40 text-center font-mono">
-          <p className="text-[11px] text-brand-gold/85 uppercase tracking-wider">
-            {t('footerEgyptDelivery')}
-          </p>
-        </div>
 
         {/* Bottom Credits & Payment Badges */}
         <div className="mt-8 pt-6 border-t border-brand-border/30 flex flex-col sm:flex-row items-center justify-between text-[11px] text-brand-muted space-y-4 sm:space-y-0">
