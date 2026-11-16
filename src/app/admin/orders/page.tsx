@@ -6,6 +6,7 @@ import { useLanguage } from '@/context/LanguageContext';
 import { StoredOrder, OrderStatus, PaymentStatus } from '@/data/localOrdersStore';
 import { adminFetch } from '@/lib/adminAuthClient';
 import { getAdminToCustomerWhatsAppUrl } from '@/lib/whatsappUtils';
+import QRCode from 'qrcode';
 import {
   ShoppingBag,
   Search,
@@ -28,6 +29,9 @@ import {
   FileText,
   User,
   MessageCircle,
+  Receipt,
+  Copy,
+  Check,
 } from 'lucide-react';
 
 export default function AdminOrdersPage() {
@@ -44,9 +48,46 @@ export default function AdminOrdersPage() {
   // Modal States
   const [selectedOrder, setSelectedOrder] = useState<StoredOrder | null>(null);
   const [isInvoiceModalOpen, setIsInvoiceModalOpen] = useState(false);
+  const [invoiceFormat, setInvoiceFormat] = useState<'thermal' | 'standard'>('thermal');
+  const [orderQrUrl, setOrderQrUrl] = useState('');
+  const [copiedReceipt, setCopiedReceipt] = useState(false);
   const [feedbackMsg, setFeedbackMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
   const isFetchingRef = React.useRef(false);
+
+  // Generate QR code for order tracking
+  useEffect(() => {
+    if (selectedOrder) {
+      const trackingUrl = typeof window !== 'undefined'
+        ? `${window.location.origin}/track-order?search=${encodeURIComponent(selectedOrder.orderReference)}`
+        : `https://atheer.store/track-order?search=${encodeURIComponent(selectedOrder.orderReference)}`;
+
+      QRCode.toDataURL(trackingUrl, {
+        margin: 1,
+        width: 140,
+        color: { dark: '#000000', light: '#ffffff' }
+      })
+        .then(setOrderQrUrl)
+        .catch(() => {});
+    }
+  }, [selectedOrder]);
+
+  const copyShortReceipt = (order: StoredOrder) => {
+    const itemsList = order.items
+      .map(
+        (it) =>
+          `• ${it.productNameAr || it.productNameEn} (${it.selectedSize} / ${it.selectedColor}) × ${it.quantity} = ${it.totalPrice.toLocaleString()} ج.م`
+      )
+      .join('\n');
+
+    const text = `🧾 إيصال شحن وطلب - دار أثير | ATHEER\n--------------------------------\nرقم الطلب: ${order.orderReference}\nالتاريخ: ${new Date(order.createdAt).toLocaleDateString(isAr ? 'ar-EG' : 'en-GB')}\nطريقة السداد: الدفع نقداً عند الاستلام (COD)\n--------------------------------\n👤 بيانات العميل المستلم:\nالاسم: ${order.customerName}\nالهاتف: ${order.customerPhone}${order.customerEmail ? `\nالبريد: ${order.customerEmail}` : ''}\nالعنوان: ${order.shippingCity} (${order.governorate || 'القاهرة'})\n${order.shippingAddress}${order.notes ? `\nملاحظة: ${order.notes}` : ''}\n--------------------------------\n📦 الأصناف:\n${itemsList}\n--------------------------------\nمجموع الأصناف: ${order.subtotal.toLocaleString()} ج.م\nمصاريف الشحن: ${order.shippingFee === 0 ? 'مجاني' : `${order.shippingFee.toLocaleString()} ج.م`}${order.discountAmount ? `\nالخصم: -${order.discountAmount.toLocaleString()} ج.م` : ''}\n💰 الإجمالي المطلوب تحصيله كاش: ${order.totalAmount.toLocaleString()} ج.م\n--------------------------------\n⭐ يحق للعميل فحص ومعاينة الطرد مع المندوب قبل الاستلام والدفع\nخدمة عملاء أثير: 01015993802`;
+
+    if (navigator?.clipboard) {
+      navigator.clipboard.writeText(text);
+      setCopiedReceipt(true);
+      setTimeout(() => setCopiedReceipt(false), 2500);
+    }
+  };
 
   const fetchOrders = async (silent = false) => {
     if (isFetchingRef.current && silent) return;
@@ -474,12 +515,13 @@ export default function AdminOrdersPage() {
                         type="button"
                         onClick={() => {
                           setSelectedOrder(order);
+                          setInvoiceFormat('thermal');
                           setIsInvoiceModalOpen(true);
                         }}
                         className="p-2 border border-brand-border bg-brand-stone/30 text-brand-cream/80 hover:text-brand-gold rounded-xs transition-colors shrink-0"
-                        title={isAr ? 'طباعة الفاتورة' : 'Print Invoice'}
+                        title={isAr ? 'طباعة إيصال مختصر (80mm)' : 'Print Mini Receipt'}
                       >
-                        <Printer className="w-4 h-4" />
+                        <Receipt className="w-4 h-4 text-brand-gold" />
                       </button>
                     </div>
                   </div>
@@ -629,10 +671,22 @@ export default function AdminOrdersPage() {
                           <button
                             onClick={() => {
                               setSelectedOrder(order);
+                              setInvoiceFormat('thermal');
+                              setIsInvoiceModalOpen(true);
+                            }}
+                            className="p-1.5 text-brand-gold hover:text-brand-ivory hover:bg-brand-stone rounded-xs transition-colors"
+                            title={isAr ? 'طباعة إيصال مختصر (80mm)' : 'Print Mini Receipt (80mm)'}
+                          >
+                            <Receipt className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => {
+                              setSelectedOrder(order);
+                              setInvoiceFormat('standard');
                               setIsInvoiceModalOpen(true);
                             }}
                             className="p-1.5 text-brand-cream/70 hover:text-brand-gold hover:bg-brand-stone rounded-xs transition-colors"
-                            title={isAr ? 'طباعة الفاتورة' : 'Print Invoice'}
+                            title={isAr ? 'طباعة فاتورة A4 كاملة' : 'Print Full A4 Invoice'}
                           >
                             <Printer className="w-4 h-4" />
                           </button>
@@ -673,13 +727,29 @@ export default function AdminOrdersPage() {
               </div>
               <div className="flex items-center space-x-2 rtl:space-x-reverse">
                 <button
-                  onClick={() => setIsInvoiceModalOpen(true)}
-                  className="flex items-center space-x-1.5 rtl:space-x-reverse px-3 py-1.5 bg-brand-stone border border-brand-border text-brand-ivory hover:border-brand-gold rounded-xs"
+                  type="button"
+                  onClick={() => {
+                    setInvoiceFormat('thermal');
+                    setIsInvoiceModalOpen(true);
+                  }}
+                  className="flex items-center space-x-1.5 rtl:space-x-reverse px-2.5 py-1.5 bg-brand-gold/15 border border-brand-gold/50 text-brand-gold hover:bg-brand-gold hover:text-brand-black rounded-xs transition-colors font-bold text-xs"
                 >
-                  <Printer className="w-3.5 h-3.5 text-brand-gold" />
-                  <span>{isAr ? 'فاتورة' : 'Invoice'}</span>
+                  <Receipt className="w-3.5 h-3.5" />
+                  <span>{isAr ? 'إيصال مختصر (80mm)' : 'Mini Receipt'}</span>
                 </button>
                 <button
+                  type="button"
+                  onClick={() => {
+                    setInvoiceFormat('standard');
+                    setIsInvoiceModalOpen(true);
+                  }}
+                  className="flex items-center space-x-1.5 rtl:space-x-reverse px-2.5 py-1.5 bg-brand-stone border border-brand-border text-brand-ivory hover:border-brand-gold rounded-xs transition-colors text-xs"
+                >
+                  <Printer className="w-3.5 h-3.5 text-brand-gold" />
+                  <span>{isAr ? 'فاتورة كاملة' : 'Invoice'}</span>
+                </button>
+                <button
+                  type="button"
                   onClick={() => setSelectedOrder(null)}
                   className="p-1.5 text-brand-cream/60 hover:text-brand-ivory"
                 >
@@ -908,163 +978,392 @@ export default function AdminOrdersPage() {
         </div>
       )}
 
-      {/* PRINTABLE INVOICE SLIP MODAL */}
+      {/* PRINTABLE INVOICE / MINI THERMAL RECEIPT SLIP MODAL */}
       {selectedOrder && isInvoiceModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4 overflow-y-auto">
-          <div className="bg-white text-black w-full max-w-2xl rounded-sm p-8 shadow-2xl space-y-6 my-6 print:m-0 print:p-0 print:w-full print:shadow-none">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-2 sm:p-4 overflow-y-auto">
+          <div
+            id="printable-receipt-modal"
+            className={`bg-white text-black w-full rounded-sm shadow-2xl space-y-4 my-4 font-mono print:m-0 print:p-0 print:w-full print:shadow-none ${
+              invoiceFormat === 'thermal'
+                ? 'max-w-sm p-4 sm:p-6 thermal-receipt-paper border-2 border-dashed border-gray-400'
+                : 'max-w-2xl p-6 sm:p-8'
+            }`}
+          >
             {/* Action Bar (hidden when printed) */}
-            <div className="flex items-center justify-between pb-4 border-b border-gray-200 print:hidden font-mono text-xs">
-              <span className="font-bold text-gray-700">{isAr ? 'فاتورة شحن وتوصيل دار أثير الرسمية' : 'ATHEER Commercial COD Invoice Slip'}</span>
-              <div className="flex items-center space-x-2 rtl:space-x-reverse">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-gray-200 print-hide print:hidden text-xs">
+              {/* Format Toggle Tabs */}
+              <div className="flex items-center bg-gray-100 p-1 rounded-sm border border-gray-200">
+                <button
+                  type="button"
+                  onClick={() => setInvoiceFormat('thermal')}
+                  className={`px-3 py-1.5 rounded-xs font-bold text-xs flex items-center space-x-1.5 rtl:space-x-reverse transition-all ${
+                    invoiceFormat === 'thermal'
+                      ? 'bg-black text-white shadow-sm'
+                      : 'text-gray-700 hover:text-black'
+                  }`}
+                >
+                  <Receipt className="w-3.5 h-3.5" />
+                  <span>{isAr ? 'إيصال مختصر (80mm)' : 'Mini Receipt (80mm)'}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setInvoiceFormat('standard')}
+                  className={`px-3 py-1.5 rounded-xs font-bold text-xs flex items-center space-x-1.5 rtl:space-x-reverse transition-all ${
+                    invoiceFormat === 'standard'
+                      ? 'bg-black text-white shadow-sm'
+                      : 'text-gray-700 hover:text-black'
+                  }`}
+                >
+                  <FileText className="w-3.5 h-3.5" />
+                  <span>{isAr ? 'فاتورة A4 كاملة' : 'Full A4 Invoice'}</span>
+                </button>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex flex-wrap items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => copyShortReceipt(selectedOrder)}
+                  className="px-2.5 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-800 border border-gray-300 font-bold rounded-xs flex items-center space-x-1 rtl:space-x-reverse transition-colors"
+                  title={isAr ? 'نسخ بيانات الإيصال للمندوب أو شركات الشحن' : 'Copy receipt text'}
+                >
+                  {copiedReceipt ? (
+                    <>
+                      <Check className="w-3.5 h-3.5 text-emerald-600" />
+                      <span className="text-emerald-700">{isAr ? 'تم النسخ!' : 'Copied!'}</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-3.5 h-3.5 text-gray-600" />
+                      <span>{isAr ? 'نسخ' : 'Copy'}</span>
+                    </>
+                  )}
+                </button>
+
                 <a
                   href={getAdminToCustomerWhatsAppUrl(selectedOrder, isAr ? 'ar' : 'en')}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold uppercase rounded-sm flex items-center space-x-1.5 rtl:space-x-reverse"
+                  className="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xs flex items-center space-x-1 rtl:space-x-reverse transition-colors"
+                  title={isAr ? 'إرسال بيانات الإيصال لواتساب العميل' : 'Send via WhatsApp'}
                 >
-                  <MessageCircle className="w-4 h-4" />
-                  <span>{isAr ? 'إرسال الفاتورة عبر واتساب' : 'Send via WhatsApp'}</span>
+                  <MessageCircle className="w-3.5 h-3.5" />
+                  <span>{isAr ? 'واتساب' : 'WhatsApp'}</span>
                 </a>
+
                 <button
+                  type="button"
                   onClick={printInvoice}
-                  className="px-4 py-2 bg-black text-white hover:bg-gray-800 font-bold uppercase rounded-sm flex items-center space-x-1.5 rtl:space-x-reverse"
+                  className="px-3 py-1.5 bg-black text-white hover:bg-gray-800 font-bold rounded-xs flex items-center space-x-1.5 rtl:space-x-reverse shadow-md transition-colors"
                 >
-                  <Printer className="w-4 h-4" />
-                  <span>{isAr ? 'طباعة الفاتورة' : 'Print Invoice'}</span>
+                  <Printer className="w-3.5 h-3.5" />
+                  <span>{isAr ? 'طباعة' : 'Print'}</span>
                 </button>
+
                 <button
+                  type="button"
                   onClick={() => setIsInvoiceModalOpen(false)}
-                  className="px-3 py-2 border border-gray-300 text-gray-700 hover:bg-gray-100 rounded-sm"
+                  className="p-1.5 border border-gray-300 text-gray-700 hover:bg-gray-100 rounded-xs"
+                  aria-label="Close"
                 >
-                  {isAr ? 'إغلاق' : 'Close'}
+                  <X className="w-4 h-4" />
                 </button>
               </div>
             </div>
 
-            {/* Printable Document Body */}
-            <div className="space-y-6 text-sm">
-              {/* Invoice Header */}
-              <div className="flex justify-between items-start pb-6 border-b-2 border-black">
-                <div>
-                  <h2 className="text-3xl font-black tracking-widest uppercase">ATHEER</h2>
-                  <p className="text-xs tracking-wider text-gray-600 mt-0.5">
-                    {isAr ? 'أثير · أزياء الشارع الراقية للشباب' : 'أثير · PREMIUM YOUTH STREETWEAR'}
+            {/* FORMAT 1: COMPACT MINI THERMAL RECEIPT SLIP (80mm) */}
+            {invoiceFormat === 'thermal' ? (
+              <div className="space-y-3 text-black text-xs font-mono leading-tight">
+                {/* 1. Header: Logo, Store Name, Subtitle */}
+                <div className="text-center space-y-1 pb-2.5 border-b-2 border-dashed border-black">
+                  <div className="w-12 h-12 mx-auto mb-1 flex items-center justify-center">
+                    <img
+                      src="/images/atheer-emblem-transparent.png"
+                      alt="ATHEER Logo"
+                      className="w-full h-full object-contain filter grayscale contrast-200"
+                    />
+                  </div>
+                  <h2 className="text-xl font-black tracking-widest uppercase">ATHEER · أثير</h2>
+                  <p className="text-[10px] text-gray-700 font-bold uppercase tracking-wider">
+                    {isAr ? 'دار أزياء الشارع المصرية الفاخرة · ٥٠٠ جم' : 'PREMIUM STREETWEAR ATELIER'}
                   </p>
-                  <p className="text-[11px] text-gray-500 mt-2">
-                    {isAr ? 'القاهرة، مصر · السجل التجاري والبطاقة الضريبية: قيد التسجيل الرسمي' : 'Cairo, Egypt · Commercial Registration & Tax ID: Pending Official Filing'}
+                  <p className="text-[10px] text-gray-600">
+                    {isAr ? 'القاهرة، جمهورية مصر العربية · هاتف: 01015993802' : 'Cairo, Egypt · Tel: 01015993802'}
                   </p>
-                  <p className="text-[11px] text-gray-500">
-                    {isAr ? 'خدمة العملاء: concierge@atheer.store' : 'Concierge Support: concierge@atheer.store'}
-                  </p>
-                </div>
-                <div className="text-right rtl:text-left font-mono">
-                  <div className="text-xl font-bold">{selectedOrder.orderReference}</div>
-                  <div className="text-xs text-gray-500 mt-1">
-                    {isAr ? 'التاريخ:' : 'Date:'} {new Date(selectedOrder.createdAt).toLocaleDateString(isAr ? 'ar-EG' : 'en-GB')}
-                  </div>
-                  <div className="mt-2 inline-block px-2.5 py-1 bg-gray-100 text-gray-900 border border-gray-300 text-xs font-bold uppercase">
-                    {isAr ? 'الدفع عند الاستلام' : 'CASH ON DELIVERY (COD)'}
-                  </div>
-                </div>
-              </div>
-
-              {/* Customer & Courier Destination */}
-              <div className="grid grid-cols-2 gap-6 bg-gray-50 p-4 border border-gray-200">
-                <div>
-                  <div className="text-[10px] font-mono uppercase tracking-wider text-gray-500 font-bold mb-1">
-                    {isAr ? 'بيانات العميل المستلم:' : 'Recipient Customer:'}
-                  </div>
-                  <div className="font-bold text-gray-900 text-base">{selectedOrder.customerName}</div>
-                  <div className="font-mono text-xs text-gray-700 mt-1 font-semibold">
-                    {isAr ? 'الهاتف:' : 'Phone:'} {selectedOrder.customerPhone}
-                  </div>
-                  {selectedOrder.customerEmail && (
-                    <div className="text-xs text-gray-600">{selectedOrder.customerEmail}</div>
-                  )}
                 </div>
 
-                <div>
-                  <div className="text-[10px] font-mono uppercase tracking-wider text-gray-500 font-bold mb-1">
-                    {isAr ? 'عنوان التوصيل في مصر:' : 'Delivery Address (Egypt):'}
+                {/* 2. Order Reference & Date */}
+                <div className="pb-2.5 border-b border-dashed border-gray-400 space-y-1 text-[11px]">
+                  <div className="flex justify-between items-center font-bold">
+                    <span>{isAr ? 'رقم الطلب:' : 'Order Ref:'}</span>
+                    <span className="text-xs bg-black text-white px-2 py-0.5 rounded-xs tracking-wider">
+                      {selectedOrder.orderReference}
+                    </span>
                   </div>
-                  <div className="font-bold text-gray-900 text-sm">
-                    {selectedOrder.shippingCity} ({selectedOrder.governorate || (isAr ? 'القاهرة' : 'Cairo')})
+                  <div className="flex justify-between text-gray-700">
+                    <span>{isAr ? 'التاريخ والوقت:' : 'Date:'}</span>
+                    <span>
+                      {new Date(selectedOrder.createdAt).toLocaleDateString(isAr ? 'ar-EG' : 'en-GB')}
+                    </span>
                   </div>
-                  <div className="text-xs text-gray-700 mt-1 leading-relaxed">
-                    {selectedOrder.shippingAddress}
-                    {selectedOrder.shippingDistrict ? ` · ${selectedOrder.shippingDistrict}` : ''}
+                  <div className="flex justify-between text-gray-700">
+                    <span>{isAr ? 'طريقة السداد:' : 'Payment:'}</span>
+                    <span className="font-bold underline">
+                      {isAr ? 'الدفع نقداً عند الاستلام (COD)' : 'Cash On Delivery'}
+                    </span>
+                  </div>
+                </div>
+
+                {/* 3. Customer & Address Details (عنوان العميل بالتفصيل) */}
+                <div className="pb-2.5 border-b-2 border-dashed border-black space-y-1 text-[11px] bg-gray-50 p-2.5 rounded-xs border border-gray-200">
+                  <div className="font-bold text-black border-b border-gray-300 pb-1 flex items-center justify-between">
+                    <span>{isAr ? '📍 عنوان وبيانات المستلم:' : '📍 Recipient Address:'}</span>
+                    <span className="text-[10px] text-gray-500 font-normal">{isAr ? 'مصر' : 'Egypt'}</span>
+                  </div>
+                  <div className="flex justify-between pt-0.5">
+                    <span className="text-gray-600">{isAr ? 'العميل:' : 'Name:'}</span>
+                    <span className="font-bold text-gray-900">{selectedOrder.customerName}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">{isAr ? 'الهاتف:' : 'Phone:'}</span>
+                    <span className="font-bold text-gray-900 tracking-wider" dir="ltr">
+                      {selectedOrder.customerPhone}
+                    </span>
+                  </div>
+                  <div className="pt-1">
+                    <div className="text-gray-600 text-[10px]">{isAr ? 'العنوان بالتفصيل:' : 'Address:'}</div>
+                    <div className="font-bold text-gray-900 leading-snug">
+                      {selectedOrder.shippingCity} ({selectedOrder.governorate || (isAr ? 'القاهرة' : 'Cairo')})
+                      {selectedOrder.shippingDistrict ? ` · ${selectedOrder.shippingDistrict}` : ''}
+                      <div className="font-normal text-[11px] text-gray-800 mt-0.5">
+                        {selectedOrder.shippingAddress}
+                      </div>
+                    </div>
                   </div>
                   {selectedOrder.notes && (
-                    <div className="text-[11px] text-gray-600 italic mt-1">
-                      {isAr ? 'ملاحظات:' : 'Note:'} {selectedOrder.notes}
+                    <div className="pt-1 text-[10px] text-amber-900 bg-amber-50 p-1 rounded-xs border border-amber-200">
+                      <span className="font-bold">{isAr ? 'ملاحظة للمندوب: ' : 'Courier Note: '}</span>
+                      {selectedOrder.notes}
                     </div>
                   )}
                 </div>
-              </div>
 
-              {/* Line Items Table */}
-              <table className="w-full text-left rtl:text-right border-collapse">
-                <thead>
-                  <tr className="border-b-2 border-black text-xs font-mono uppercase text-gray-600">
-                    <th className="py-2">{isAr ? 'بيان القطعة' : 'Item Description'}</th>
-                    <th className="py-2">{isAr ? 'المقاس / اللون' : 'Size / Color'}</th>
-                    <th className="py-2 text-center">{isAr ? 'جم/م²' : 'GSM'}</th>
-                    <th className="py-2 text-center">{isAr ? 'الكمية' : 'Qty'}</th>
-                    <th className="py-2 text-right rtl:text-left">{isAr ? 'سعر الوحدة (ج.م)' : 'Unit (EGP)'}</th>
-                    <th className="py-2 text-right rtl:text-left">{isAr ? 'الإجمالي (ج.م)' : 'Total (EGP)'}</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200 text-xs">
-                  {selectedOrder.items.map((it, idx) => (
-                    <tr key={idx} className="py-2">
-                      <td className="py-3 font-semibold text-gray-900">
-                        {isAr ? (it.productNameAr || it.productNameEn) : it.productNameEn}
-                        <div className="text-[11px] text-gray-500 font-normal">{isAr ? it.productNameEn : it.productNameAr}</div>
-                      </td>
-                      <td className="py-3 font-mono">{it.selectedSize} / {it.selectedColor}</td>
-                      <td className="py-3 font-mono text-center">{it.gsm}</td>
-                      <td className="py-3 font-mono text-center font-bold">{it.quantity}</td>
-                      <td className="py-3 font-mono text-right rtl:text-left">{it.unitPrice.toLocaleString()}</td>
-                      <td className="py-3 font-mono text-right rtl:text-left font-bold">{it.totalPrice.toLocaleString()}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                {/* 4. The Few Items List (الأصناف القليلة المختصرة) */}
+                <div className="pb-2.5 border-b-2 border-dashed border-black space-y-1.5">
+                  <div className="text-[10px] font-bold text-gray-700 uppercase tracking-wider pb-1 border-b border-gray-300 flex justify-between">
+                    <span>{isAr ? 'الصنف / المقاس' : 'Item / Size'}</span>
+                    <span>{isAr ? 'الكمية × السعر' : 'Qty × Price'}</span>
+                  </div>
+                  <div className="space-y-2 pt-1">
+                    {selectedOrder.items.map((it, idx) => (
+                      <div key={idx} className="flex justify-between items-start text-[11px]">
+                        <div className="flex-1 pr-2 rtl:pr-0 rtl:pl-2">
+                          <div className="font-bold text-gray-900 leading-tight">
+                            {isAr ? (it.productNameAr || it.productNameEn) : it.productNameEn}
+                          </div>
+                          <div className="text-[10px] text-gray-600">
+                            {it.selectedSize} · {it.selectedColor}
+                          </div>
+                        </div>
+                        <div className="text-right rtl:text-left shrink-0">
+                          <div className="font-bold text-gray-900">
+                            {it.totalPrice.toLocaleString()} {isAr ? 'ج.م' : 'EGP'}
+                          </div>
+                          <div className="text-[10px] text-gray-500">
+                            {it.quantity} × {it.unitPrice.toLocaleString()}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
 
-              {/* Totals Summary */}
-              <div className="flex justify-end pt-4 border-t-2 border-black">
-                <div className="w-64 space-y-1.5 font-mono text-xs">
-                  <div className="flex justify-between text-gray-600">
-                    <span>{isAr ? 'المجموع الفرعي:' : 'Subtotal:'}</span>
+                {/* 5. Totals & Grand COD Due Box (المبلغ الإجمالي) */}
+                <div className="space-y-1 text-[11px] pt-1 pb-2.5 border-b-2 border-dashed border-black">
+                  <div className="flex justify-between text-gray-700">
+                    <span>{isAr ? 'مجموع الأصناف:' : 'Subtotal:'}</span>
                     <span>{selectedOrder.subtotal.toLocaleString()} {isAr ? 'ج.م' : 'EGP'}</span>
                   </div>
-                  <div className="flex justify-between text-gray-600">
-                    <span>{isAr ? 'رسوم الشحن:' : 'Shipping Fee:'}</span>
+                  <div className="flex justify-between text-gray-700">
+                    <span>{isAr ? 'مصاريف الشحن:' : 'Delivery:'}</span>
                     <span>
-                      {selectedOrder.shippingFee === 0 ? (isAr ? 'مجاني' : 'FREE') : `${selectedOrder.shippingFee.toLocaleString()} ${isAr ? 'ج.م' : 'EGP'}`}
+                      {selectedOrder.shippingFee === 0
+                        ? (isAr ? 'شحن مجاني' : 'FREE')
+                        : `${selectedOrder.shippingFee.toLocaleString()} ${isAr ? 'ج.م' : 'EGP'}`}
                     </span>
                   </div>
                   {selectedOrder.discountAmount ? (
-                    <div className="flex justify-between text-gray-600">
+                    <div className="flex justify-between text-emerald-700 font-bold">
                       <span>{isAr ? 'الخصم:' : 'Discount:'}</span>
                       <span>-{selectedOrder.discountAmount.toLocaleString()} {isAr ? 'ج.م' : 'EGP'}</span>
                     </div>
                   ) : null}
-                  <div className="flex justify-between text-base font-bold text-black pt-2 border-t border-gray-300">
-                    <span>{isAr ? 'الإجمالي المطلوب سداده:' : 'TOTAL COD DUE:'}</span>
-                    <span>{selectedOrder.totalAmount.toLocaleString()} {isAr ? 'ج.م' : 'EGP'}</span>
+
+                  {/* Prominent Highlighted Cash Due Box */}
+                  <div className="mt-2 p-2 bg-black text-white rounded-xs text-center border-2 border-black">
+                    <div className="text-[9px] uppercase font-bold tracking-widest text-gray-300">
+                      {isAr ? 'المبلغ الإجمالي المطلوب تحصيله كاش' : 'TOTAL COD DUE'}
+                    </div>
+                    <div className="text-lg sm:text-xl font-black tracking-wider text-white mt-0.5">
+                      {selectedOrder.totalAmount.toLocaleString()} {isAr ? 'ج.م مصري' : 'EGP'}
+                    </div>
+                  </div>
+                </div>
+
+                {/* 6. Footer Notice & QR Code */}
+                <div className="text-center pt-2 space-y-2">
+                  <p className="text-[10px] text-gray-800 font-bold">
+                    {isAr
+                      ? '⭐ يحق للعميل معاينة الطرد والتأكد من خامة القطن ٥٠٠ جم مع المندوب قبل الدفع.'
+                      : '⭐ Open box inspection guaranteed with courier before payment.'}
+                  </p>
+
+                  {orderQrUrl && (
+                    <div className="pt-1 flex flex-col items-center justify-center">
+                      <img src={orderQrUrl} alt="Order QR" className="w-16 h-16 border border-gray-300 p-1" />
+                      <span className="text-[9px] text-gray-500 mt-0.5">
+                        {isAr ? 'امسح الرمز لتتبع الشحنة أونلاين' : 'Scan to track online'}
+                      </span>
+                    </div>
+                  )}
+
+                  <div className="text-[9px] text-gray-500 border-t border-dotted border-gray-300 pt-1.5">
+                    {isAr ? 'دار أثير · خدمة العملاء: 01015993802' : 'ATHEER Atelier · Support: 01015993802'}
                   </div>
                 </div>
               </div>
+            ) : (
+              /* FORMAT 2: FULL COMMERCIAL A4 INVOICE */
+              <div className="space-y-6 text-sm">
+                {/* Invoice Header */}
+                <div className="flex justify-between items-start pb-6 border-b-2 border-black">
+                  <div className="flex items-start space-x-3 rtl:space-x-reverse">
+                    <img
+                      src="/images/atheer-emblem-transparent.png"
+                      alt="ATHEER"
+                      className="w-12 h-12 object-contain filter grayscale contrast-200 mt-1"
+                    />
+                    <div>
+                      <h2 className="text-3xl font-black tracking-widest uppercase">ATHEER · أثير</h2>
+                      <p className="text-xs tracking-wider text-gray-600 mt-0.5">
+                        {isAr ? 'أثير · أزياء الشارع الراقية للشباب ٥٠٠ جم/م²' : 'ATHEER · 500 GSM PREMIUM STREETWEAR'}
+                      </p>
+                      <p className="text-[11px] text-gray-500 mt-1">
+                        {isAr ? 'القاهرة، جمهورية مصر العربية · هاتف: 01015993802' : 'Cairo, Egypt · Tel: 01015993802'}
+                      </p>
+                      <p className="text-[11px] text-gray-500">
+                        {isAr ? 'خدمة العملاء: atheerxo140@gmail.com' : 'Concierge: atheerxo140@gmail.com'}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-right rtl:text-left font-mono">
+                    <div className="text-xl font-bold">{selectedOrder.orderReference}</div>
+                    <div className="text-xs text-gray-500 mt-1">
+                      {isAr ? 'التاريخ:' : 'Date:'} {new Date(selectedOrder.createdAt).toLocaleDateString(isAr ? 'ar-EG' : 'en-GB')}
+                    </div>
+                    <div className="mt-2 inline-block px-2.5 py-1 bg-gray-100 text-gray-900 border border-gray-300 text-xs font-bold uppercase">
+                      {isAr ? 'الدفع نقداً عند الاستلام' : 'CASH ON DELIVERY (COD)'}
+                    </div>
+                  </div>
+                </div>
 
-              {/* Delivery Courier Notice */}
-              <div className="pt-6 border-t border-gray-200 text-[11px] text-gray-500 leading-relaxed text-center font-mono">
-                {isAr
-                  ? 'شكراً لاختياركم أثير. يحق لكم فحص ومعاينة الطرد مع المندوب قبل الاستلام وسداد القيمة.'
-                  : 'Thank you for choosing ATHEER | أثير. Please inspect garment packaging before accepting COD delivery.'}
-                For inquiries or customer support, reach our Cairo concierge at concierge@atheer.store.
+                {/* Customer & Courier Destination */}
+                <div className="grid grid-cols-2 gap-6 bg-gray-50 p-4 border border-gray-200">
+                  <div>
+                    <div className="text-[10px] font-mono uppercase tracking-wider text-gray-500 font-bold mb-1">
+                      {isAr ? 'بيانات العميل المستلم:' : 'Recipient Customer:'}
+                    </div>
+                    <div className="font-bold text-gray-900 text-base">{selectedOrder.customerName}</div>
+                    <div className="font-mono text-xs text-gray-700 mt-1 font-semibold" dir="ltr">
+                      {isAr ? 'الهاتف:' : 'Phone:'} {selectedOrder.customerPhone}
+                    </div>
+                    {selectedOrder.customerEmail && (
+                      <div className="text-xs text-gray-600">{selectedOrder.customerEmail}</div>
+                    )}
+                  </div>
+
+                  <div>
+                    <div className="text-[10px] font-mono uppercase tracking-wider text-gray-500 font-bold mb-1">
+                      {isAr ? 'عنوان التوصيل في مصر:' : 'Delivery Address (Egypt):'}
+                    </div>
+                    <div className="font-bold text-gray-900 text-sm">
+                      {selectedOrder.shippingCity} ({selectedOrder.governorate || (isAr ? 'القاهرة' : 'Cairo')})
+                    </div>
+                    <div className="text-xs text-gray-700 mt-1 leading-relaxed">
+                      {selectedOrder.shippingAddress}
+                      {selectedOrder.shippingDistrict ? ` · ${selectedOrder.shippingDistrict}` : ''}
+                    </div>
+                    {selectedOrder.notes && (
+                      <div className="text-[11px] text-gray-600 italic mt-1">
+                        {isAr ? 'ملاحظات للمندوب:' : 'Courier Note:'} {selectedOrder.notes}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Line Items Table */}
+                <table className="w-full text-left rtl:text-right border-collapse">
+                  <thead>
+                    <tr className="border-b-2 border-black text-xs font-mono uppercase text-gray-600">
+                      <th className="py-2">{isAr ? 'بيان القطعة' : 'Item Description'}</th>
+                      <th className="py-2">{isAr ? 'المقاس / اللون' : 'Size / Color'}</th>
+                      <th className="py-2 text-center">{isAr ? 'جم/م²' : 'GSM'}</th>
+                      <th className="py-2 text-center">{isAr ? 'الكمية' : 'Qty'}</th>
+                      <th className="py-2 text-right rtl:text-left">{isAr ? 'سعر الوحدة (ج.م)' : 'Unit (EGP)'}</th>
+                      <th className="py-2 text-right rtl:text-left">{isAr ? 'الإجمالي (ج.م)' : 'Total (EGP)'}</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200 text-xs">
+                    {selectedOrder.items.map((it, idx) => (
+                      <tr key={idx} className="py-2">
+                        <td className="py-3 font-semibold text-gray-900">
+                          {isAr ? (it.productNameAr || it.productNameEn) : it.productNameEn}
+                          <div className="text-[11px] text-gray-500 font-normal">{isAr ? it.productNameEn : it.productNameAr}</div>
+                        </td>
+                        <td className="py-3 font-mono">{it.selectedSize} / {it.selectedColor}</td>
+                        <td className="py-3 font-mono text-center">{it.gsm}</td>
+                        <td className="py-3 font-mono text-center font-bold">{it.quantity}</td>
+                        <td className="py-3 font-mono text-right rtl:text-left">{it.unitPrice.toLocaleString()}</td>
+                        <td className="py-3 font-mono text-right rtl:text-left font-bold">{it.totalPrice.toLocaleString()}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+
+                {/* Totals Summary */}
+                <div className="flex justify-end pt-4 border-t-2 border-black">
+                  <div className="w-64 space-y-1.5 font-mono text-xs">
+                    <div className="flex justify-between text-gray-600">
+                      <span>{isAr ? 'المجموع الفرعي:' : 'Subtotal:'}</span>
+                      <span>{selectedOrder.subtotal.toLocaleString()} {isAr ? 'ج.م' : 'EGP'}</span>
+                    </div>
+                    <div className="flex justify-between text-gray-600">
+                      <span>{isAr ? 'رسوم الشحن:' : 'Shipping Fee:'}</span>
+                      <span>
+                        {selectedOrder.shippingFee === 0 ? (isAr ? 'مجاني' : 'FREE') : `${selectedOrder.shippingFee.toLocaleString()} ${isAr ? 'ج.م' : 'EGP'}`}
+                      </span>
+                    </div>
+                    {selectedOrder.discountAmount ? (
+                      <div className="flex justify-between text-gray-600">
+                        <span>{isAr ? 'الخصم:' : 'Discount:'}</span>
+                        <span>-{selectedOrder.discountAmount.toLocaleString()} {isAr ? 'ج.م' : 'EGP'}</span>
+                      </div>
+                    ) : null}
+                    <div className="flex justify-between text-base font-bold text-black pt-2 border-t border-gray-300">
+                      <span>{isAr ? 'الإجمالي المطلوب سداده:' : 'TOTAL COD DUE:'}</span>
+                      <span>{selectedOrder.totalAmount.toLocaleString()} {isAr ? 'ج.م' : 'EGP'}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Delivery Courier Notice */}
+                <div className="pt-6 border-t border-gray-200 text-[11px] text-gray-500 leading-relaxed text-center font-mono">
+                  {isAr
+                    ? 'شكراً لاختياركم أثير. يحق لكم فحص ومعاينة الطرد مع المندوب قبل الاستلام وسداد القيمة.'
+                    : 'Thank you for choosing ATHEER | أثير. Please inspect garment packaging before accepting COD delivery.'}
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       )}
