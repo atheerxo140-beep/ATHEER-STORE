@@ -364,7 +364,7 @@ export const Footer: React.FC = () => {
               </div>
             </div>
 
-            {/* Circular Social Icons Matching Screenshot */}
+            {/* Circular Social Icons - Luminous Gold Luxury Style */}
             <div className="pt-2 flex items-center space-x-2.5 rtl:space-x-reverse">
               {/* WhatsApp */}
               <a
@@ -372,9 +372,10 @@ export const Footer: React.FC = () => {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="WhatsApp"
-                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#181818] border border-brand-border/80 hover:border-brand-gold hover:text-brand-gold hover:bg-brand-black transition-all flex items-center justify-center text-brand-cream/80 shadow-md"
+                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-brand-charcoal/90 border-2 border-brand-gold/60 hover:border-brand-gold text-brand-gold hover:text-brand-black hover:bg-brand-gold transition-all duration-300 flex items-center justify-center shadow-gold group"
+                title="واتساب"
               >
-                <MessageCircle className="w-4 h-4" />
+                <MessageCircle className="w-4 h-4 stroke-[2.2] group-hover:scale-110 transition-transform" />
               </a>
 
               {/* Instagram */}
@@ -383,9 +384,10 @@ export const Footer: React.FC = () => {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Instagram"
-                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#181818] border border-brand-border/80 hover:border-brand-gold hover:text-brand-gold hover:bg-brand-black transition-all flex items-center justify-center text-brand-cream/80 shadow-md"
+                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-brand-charcoal/90 border-2 border-brand-gold/60 hover:border-brand-gold text-brand-gold hover:text-brand-black hover:bg-brand-gold transition-all duration-300 flex items-center justify-center shadow-gold group"
+                title="إنستغرام"
               >
-                <Instagram className="w-4 h-4" />
+                <Instagram className="w-4 h-4 stroke-[2.2] group-hover:scale-110 transition-transform" />
               </a>
 
               {/* TikTok */}
@@ -394,9 +396,10 @@ export const Footer: React.FC = () => {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="TikTok"
-                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#181818] border border-brand-border/80 hover:border-brand-gold hover:text-brand-gold hover:bg-brand-black transition-all flex items-center justify-center text-brand-cream/80 shadow-md"
+                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-brand-charcoal/90 border-2 border-brand-gold/60 hover:border-brand-gold text-brand-gold hover:text-brand-black hover:bg-brand-gold transition-all duration-300 flex items-center justify-center shadow-gold group"
+                title="تيك توك"
               >
-                <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 fill-current group-hover:scale-110 transition-transform" viewBox="0 0 24 24">
                   <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 3 15.68 6.34 6.34 0 0 0 9.34 22a6.34 6.34 0 0 0 6.34-6.32V8.92a8.28 8.28 0 0 0 4.91 1.6V7.07a4.8 4.8 0 0 1-1-.38z" />
                 </svg>
               </a>
@@ -407,18 +410,20 @@ export const Footer: React.FC = () => {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Facebook"
-                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#181818] border border-brand-border/80 hover:border-brand-gold hover:text-brand-gold hover:bg-brand-black transition-all flex items-center justify-center text-brand-cream/80 shadow-md"
+                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-brand-charcoal/90 border-2 border-brand-gold/60 hover:border-brand-gold text-brand-gold hover:text-brand-black hover:bg-brand-gold transition-all duration-300 flex items-center justify-center shadow-gold group"
+                title="فيسبوك"
               >
-                <Facebook className="w-4 h-4" />
+                <Facebook className="w-4 h-4 stroke-[2.2] group-hover:scale-110 transition-transform" />
               </a>
 
               {/* Mail */}
               <a
                 href={`mailto:${settings.supportEmail || 'atheerxo140@gmail.com'}`}
                 aria-label="Email"
-                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#181818] border border-brand-border/80 hover:border-brand-gold hover:text-brand-gold hover:bg-brand-black transition-all flex items-center justify-center text-brand-cream/80 shadow-md"
+                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-brand-charcoal/90 border-2 border-brand-gold/60 hover:border-brand-gold text-brand-gold hover:text-brand-black hover:bg-brand-gold transition-all duration-300 flex items-center justify-center shadow-gold group"
+                title="البريد الإلكتروني"
               >
-                <Mail className="w-4 h-4" />
+                <Mail className="w-4 h-4 stroke-[2.2] group-hover:scale-110 transition-transform" />
               </a>
             </div>
           </div>
