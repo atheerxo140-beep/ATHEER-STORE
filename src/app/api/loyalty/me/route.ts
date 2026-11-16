@@ -41,7 +41,7 @@ export async function GET(req: NextRequest) {
     }
 
     const config = getLoyaltyConfig();
-    const account = getLoyaltyAccount(email);
+    const account = getLoyaltyAccount(email, undefined, phoneParam || undefined);
 
     return NextResponse.json({
       success: true,

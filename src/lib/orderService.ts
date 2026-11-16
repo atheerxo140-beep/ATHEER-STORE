@@ -400,21 +400,15 @@ export const createOrder = async (input: CreateOrderInput): Promise<OrderCreatio
   // 10. Cache order in memory for fast synchronous reading
   saveLocalOrder(newOrder);
 
-  // 10b. Auto-Award Digital Loyalty Stamps to Customer (ATHEER REWARDS)
-  if (newOrder.customerEmail) {
+  // 10b. Consume Loyalty Voucher if used at checkout (ATHEER REWARDS)
+  // Note: Loyalty stamps are NOT awarded at order placement. Stamps are strictly awarded
+  // only when the order is delivered and confirmed by admin in the dashboard.
+  if (validatedCouponCode && validatedCouponCode.startsWith('ATH-VIP-')) {
     try {
-      const { awardStampsForOrder, consumeLoyaltyVoucher } = await import('@/lib/loyaltyService');
-      awardStampsForOrder(
-        newOrder.customerEmail,
-        newOrder.customerName,
-        newOrder.orderReference,
-        newOrder.totalAmount
-      );
-      if (validatedCouponCode && validatedCouponCode.startsWith('ATH-VIP-')) {
-        consumeLoyaltyVoucher(validatedCouponCode, newOrder.orderReference);
-      }
+      const { consumeLoyaltyVoucher } = await import('@/lib/loyaltyService');
+      consumeLoyaltyVoucher(validatedCouponCode, newOrder.orderReference);
     } catch (loyaltyErr) {
-      console.warn('[Loyalty Award/Consume Notice]', loyaltyErr);
+      console.warn('[Loyalty Consume Notice]', loyaltyErr);
     }
   }
 

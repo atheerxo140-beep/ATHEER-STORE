@@ -178,17 +178,29 @@ export async function PUT(req: NextRequest) {
         }
         try {
           const { awardStampsForOrder } = await import('@/lib/loyaltyService');
+          const cleanEmail =
+            order.customerEmail ||
+            (order.customerPhone ? `${order.customerPhone}@customer.atheer.store` : 'customer@atheer.store');
           awardStampsForOrder(
-            order.customerEmail || `${order.customerPhone}@customer.atheer.store`,
+            cleanEmail,
             order.customerName,
             order.orderReference,
-            order.totalAmount
+            order.totalAmount,
+            order.customerPhone
           );
         } catch (loyaltyErr) {
           console.warn('[AdminOrders] Loyalty stamp award notice on delivery:', loyaltyErr);
         }
-      } else if (target === 'cancelled' && order.paymentStatus === 'pending_cod') {
-        order.paymentStatus = 'cancelled';
+      } else if (target === 'cancelled') {
+        if (order.paymentStatus === 'pending_cod') {
+          order.paymentStatus = 'cancelled';
+        }
+        try {
+          const { reverseStampsForOrder } = await import('@/lib/loyaltyService');
+          reverseStampsForOrder(order.orderReference);
+        } catch (loyaltyErr) {
+          console.warn('[AdminOrders] Loyalty stamp reverse notice on cancellation:', loyaltyErr);
+        }
       }
     }
 

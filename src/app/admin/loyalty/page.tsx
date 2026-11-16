@@ -90,9 +90,9 @@ export default function AdminLoyaltyPage() {
   const [newEmail, setNewEmail] = useState('');
   const [newName, setNewName] = useState('');
   const [newPhone, setNewPhone] = useState('');
-  const [newInitialStamps, setNewInitialStamps] = useState(1);
+  const [newInitialStamps, setNewInitialStamps] = useState(0);
   const [newTier, setNewTier] = useState<'Bronze' | 'Silver' | 'Gold' | 'Black_Edition'>('Bronze');
-  const [newWelcomeAmount, setNewWelcomeAmount] = useState(100);
+  const [newWelcomeAmount, setNewWelcomeAmount] = useState(0);
 
   const [adjustCount, setAdjustCount] = useState<number>(1);
   const [adjustNotes, setAdjustNotes] = useState('');
@@ -307,9 +307,9 @@ export default function AdminLoyaltyPage() {
         setNewEmail('');
         setNewName('');
         setNewPhone('');
-        setNewInitialStamps(1);
+        setNewInitialStamps(0);
         setNewTier('Bronze');
-        setNewWelcomeAmount(100);
+        setNewWelcomeAmount(0);
         fetchLoyalty();
       } else {
         showToast('error', data.error || 'Failed to create loyalty account');
@@ -1201,7 +1201,7 @@ export default function AdminLoyaltyPage() {
                   min={0}
                   max={10}
                   value={newInitialStamps}
-                  onChange={(e) => setNewInitialStamps(parseInt(e.target.value) || 1)}
+                  onChange={(e) => setNewInitialStamps(Math.max(0, parseInt(e.target.value) || 0))}
                   className="w-full bg-brand-stone/40 border border-brand-border text-brand-gold font-bold p-2 rounded-xs"
                 />
               </div>
@@ -1215,11 +1215,11 @@ export default function AdminLoyaltyPage() {
                   min={0}
                   step={50}
                   value={newWelcomeAmount}
-                  onChange={(e) => setNewWelcomeAmount(parseFloat(e.target.value) || 100)}
+                  onChange={(e) => setNewWelcomeAmount(Math.max(0, parseFloat(e.target.value) || 0))}
                   className="w-full bg-brand-stone/40 border border-brand-border text-emerald-400 font-bold p-2 rounded-xs"
                 />
                 <span className="text-[10px] text-brand-cream/40 block mt-1">
-                  {isAr ? 'تصدر قسيمة ترحيبية فورية بالرصيد المكتوب صالحة لمدة سنة' : 'Auto-issues a welcome voucher code'}
+                  {isAr ? 'اتركها 0 إن كنت لا ترغب بمنح قسيمة فورية للعميل' : 'Leave 0 for no instant welcome voucher'}
                 </span>
               </div>
             </div>

@@ -265,12 +265,12 @@ export default function LoyaltyCardPage() {
           <div className="p-4 bg-brand-charcoal border border-brand-border/70 rounded-xs space-y-1.5">
             <div className="flex items-center space-x-2 rtl:space-x-reverse text-xs font-mono font-bold text-brand-gold">
               <Award className="w-4 h-4" />
-              <span>{isAr ? 'ختم تلقائي مع كل أوردر' : 'Automatic Stamp Addition'}</span>
+              <span>{isAr ? 'ختم تلقائي بعد استلام وتأكيد الطلب' : 'Automatic Stamp Upon Confirmed Delivery'}</span>
             </div>
             <p className="text-[11px] text-brand-cream/60 leading-relaxed font-sans">
               {isAr
-                ? 'يضاف الختم تلقائياً لحسابك المسجل عند توصيل كل طلب مؤهل (فوق 800 ج.م) بنجاح لباب بيتك.'
-                : 'Stamps are auto-credited when an eligible order above 800 EGP is delivered.'}
+                ? 'يبدأ الكارت بـ 0 أختام، ويُضاف الختم لحسابك فور استلام الطلب وتأكيد وصوله بنجاح من إدارة المتجر.'
+                : 'Your pass starts at 0 stamps. Each stamp is credited once your order is delivered and confirmed.'}
             </p>
           </div>
 

@@ -213,8 +213,8 @@ export const CustomerAuthForm: React.FC<CustomerAuthFormProps> = ({ initialMode 
           <p className="text-xs sm:text-sm text-brand-cream/70 font-sans leading-relaxed max-w-md mx-auto">
             {isRegister
               ? (isAr
-                  ? 'أنشئ حسابك برقم هاتفك لتحصل فوراً على كارت الولاء الذهبي و١٠٠ ج.م رصيد ترحيبي مع تتبع شحناتك بسهولة.'
-                  : 'Register with your phone number to unlock your instant Gold Loyalty Pass + 100 EGP welcome bonus.')
+                  ? 'أنشئ حسابك برقم هاتفك لتفعيل كارت الولاء الرقمي، تتبع شحناتك بسهولة، واكتساب الأختام عند توصيل طلباتك.'
+                  : 'Register with your mobile number to activate your loyalty pass, track orders, and collect stamps on delivery.')
               : (isAr
                   ? 'سجل دخولك برقم هاتفك أو بريدك لمتابعة شحناتك المباشرة ورصيد أختام كارت الولاء.'
                   : 'Sign in with your mobile number or email to manage your orders and rewards.')}

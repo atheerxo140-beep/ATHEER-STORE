@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { getStoreFilePath } from '@/lib/storePath';
+import { normalizeEgyptianPhone, arePhonesEqual } from '@/lib/phoneUtils';
 
 export interface LoyaltyConfig {
   programName: string;
@@ -102,42 +103,55 @@ export function updateLoyaltyConfig(updates: Partial<LoyaltyConfig>): LoyaltyCon
   return store.config;
 }
 
-export function getLoyaltyAccount(customerEmail: string, customerName?: string): LoyaltyAccount {
+export function getLoyaltyAccount(
+  customerEmail: string,
+  customerName?: string,
+  customerPhone?: string
+): LoyaltyAccount {
   const cleanEmail = customerEmail.trim().toLowerCase();
+  const cleanPhone = customerPhone ? normalizeEgyptianPhone(customerPhone) : '';
   const store = readStore();
-  let acc = store.accounts.find((a) => a.customerEmail.toLowerCase() === cleanEmail);
+
+  let acc = store.accounts.find((a) => {
+    if (a.customerEmail.toLowerCase() === cleanEmail) return true;
+    if (cleanPhone && a.customerPhone && arePhonesEqual(a.customerPhone, cleanPhone)) return true;
+    if (
+      cleanEmail.includes('@customer.atheer.store') &&
+      a.customerEmail.split('@')[0] === cleanEmail.split('@')[0]
+    ) {
+      return true;
+    }
+    return false;
+  });
 
   if (!acc) {
-    const welcomeVoucherCode = `ATH-VIP-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
-    const oneYearLater = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
     acc = {
       id: `loyalty-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
       customerEmail: cleanEmail,
       customerName: customerName || cleanEmail.split('@')[0],
-      stampsCount: 1,
-      totalStampsEarned: 1,
+      customerPhone: cleanPhone || undefined,
+      stampsCount: 0,
+      totalStampsEarned: 0,
       stampsRedeemed: 0,
       tier: 'Bronze',
-      activeVouchers: [
-        {
-          code: welcomeVoucherCode,
-          discountAmount: 100,
-          isUsed: false,
-          expiresAt: oneYearLater,
-        },
-      ],
+      activeVouchers: [],
       history: [
         {
-          id: `hist-welcome-${Date.now()}`,
+          id: `hist-init-${Date.now()}`,
           type: 'earn',
-          stamps: 1,
+          stamps: 0,
           date: new Date().toISOString(),
-          notes: 'ختم ترحيبي مجاني + قسيمة 100 ج.م كاش بمناسبة استلام كارت الولاء VIP',
+          notes: 'إصدار كارت الولاء الرقمي بنجاح (الرصيد: 0 أختام) - تضاف الأختام تلقائياً فور توصيل وتأكيد استلام طلباتك',
         },
       ],
     };
     store.accounts.push(acc);
     writeStore(store);
+  } else {
+    if (cleanPhone && !acc.customerPhone) {
+      acc.customerPhone = cleanPhone;
+      writeStore(store);
+    }
   }
 
   return acc;
@@ -154,7 +168,8 @@ export function awardStampsForOrder(
   customerEmail: string,
   customerName: string | undefined,
   orderRef: string,
-  orderTotal: number
+  orderTotal: number,
+  customerPhone?: string
 ): { awarded: boolean; stamps: number; newTotal: number; earnedReward?: LoyaltyVoucher } {
   const store = readStore();
   if (!store.config.isActive) return { awarded: false, stamps: 0, newTotal: 0 };
@@ -163,13 +178,26 @@ export function awardStampsForOrder(
   }
 
   const cleanEmail = customerEmail.trim().toLowerCase();
-  let acc = store.accounts.find((a) => a.customerEmail.toLowerCase() === cleanEmail);
+  const cleanPhone = customerPhone ? normalizeEgyptianPhone(customerPhone) : '';
+
+  let acc = store.accounts.find((a) => {
+    if (a.customerEmail.toLowerCase() === cleanEmail) return true;
+    if (cleanPhone && a.customerPhone && arePhonesEqual(a.customerPhone, cleanPhone)) return true;
+    if (
+      cleanEmail.includes('@customer.atheer.store') &&
+      a.customerEmail.split('@')[0] === cleanEmail.split('@')[0]
+    ) {
+      return true;
+    }
+    return false;
+  });
 
   if (!acc) {
     acc = {
       id: `loyalty-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
       customerEmail: cleanEmail,
       customerName: customerName || 'Valued Customer',
+      customerPhone: cleanPhone || undefined,
       stampsCount: 0,
       totalStampsEarned: 0,
       stampsRedeemed: 0,
@@ -178,6 +206,8 @@ export function awardStampsForOrder(
       history: [],
     };
     store.accounts.push(acc);
+  } else if (cleanPhone && !acc.customerPhone) {
+    acc.customerPhone = cleanPhone;
   }
 
   // Prevent duplicate awards for the same order
@@ -202,7 +232,7 @@ export function awardStampsForOrder(
     stamps: 1,
     orderRef,
     date: new Date().toISOString(),
-    notes: `Earned 1 Stamp for Order ${orderRef} (${orderTotal.toLocaleString()} EGP)`,
+    notes: `ختم إلكتروني لتأكيد استلام وتوصيل الطلب ${orderRef} (${orderTotal.toLocaleString()} ج.م)`,
   });
 
   let earnedReward: LoyaltyVoucher | undefined = undefined;
@@ -467,10 +497,20 @@ export function createManualLoyaltyAccount(data: {
     return { success: false, error: 'A loyalty pass already exists for this email.' };
   }
 
-  const initialStamps = Math.max(0, data.initialStamps || 1);
-  const welcomeAmount = data.welcomeVoucherAmount || 100;
+  const initialStamps = Math.max(0, data.initialStamps !== undefined ? Number(data.initialStamps) : 0);
+  const welcomeAmount = Math.max(0, data.welcomeVoucherAmount !== undefined ? Number(data.welcomeVoucherAmount) : 0);
   const voucherCode = `ATH-VIP-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
   const oneYearExpiry = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
+
+  const activeVouchers: LoyaltyVoucher[] = [];
+  if (welcomeAmount > 0) {
+    activeVouchers.push({
+      code: voucherCode,
+      discountAmount: welcomeAmount,
+      isUsed: false,
+      expiresAt: oneYearExpiry,
+    });
+  }
 
   const newAcc: LoyaltyAccount = {
     id: `loyalty-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
@@ -481,21 +521,17 @@ export function createManualLoyaltyAccount(data: {
     totalStampsEarned: initialStamps,
     stampsRedeemed: 0,
     tier: data.tier || 'Bronze',
-    activeVouchers: [
-      {
-        code: voucherCode,
-        discountAmount: welcomeAmount,
-        isUsed: false,
-        expiresAt: oneYearExpiry,
-      },
-    ],
+    activeVouchers,
     history: [
       {
         id: `hist-create-${Date.now()}`,
         type: 'earn',
         stamps: initialStamps,
         date: new Date().toISOString(),
-        notes: `إصدار كارت ولاء يدوي من الإدارة برصيد ${initialStamps} أختام وقسيمة ترحيبية ${welcomeAmount} ج.م`,
+        notes:
+          initialStamps > 0
+            ? `إصدار كارت ولاء يدوي من الإدارة برصيد ${initialStamps} أختام`
+            : 'إصدار كارت ولاء يدوي بنجاح (الرصيد: 0 أختام) - تضاف الأختام فور تأكيد استلام الطلبات',
       },
     ],
   };
