@@ -327,7 +327,8 @@ function TrackOrderContent() {
 
         {/* Brand Hallmark & Page Header */}
         <div className="text-center space-y-3">
-          <Link href="/" className="inline-block group mb-2">
+          <Link href="/" className="inline-flex items-center justify-center space-x-2.5 rtl:space-x-reverse group mb-2">
+            <img src="/images/atheer-emblem-transparent.png" alt="ATHEER" className="w-8 h-8 object-contain filter drop-shadow group-hover:scale-105 transition-transform" />
             <span className="font-sans font-black text-2xl sm:text-3xl tracking-[0.25em] text-brand-ivory uppercase group-hover:text-brand-gold transition-colors">
               ATHEER
             </span>

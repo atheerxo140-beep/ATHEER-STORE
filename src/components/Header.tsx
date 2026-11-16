@@ -235,7 +235,15 @@ export const Header: React.FC = () => {
             {/* Center: Brand Identity */}
             <div className="text-center flex-1 lg:flex-none px-1">
               <Link href="/" className="inline-block group">
-                <div className="flex items-center justify-center space-x-1.5 xs:space-x-2 sm:space-x-2.5 rtl:space-x-reverse whitespace-nowrap">
+                <div className="flex items-center justify-center space-x-2 sm:space-x-2.5 rtl:space-x-reverse whitespace-nowrap">
+                  {/* Official Golden Emblem */}
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xs bg-brand-charcoal/90 border border-brand-gold/60 p-0.5 flex items-center justify-center shrink-0 shadow-gold group-hover:border-brand-gold transition-colors">
+                    <img
+                      src="/images/atheer-emblem-transparent.png"
+                      alt="ATHEER Logo"
+                      className="w-full h-full object-contain filter drop-shadow group-hover:scale-105 transition-transform"
+                    />
+                  </div>
                   {isAr ? (
                     <>
                       <span className="font-arabic font-bold text-xl xs:text-2xl sm:text-3xl text-brand-ivory group-hover:text-brand-gold transition-colors">
@@ -548,7 +556,14 @@ export const Header: React.FC = () => {
           >
             <div>
               <div className="flex items-center justify-between pb-6 border-b border-brand-border">
-                <div className="flex items-center space-x-2 rtl:space-x-reverse">
+                <div className="flex items-center space-x-2.5 rtl:space-x-reverse">
+                  <div className="w-7 h-7 rounded-xs bg-brand-charcoal border border-brand-gold/60 p-0.5 flex items-center justify-center shrink-0 shadow-gold">
+                    <img
+                      src="/images/atheer-emblem-transparent.png"
+                      alt="ATHEER"
+                      className="w-full h-full object-contain filter drop-shadow"
+                    />
+                  </div>
                   {isAr ? (
                     <>
                       <span className="font-arabic font-bold text-xl text-brand-ivory">أثير</span>

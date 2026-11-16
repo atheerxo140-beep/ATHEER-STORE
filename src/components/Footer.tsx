@@ -211,10 +211,14 @@ export const Footer: React.FC = () => {
           {/* Brand Column (Right side in RTL, Span 4) */}
           <div className="lg:col-span-4 space-y-4 text-start">
             {/* Logo Emblem Matching Reference Layout */}
-            <div className="flex items-center space-x-3 rtl:space-x-reverse">
-              {/* Luxury Monogram Badge */}
-              <div className="w-12 h-12 rounded-sm bg-gradient-to-br from-brand-gold/25 to-brand-gold/10 border-2 border-brand-gold flex items-center justify-center shrink-0 shadow-gold">
-                <span className="font-serif font-black text-xl text-brand-gold">أ</span>
+            <div className="flex items-center space-x-3.5 rtl:space-x-reverse">
+              {/* Official Luxury Logo Emblem */}
+              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-sm bg-gradient-to-br from-brand-charcoal via-brand-stone/40 to-brand-black border-2 border-brand-gold/70 flex items-center justify-center shrink-0 shadow-gold p-1.5 overflow-hidden group">
+                <img
+                  src="/images/atheer-emblem-transparent.png"
+                  alt="ATHEER Atelier Logo"
+                  className="w-full h-full object-contain filter drop-shadow group-hover:scale-105 transition-transform"
+                />
               </div>
 
               <div className="flex flex-col">

@@ -95,7 +95,8 @@ export default function LoyaltyCardPage() {
             {/* Card Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-brand-border/60 pb-6">
               <div>
-                <div className="flex items-center space-x-2 rtl:space-x-reverse">
+                <div className="flex items-center space-x-3 rtl:space-x-reverse">
+                  <img src="/images/atheer-emblem-transparent.png" alt="ATHEER" className="w-8 h-8 object-contain filter drop-shadow" />
                   <span className="font-sans font-black text-2xl tracking-[0.2em] text-brand-ivory uppercase">
                     {isAr ? 'أثير' : 'ATHEER'}
                   </span>

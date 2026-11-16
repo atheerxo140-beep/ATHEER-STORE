@@ -110,8 +110,8 @@ export default function AdminLoginPage() {
         <div className="bg-brand-charcoal border border-brand-border/80 rounded-sm p-5 sm:p-8 shadow-2xl space-y-6">
           {/* Brand Mark */}
           <div className="text-center space-y-1">
-            <div className="inline-flex items-center justify-center p-3 bg-brand-stone/40 border border-brand-gold/30 rounded-xs mb-2">
-              <ShieldCheck className="w-7 h-7 text-brand-gold" />
+            <div className="inline-flex items-center justify-center p-2.5 bg-brand-stone/40 border-2 border-brand-gold/60 rounded-xs mb-2 shadow-gold">
+              <img src="/images/atheer-emblem-transparent.png" alt="ATHEER Logo" className="w-10 h-10 object-contain filter drop-shadow" />
             </div>
             <h1 className="font-sans font-black text-2xl tracking-[0.25em] text-brand-ivory">ATHEER</h1>
             <p className="font-arabic font-bold text-lg text-brand-gold">أثير · إدارة المتجر</p>
