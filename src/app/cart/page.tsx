@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { WhatsAppButton } from '@/components/WhatsAppButton';
+import { BackButton } from '@/components/BackButton';
 import { useCart } from '@/context/CartContext';
 import { useLanguage } from '@/context/LanguageContext';
 import { getShippingZones, calculateShippingFee } from '@/data/shippingZones';
@@ -43,7 +44,15 @@ export default function CartPage() {
     <div className="min-h-screen bg-brand-black text-brand-ivory flex flex-col">
       <Header />
 
-      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-16 w-full pb-28 sm:pb-16">
+      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-12 w-full pb-28 sm:pb-16">
+        {/* Top Back Navigation */}
+        <div className="mb-6">
+          <BackButton
+            label={language === 'ar' ? 'رجوع للمتجر والمنتجات' : 'Back to Store & Products'}
+            fallbackUrl="/#products"
+          />
+        </div>
+
         <div className="flex items-center justify-between pb-6 border-b border-brand-border/60 mb-8">
           <div>
             <h1 className="font-sans font-black text-3xl sm:text-4xl uppercase tracking-tight">

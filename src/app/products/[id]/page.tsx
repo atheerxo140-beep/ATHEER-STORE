@@ -7,6 +7,7 @@ import { Product } from '@/types';
 import { mockProducts, currentProducts } from '@/data/mockProducts';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
+import { BackButton } from '@/components/BackButton';
 import { CartDrawer } from '@/components/CartDrawer';
 import { WhatsAppButton } from '@/components/WhatsAppButton';
 import { useLanguage } from '@/context/LanguageContext';
@@ -251,19 +252,29 @@ export default function ProductDetailPage() {
     <div className="min-h-screen bg-brand-black text-brand-ivory flex flex-col">
       <Header />
 
-      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-14 w-full pb-28 sm:pb-14">
-        {/* Breadcrumb Navigation */}
-        <nav className="flex items-center space-x-2 rtl:space-x-reverse text-xs text-brand-cream/60 mb-8 font-mono">
-          <Link href="/" className="hover:text-brand-gold transition-colors">
-            {language === 'ar' ? 'الرئيسية' : 'Home'}
-          </Link>
-          <ArrowIcon className="w-3.5 h-3.5 opacity-40" />
-          <Link href="/#products" className="hover:text-brand-gold transition-colors">
-            {categoryLabel}
-          </Link>
-          <ArrowIcon className="w-3.5 h-3.5 opacity-40" />
-          <span className="text-brand-gold font-medium truncate max-w-xs">{title}</span>
-        </nav>
+      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 w-full pb-28 sm:pb-14">
+        {/* Top Navigation Bar with Prominent Back Button & Breadcrumbs */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 sm:mb-8 pb-4 border-b border-brand-border/60">
+          <div className="flex items-center space-x-3 rtl:space-x-reverse">
+            <BackButton
+              label={language === 'ar' ? 'رجوع للخطوة السابقة' : 'Back to previous'}
+              fallbackUrl="/#products"
+            />
+          </div>
+
+          {/* Breadcrumb Navigation */}
+          <nav className="flex items-center space-x-2 rtl:space-x-reverse text-xs text-brand-cream/60 font-mono overflow-x-auto py-1">
+            <Link href="/" className="hover:text-brand-gold transition-colors shrink-0">
+              {language === 'ar' ? 'الرئيسية' : 'Home'}
+            </Link>
+            <ArrowIcon className="w-3.5 h-3.5 opacity-40 shrink-0" />
+            <Link href="/#products" className="hover:text-brand-gold transition-colors shrink-0">
+              {categoryLabel}
+            </Link>
+            <ArrowIcon className="w-3.5 h-3.5 opacity-40 shrink-0" />
+            <span className="text-brand-gold font-bold truncate max-w-xs">{title}</span>
+          </nav>
+        </div>
 
         {/* Product Details Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14">

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
+import { BackButton } from '@/components/BackButton';
 import { useCart } from '@/context/CartContext';
 import { useLanguage } from '@/context/LanguageContext';
 import { useCustomerAuth } from '@/context/CustomerAuthContext';
@@ -325,22 +326,13 @@ export default function CheckoutPage() {
     <div className="min-h-screen bg-brand-black text-brand-ivory flex flex-col">
       <Header />
 
-      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16 w-full">
-        {/* Checkout Header */}
-        <div className="pb-6 border-b border-brand-border/60 mb-10 flex items-center justify-between">
-          <div>
-            <div className="flex items-center space-x-2 rtl:space-x-reverse text-xs text-brand-gold font-mono uppercase tracking-widest mb-1">
-              <Lock className="w-3.5 h-3.5" />
-              <span>
-                {language === 'ar'
-                  ? 'دفع آمن نقدياً عند الاستلام في مصر'
-                  : 'SECURE CASH ON DELIVERY IN EGYPT'}
-              </span>
-            </div>
-            <h1 className="font-sans font-black text-3xl sm:text-4xl uppercase tracking-tight">
-              {language === 'ar' ? 'إتمام الطلب — جمهورية مصر العربية' : 'Complete Your Order — Egypt'}
-            </h1>
-          </div>
+      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-12 w-full">
+        {/* Top Back Navigation */}
+        <div className="mb-6 flex items-center justify-between">
+          <BackButton
+            label={language === 'ar' ? 'رجوع للحقيبة والمنتجات' : 'Back to Bag & Products'}
+            fallbackUrl="/cart"
+          />
 
           <Link
             href="/cart"
@@ -348,6 +340,21 @@ export default function CheckoutPage() {
           >
             {language === 'ar' ? 'تعديل الحقيبة' : 'Edit Bag'}
           </Link>
+        </div>
+
+        {/* Checkout Header */}
+        <div className="pb-6 border-b border-brand-border/60 mb-10">
+          <div className="flex items-center space-x-2 rtl:space-x-reverse text-xs text-brand-gold font-mono uppercase tracking-widest mb-1">
+            <Lock className="w-3.5 h-3.5" />
+            <span>
+              {language === 'ar'
+                ? 'دفع آمن نقدياً عند الاستلام في مصر'
+                : 'SECURE CASH ON DELIVERY IN EGYPT'}
+            </span>
+          </div>
+          <h1 className="font-sans font-black text-3xl sm:text-4xl uppercase tracking-tight">
+            {language === 'ar' ? 'إتمام الطلب — جمهورية مصر العربية' : 'Complete Your Order — Egypt'}
+          </h1>
         </div>
 
         {/* Error Alert Banner */}

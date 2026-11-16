@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useLanguage } from '@/context/LanguageContext';
+import { BackButton } from '@/components/BackButton';
 import {
   Search,
   Package,
@@ -314,8 +315,16 @@ function TrackOrderContent() {
   const insights = selectedOrder ? getStatusInsights(selectedOrder.orderStatus) : null;
 
   return (
-    <div className="min-h-screen bg-brand-black text-brand-ivory py-10 sm:py-16 px-3 sm:px-6 lg:px-8 pb-28 sm:pb-16 selection:bg-brand-gold selection:text-brand-black">
-      <div className="max-w-3xl mx-auto space-y-8">
+    <div className="min-h-screen bg-brand-black text-brand-ivory py-8 sm:py-14 px-3 sm:px-6 lg:px-8 pb-28 sm:pb-16 selection:bg-brand-gold selection:text-brand-black">
+      <div className="max-w-3xl mx-auto space-y-6 sm:space-y-8">
+        {/* Top Navigation & Back Action */}
+        <div className="flex items-center justify-between">
+          <BackButton
+            label={isAr ? 'رجوع للخطوة السابقة' : 'Back to previous'}
+            fallbackUrl="/"
+          />
+        </div>
+
         {/* Brand Hallmark & Page Header */}
         <div className="text-center space-y-3">
           <Link href="/" className="inline-block group mb-2">

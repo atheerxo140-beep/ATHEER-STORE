@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useWishlist } from '@/context/WishlistContext';
 import { useLanguage } from '@/context/LanguageContext';
 import { useCart } from '@/context/CartContext';
+import { BackButton } from '@/components/BackButton';
 import { Product } from '@/types';
 import { mockProducts } from '@/data/mockProducts';
 import { Heart, ShoppingBag, Trash2, ArrowRight, ArrowLeft, Package, Sparkles } from 'lucide-react';
@@ -38,13 +39,16 @@ export default function CustomerWishlistPage() {
   return (
     <div className="min-h-screen bg-brand-black text-brand-ivory py-12 px-4 sm:px-6 lg:px-8 selection:bg-brand-gold selection:text-brand-black">
       <div className="max-w-6xl mx-auto space-y-6">
-        {/* Navigation Breadcrumb */}
-        <div className="flex items-center space-x-2 rtl:space-x-reverse text-xs font-mono text-brand-cream/60">
-          <Link href="/account" className="hover:text-brand-gold transition-colors">
-            {isAr ? 'حسابي' : 'My Account'}
-          </Link>
-          <span>/</span>
-          <span className="text-brand-gold font-bold">{isAr ? 'قائمة المفضلة' : 'Wishlist'}</span>
+        {/* Top Back Action & Navigation Breadcrumb */}
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <BackButton label={isAr ? 'رجوع للخطوة السابقة' : 'Back to previous'} fallbackUrl="/account" />
+          <div className="flex items-center space-x-2 rtl:space-x-reverse text-xs font-mono text-brand-cream/60">
+            <Link href="/account" className="hover:text-brand-gold transition-colors">
+              {isAr ? 'حسابي' : 'My Account'}
+            </Link>
+            <span>/</span>
+            <span className="text-brand-gold font-bold">{isAr ? 'قائمة المفضلة' : 'Wishlist'}</span>
+          </div>
         </div>
 
         {/* Page Header */}

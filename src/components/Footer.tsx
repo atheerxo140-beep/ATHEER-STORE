@@ -19,6 +19,7 @@ import {
   Phone,
   MessageCircle,
   Mail,
+  MapPin,
   Send,
 } from 'lucide-react';
 import Link from 'next/link';
@@ -33,6 +34,7 @@ export const Footer: React.FC = () => {
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
   const [footerQrUrl, setFooterQrUrl] = useState('');
+  const [showQrModal, setShowQrModal] = useState(false);
 
   const targetQr =
     content.qrTargetUrl?.trim() ||
@@ -199,15 +201,15 @@ export const Footer: React.FC = () => {
         </div>
       </div>
 
-      {/* 3. Main Footer Directory Matching User Screenshot Layout */}
+      {/* 3. Main Footer Directory Merging Image 1 (Marotech Stone) & Image 2 (Double Business) */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 sm:pt-20 pb-10 relative">
-        {/* Subtle Ambient Curved Golden Arc in Top-Right Corner (like reference image) */}
+        {/* Subtle Ambient Curved Golden Arc in Top-Right Corner (matching reference image) */}
         <div className="absolute top-0 right-0 w-80 h-80 rounded-full border border-brand-gold/15 pointer-events-none -mr-20 -mt-20 hidden md:block" />
         <div className="absolute top-0 right-0 w-[420px] h-[420px] rounded-full border border-brand-gold/10 pointer-events-none -mr-32 -mt-32 hidden md:block" />
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10 lg:gap-8 items-start">
           {/* Brand Column (Right side in RTL, Span 4) */}
-          <div className="lg:col-span-5 space-y-4 text-start">
+          <div className="lg:col-span-4 space-y-4 text-start">
             {/* Logo Emblem Matching Reference Layout */}
             <div className="flex items-center space-x-3 rtl:space-x-reverse">
               {/* Luxury Monogram Badge */}
@@ -226,19 +228,33 @@ export const Footer: React.FC = () => {
             </div>
 
             {/* Concise Mission / Slogan (matching screenshot sentence structure) */}
-            <p className="text-xs sm:text-sm text-brand-cream/75 font-light leading-relaxed max-w-md pt-2">
+            <p className="text-xs sm:text-sm text-brand-cream/75 font-light leading-relaxed max-w-sm pt-1">
               {isAr
                 ? 'شريكك في التميز يجمع جودة النسيج الثقيل والتصميم العصري حول هدف واحد: أناقتك وثقتك.'
                 : 'Strategic fashion atelier uniting 500 GSM heavy craftsmanship and bespoke streetwear around one goal: your distinct presence.'}
             </p>
+
+            {/* Permanent Store QR Discreet Trigger */}
+            {content.showQrCode !== false && footerQrUrl && (
+              <div className="pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowQrModal(true)}
+                  className="inline-flex items-center space-x-2 rtl:space-x-reverse px-3 py-1.5 bg-brand-charcoal/80 border border-brand-gold/30 hover:border-brand-gold text-brand-gold text-xs font-mono rounded-xs transition-colors group cursor-pointer"
+                >
+                  <QrCode className="w-3.5 h-3.5 text-brand-gold group-hover:scale-110 transition-transform" />
+                  <span>{isAr ? 'رمز المتجر الدائم QR' : 'Permanent Store QR'}</span>
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Column 1: روابط سريعة (Span 2) */}
-          <div className="lg:col-span-2 space-y-4 text-start">
-            <h4 className="font-bold text-sm sm:text-base text-brand-ivory font-sans">
+          <div className="lg:col-span-2 space-y-3.5 text-start">
+            <h4 className="font-bold text-sm sm:text-base text-brand-ivory font-sans tracking-wide">
               {isAr ? 'روابط سريعة' : 'QUICK LINKS'}
             </h4>
-            <ul className="space-y-3 text-xs sm:text-sm text-brand-cream/80 font-light">
+            <ul className="space-y-2.5 text-xs sm:text-sm text-brand-cream/80 font-light">
               <li>
                 <Link href="/" className="hover:text-brand-gold transition-colors block">
                   {isAr ? 'الرئيسية' : 'Home'}
@@ -255,8 +271,8 @@ export const Footer: React.FC = () => {
                 </a>
               </li>
               <li>
-                <Link href="/account/loyalty" className="hover:text-brand-gold transition-colors block text-brand-gold">
-                  {isAr ? 'كارت الولاء ومكافآت أثير' : 'ATHEER Loyalty Pass'}
+                <Link href="/account/loyalty" className="hover:text-brand-gold transition-colors block text-brand-gold font-medium">
+                  {isAr ? 'كارت الولاء ومكافآت أثير' : 'Loyalty Pass'}
                 </Link>
               </li>
               <li>
@@ -267,12 +283,12 @@ export const Footer: React.FC = () => {
             </ul>
           </div>
 
-          {/* Column 2: خدماتنا (Span 2) */}
-          <div className="lg:col-span-2 space-y-4 text-start">
-            <h4 className="font-bold text-sm sm:text-base text-brand-ivory font-sans">
-              {isAr ? 'خدماتنا' : 'OUR SERVICES'}
+          {/* Column 2: استكشف والقدرات (Span 3 - Merging Image 1 & Image 2) */}
+          <div className="lg:col-span-3 space-y-3.5 text-start">
+            <h4 className="font-bold text-sm sm:text-base text-brand-ivory font-sans tracking-wide">
+              {isAr ? 'استكشف والقدرات' : 'EXPLORE & QUALITY'}
             </h4>
-            <ul className="space-y-3 text-xs sm:text-sm text-brand-cream/80 font-light">
+            <ul className="space-y-2.5 text-xs sm:text-sm text-brand-cream/80 font-light">
               <li>
                 <a href="/#products" className="hover:text-brand-gold transition-colors block">
                   {isAr ? 'هوديز وسويت شيرتات ٥٠٠ جم/م²' : '500 GSM Heavyweight Drops'}
@@ -295,23 +311,23 @@ export const Footer: React.FC = () => {
               </li>
               <li>
                 <a href="/#fabric-fit" className="hover:text-brand-gold transition-colors block">
-                  {isAr ? 'إرشادات القياس والأوفرسايز' : 'Boxy Oversized Sizing Guide'}
+                  {isAr ? 'دليل المقاسات والأوفرسايز' : 'Oversized Sizing Guide'}
                 </a>
               </li>
             </ul>
           </div>
 
-          {/* Column 3: تواصل معنا (Span 3 - Phone + Quick Action + Social Icons) */}
-          <div className="lg:col-span-3 space-y-4 text-start">
-            <h4 className="font-bold text-sm sm:text-base text-brand-ivory font-sans">
+          {/* Column 3: تواصل معنا / اتصل بنا (Span 3 - Merging Phone, Email, Address, Quick Action, Social Icons) */}
+          <div className="lg:col-span-3 space-y-3.5 text-start">
+            <h4 className="font-bold text-sm sm:text-base text-brand-ivory font-sans tracking-wide">
               {isAr ? 'تواصل معنا' : 'CONTACT US'}
             </h4>
 
             {/* Large Bold Phone Number (matching screenshot style) */}
-            <div className="pt-1">
+            <div className="pt-0.5">
               <a
                 href={`tel:${displayPhone}`}
-                className="text-lg sm:text-2xl font-bold font-mono text-brand-ivory hover:text-brand-gold transition-colors tracking-wider block"
+                className="text-xl sm:text-2xl font-bold font-mono text-brand-ivory hover:text-brand-gold transition-colors tracking-wider block"
                 dir="ltr"
               >
                 {displayPhone}
@@ -330,8 +346,26 @@ export const Footer: React.FC = () => {
               </a>
             </div>
 
+            {/* Contact Details from Image 1: Email and Address */}
+            <div className="space-y-1.5 pt-1 text-xs text-brand-cream/70 font-mono">
+              <a
+                href={`mailto:${settings.supportEmail || 'atheerxo140@gmail.com'}`}
+                className="flex items-center space-x-2 rtl:space-x-reverse hover:text-brand-gold transition-colors"
+              >
+                <Mail className="w-3.5 h-3.5 text-brand-gold shrink-0" />
+                <span dir="ltr">{settings.supportEmail || 'atheerxo140@gmail.com'}</span>
+              </a>
+              <div className="flex items-center space-x-2 rtl:space-x-reverse text-brand-cream/60">
+                <MapPin className="w-3.5 h-3.5 text-brand-gold shrink-0" />
+                <span>
+                  {settings.storeAddress ||
+                    (isAr ? (settings.cairoShowroomsAr || 'القاهرة، جمهورية مصر العربية') : (settings.cairoShowroomsEn || 'Cairo, Egypt'))}
+                </span>
+              </div>
+            </div>
+
             {/* Circular Social Icons Matching Screenshot */}
-            <div className="pt-3 flex items-center space-x-2.5 rtl:space-x-reverse">
+            <div className="pt-2 flex items-center space-x-2.5 rtl:space-x-reverse">
               {/* WhatsApp */}
               <a
                 href={waLink}
@@ -390,66 +424,7 @@ export const Footer: React.FC = () => {
           </div>
         </div>
 
-        {/* Permanent Store QR Code Showcase (Sleek card above copyright) */}
-        {content.showQrCode !== false && (
-          <div className="mt-14 p-5 sm:p-6 bg-brand-charcoal/50 border border-brand-gold/30 rounded-xs flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl">
-            <div className="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-5 rtl:space-x-reverse text-center sm:text-start rtl:sm:text-start">
-              <div className="p-2 bg-brand-black border border-brand-gold/50 rounded-xs shrink-0 shadow-gold relative">
-                {footerQrUrl ? (
-                  <div className="relative">
-                    <img
-                      src={footerQrUrl}
-                      alt="ATHEER Permanent Store QR"
-                      className="w-24 h-24 object-contain"
-                    />
-                    <div className="absolute inset-0 m-auto w-6 h-6 rounded-xs bg-brand-black border border-brand-gold text-brand-gold flex items-center justify-center font-bold text-xs shadow-md">
-                      أ
-                    </div>
-                  </div>
-                ) : (
-                  <div className="w-24 h-24 bg-brand-charcoal animate-pulse flex items-center justify-center">
-                    <QrCode className="w-7 h-7 text-brand-gold" />
-                  </div>
-                )}
-              </div>
-
-              <div className="space-y-1">
-                <div className="flex items-center justify-center sm:justify-start space-x-2 rtl:space-x-reverse">
-                  <span className="text-[10px] font-mono uppercase tracking-widest text-brand-gold font-bold">
-                    {isAr ? 'رمز المتجر الدائم' : 'Permanent Store QR'}
-                  </span>
-                  <span className="bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 text-[9px] font-mono px-2 py-0.5 rounded-full">
-                    {isAr ? 'مدى الحياة' : 'Lifetime'}
-                  </span>
-                </div>
-                <h4 className="text-sm sm:text-base font-bold text-brand-ivory font-serif">
-                  {isAr
-                    ? 'امسح الرمز بكاميرا هاتفك لزيارة متجر أثير والطلب مباشرة'
-                    : 'Scan to Visit & Share ATHEER Streetwear'}
-                </h4>
-                <p className="text-xs text-brand-cream/70 font-sans max-w-lg leading-relaxed">
-                  {isAr
-                    ? 'وجّه كاميرا هاتفك نحو الرمز لفتح المتجر والاطلاع على تشكيلة الهوديز وطلب القطع من الموبايل في أي وقت.'
-                    : 'Point your camera to instantly explore our heavyweight collection and order.'}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center space-x-2 rtl:space-x-reverse shrink-0">
-              <a
-                href={targetQr}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-5 py-2.5 bg-brand-gold text-brand-black text-xs font-mono font-bold uppercase tracking-wider rounded-xs hover:bg-brand-gold-hover transition-colors shadow-gold flex items-center space-x-2 rtl:space-x-reverse"
-              >
-                <QrCode className="w-4 h-4" />
-                <span>{isAr ? 'فتح الرابط المباشر' : 'Open Direct URL'}</span>
-              </a>
-            </div>
-          </div>
-        )}
-
-        {/* 4. Elegant Bottom Bar */}
+        {/* 4. Elegant Bottom Bar (Matching Reference Images with Clean Line Separator) */}
         <div className="border-t border-brand-border/60 mt-14 pt-6 flex flex-col sm:flex-row items-center justify-between text-xs sm:text-sm text-brand-cream/70 font-mono gap-4">
           <div className="text-center sm:text-start text-brand-cream/80">
             {isAr ? 'تم التصميم والتطوير بواسطة دار أثير' : 'Designed & Developed by ATHEER Atelier'}
@@ -460,6 +435,47 @@ export const Footer: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Sleek Permanent Store QR Modal */}
+      {showQrModal && (
+        <div
+          className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in"
+          onClick={() => setShowQrModal(false)}
+        >
+          <div
+            className="bg-brand-charcoal border-2 border-brand-gold rounded-xs p-6 max-w-sm w-full text-center space-y-4 shadow-2xl relative"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setShowQrModal(false)}
+              className="absolute top-3 right-3 rtl:right-auto rtl:left-3 text-brand-cream/50 hover:text-brand-ivory text-base p-1"
+              aria-label="Close"
+            >
+              ✕
+            </button>
+            <div className="flex items-center justify-center space-x-2 rtl:space-x-reverse text-brand-gold text-xs font-mono font-bold uppercase tracking-wider">
+              <QrCode className="w-4 h-4" />
+              <span>{isAr ? 'رمز متجر أثير الدائم' : 'Permanent Store QR'}</span>
+            </div>
+            <div className="p-3 bg-brand-black border border-brand-gold/60 inline-block rounded-xs shadow-gold">
+              <img src={footerQrUrl} alt="Store QR" className="w-48 h-48 object-contain" />
+            </div>
+            <p className="text-xs text-brand-cream/70 font-sans leading-relaxed">
+              {isAr
+                ? 'امسح الرمز بكاميرا هاتفك لزيارة متجر أثير والاطلاع على تشكيلة الهوديز وطلب القطع في أي وقت.'
+                : 'Point your camera to instantly explore our heavyweight collection and order.'}
+            </p>
+            <a
+              href={targetQr}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block w-full py-2.5 bg-brand-gold text-brand-black font-mono text-xs font-bold uppercase rounded-xs hover:bg-brand-gold-hover transition-colors"
+            >
+              {isAr ? 'فتح الرابط المباشر' : 'Open Direct URL'}
+            </a>
+          </div>
+        </div>
+      )}
     </footer>
   );
 };

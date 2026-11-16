@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCustomerAuth, CustomerAddress } from '@/context/CustomerAuthContext';
 import { useLanguage } from '@/context/LanguageContext';
+import { BackButton } from '@/components/BackButton';
 import { defaultEgyptianShippingZones } from '@/data/shippingZones';
 import { MapPin, Plus, Trash2, CheckCircle2, ArrowRight, ArrowLeft, Home, Building2, Check } from 'lucide-react';
 
@@ -84,13 +85,16 @@ export default function CustomerAddressesPage() {
   return (
     <div className="min-h-screen bg-brand-black text-brand-ivory py-12 px-4 sm:px-6 lg:px-8 selection:bg-brand-gold selection:text-brand-black">
       <div className="max-w-4xl mx-auto space-y-6">
-        {/* Navigation Breadcrumb */}
-        <div className="flex items-center space-x-2 rtl:space-x-reverse text-xs font-mono text-brand-cream/60">
-          <Link href="/account" className="hover:text-brand-gold transition-colors">
-            {isAr ? 'حسابي' : 'My Account'}
-          </Link>
-          <span>/</span>
-          <span className="text-brand-gold font-bold">{isAr ? 'دفتر العناوين' : 'Address Book'}</span>
+        {/* Top Back Action & Navigation Breadcrumb */}
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <BackButton label={isAr ? 'رجوع للخطوة السابقة' : 'Back to previous'} fallbackUrl="/account" />
+          <div className="flex items-center space-x-2 rtl:space-x-reverse text-xs font-mono text-brand-cream/60">
+            <Link href="/account" className="hover:text-brand-gold transition-colors">
+              {isAr ? 'حسابي' : 'My Account'}
+            </Link>
+            <span>/</span>
+            <span className="text-brand-gold font-bold">{isAr ? 'دفتر العناوين' : 'Address Book'}</span>
+          </div>
         </div>
 
         {/* Page Header */}

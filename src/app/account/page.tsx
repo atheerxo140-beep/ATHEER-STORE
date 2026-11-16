@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCustomerAuth } from '@/context/CustomerAuthContext';
 import { useLanguage } from '@/context/LanguageContext';
+import { BackButton } from '@/components/BackButton';
 import {
   User,
   ShoppingBag,
@@ -71,7 +72,12 @@ export default function CustomerDashboardPage() {
 
   return (
     <div className="min-h-screen bg-brand-black text-brand-ivory py-8 sm:py-12 px-3 sm:px-6 lg:px-8 selection:bg-brand-gold selection:text-brand-black pb-28 sm:pb-12">
-      <div className="max-w-6xl mx-auto space-y-8">
+      <div className="max-w-6xl mx-auto space-y-6 sm:space-y-8">
+        {/* Top Back Navigation Action */}
+        <div className="flex items-center justify-between">
+          <BackButton label={isAr ? 'رجوع للمتجر والمنتجات' : 'Back to Store'} fallbackUrl="/" />
+        </div>
+
         {/* Top Header Card */}
         <div className="bg-brand-charcoal border border-brand-border/80 rounded-xs p-6 sm:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-luxury-dark">
           <div className="flex items-center space-x-4 rtl:space-x-reverse">

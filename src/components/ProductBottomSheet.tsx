@@ -84,14 +84,25 @@ export const ProductBottomSheet: React.FC<ProductBottomSheetProps> = ({
         {/* Mobile Swipe / Sheet Indicator */}
         <div className="w-12 h-1 bg-brand-border/80 rounded-full mx-auto mb-3 sm:hidden" />
 
-        {/* Close Button */}
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 rtl:right-auto rtl:left-4 p-1.5 text-brand-cream/60 hover:text-brand-ivory transition-colors bg-brand-black/60 rounded-xs z-20"
-          aria-label="Close"
-        >
-          <X className="w-4 h-4" />
-        </button>
+        {/* Top Navigation Strip with Back Button and Close Button */}
+        <div className="flex items-center justify-between pb-3 mb-4 border-b border-brand-border/40">
+          <button
+            type="button"
+            onClick={onClose}
+            className="inline-flex items-center space-x-2 rtl:space-x-reverse text-xs font-mono text-brand-cream/80 hover:text-brand-gold transition-colors group cursor-pointer py-1"
+          >
+            <ArrowIcon className="w-4 h-4 text-brand-gold transition-transform duration-200 group-hover:translate-x-1 rtl:group-hover:-translate-x-1" />
+            <span className="font-bold">{isAr ? 'رجوع للخطوة السابقة' : 'Back to previous'}</span>
+          </button>
+
+          <button
+            onClick={onClose}
+            className="p-1.5 text-brand-cream/60 hover:text-brand-ivory transition-colors bg-brand-black/60 rounded-xs"
+            aria-label="Close"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
 
         {/* Product Visual & Header Info */}
         <div className="flex flex-col sm:flex-row gap-5 pb-5 border-b border-brand-border/60">

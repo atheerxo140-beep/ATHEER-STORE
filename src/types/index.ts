@@ -124,6 +124,7 @@ export interface StoreSettings {
   socialInstagram: string;
   socialTiktok: string;
   socialFacebook?: string;
+  storeAddress?: string;
   showQrCode?: boolean;
   qrTargetUrl?: string;
 }

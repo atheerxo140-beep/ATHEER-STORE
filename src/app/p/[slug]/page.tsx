@@ -5,6 +5,7 @@ import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { CartDrawer } from '@/components/CartDrawer';
 import { WhatsAppButton } from '@/components/WhatsAppButton';
+import { BackButton } from '@/components/BackButton';
 import { getPageBySlug, getAllPages } from '@/lib/pageService';
 import Link from 'next/link';
 import { ArrowLeft, ArrowRight, ShieldCheck, Clock, MapPin } from 'lucide-react';
@@ -74,14 +75,17 @@ export default function CustomDynamicPage({ params }: Props) {
     <div className="min-h-screen bg-brand-black text-brand-ivory flex flex-col justify-between selection:bg-brand-gold selection:text-brand-black font-sans">
       <Header />
 
-      <main className="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
-        {/* Breadcrumb */}
-        <div className="flex items-center space-x-2 rtl:space-x-reverse text-xs text-brand-cream/50 font-mono mb-8">
-          <Link href="/" className="hover:text-brand-gold transition-colors">
-            ATHEER
-          </Link>
-          <span>/</span>
-          <span className="text-brand-gold">{page.titleAr}</span>
+      <main className="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-20">
+        {/* Top Back Action & Breadcrumb */}
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
+          <BackButton label="رجوع للخطوة السابقة" fallbackUrl="/" />
+          <div className="flex items-center space-x-2 rtl:space-x-reverse text-xs text-brand-cream/50 font-mono">
+            <Link href="/" className="hover:text-brand-gold transition-colors">
+              ATHEER
+            </Link>
+            <span>/</span>
+            <span className="text-brand-gold">{page.titleAr}</span>
+          </div>
         </div>
 
         {/* Title Header */}
