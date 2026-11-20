@@ -190,10 +190,10 @@ export const Footer: React.FC = () => {
               <Sparkles className="w-6 h-6 text-brand-gold flex-shrink-0" />
               <div className="text-xs">
                 <span className="font-bold text-brand-ivory block text-sm">
-                  {isAr ? 'استبدال واسترجاع سهل 14 يوم' : '14-Day Free Exchange'}
+                  {isAr ? 'استبدال واسترجاع سهل 7 أيام' : '7-Day Free Exchange'}
                 </span>
                 <span className="text-[11px] text-brand-cream/60">
-                  {isAr ? 'تغيير المقاس متاح مجاناً وبكل سلاسة' : 'Hassle-free size swaps anytime'}
+                  {isAr ? 'تغيير المقاس متاح بكل سلاسة وسرعة' : 'Hassle-free size swaps anytime'}
                 </span>
               </div>
             </div>
@@ -310,7 +310,7 @@ export const Footer: React.FC = () => {
               </li>
               <li>
                 <Link href="/p/return-policy" className="hover:text-brand-gold transition-colors block">
-                  {isAr ? 'استبدال واسترجاع سهل مجاناً' : '14-Day Free Exchange'}
+                  {isAr ? 'استبدال واسترجاع سهل خلال 7 أيام' : '7-Day Free Exchange'}
                 </Link>
               </li>
               <li>

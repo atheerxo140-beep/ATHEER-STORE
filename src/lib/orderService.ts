@@ -413,6 +413,7 @@ export const createOrder = async (input: CreateOrderInput): Promise<OrderCreatio
   }
 
   // 11. Deduct Inventory Consistently and record movement logs
+  const sbServer = isSupabaseConfigured() ? getSupabaseServer() : null;
   for (const item of matchedProducts) {
     item.product.inventory = Math.max(0, (item.product.inventory ?? 0) - item.quantity);
     addInventoryLog({
@@ -425,6 +426,29 @@ export const createOrder = async (input: CreateOrderInput): Promise<OrderCreatio
       notes: `Order confirmed (${orderReference})`,
       timestamp: nowIso,
     });
+
+    if (sbServer) {
+      try {
+        const orderItemMatch = validatedItems.find((it) => it.productId === item.product.id);
+        if (orderItemMatch) {
+          const { data: vRow } = await sbServer
+            .from('product_variants')
+            .select('id, inventory_quantity')
+            .eq('product_id', item.product.id)
+            .eq('size', orderItemMatch.selectedSize)
+            .single();
+          if (vRow) {
+            const nextQty = Math.max(0, (vRow.inventory_quantity || 0) - item.quantity);
+            await sbServer
+              .from('product_variants')
+              .update({ inventory_quantity: nextQty })
+              .eq('id', vRow.id);
+          }
+        }
+      } catch (variantDeductErr) {
+        console.warn('[OrderService] Variant inventory deduction notice:', variantDeductErr);
+      }
+    }
   }
 
   // 12. Dispatch real-time admin order notification & automated WhatsApp

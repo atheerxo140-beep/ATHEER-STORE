@@ -26,6 +26,11 @@ import {
   Clock,
   Zap,
   Scale,
+  Maximize2,
+  ZoomIn,
+  X,
+  AlertCircle,
+  Eye,
 } from 'lucide-react';
 
 interface SizeWeightSpec {
@@ -191,15 +196,27 @@ export default function ProductDetailPage() {
 
   // Gallery & Variant State
   const router = useRouter();
-  const galleryImages = [product.image, product.hoverImage];
-  const [selectedImage, setSelectedImage] = useState(galleryImages[0]);
+  const rawGallery = [
+    product.image,
+    product.hoverImage,
+    ...(product.gallery || []),
+  ].filter(Boolean);
+  // Ensure unique list
+  const galleryImages = Array.from(new Set(rawGallery));
+  const [selectedImage, setSelectedImage] = useState(galleryImages[0] || product.image);
   const [selectedColor, setSelectedColor] = useState(product.colors[0] || 'Onyx');
   const [selectedSize, setSelectedSize] = useState(product.sizes[0] || 'L');
   const [quantity, setQuantity] = useState(1);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [addedSuccess, setAddedSuccess] = useState(false);
   const [showSizeGuide, setShowSizeGuide] = useState(false);
+  const [zoomModalOpen, setZoomModalOpen] = useState(false);
+  const [imageLoading, setImageLoading] = useState(false);
+
+  // Multi-Factor Size Recommendation (Weight, Height, Fit Preference)
   const [userWeightKg, setUserWeightKg] = useState<string>('');
+  const [userHeightCm, setUserHeightCm] = useState<string>('');
+  const [fitPreference, setFitPreference] = useState<'regular' | 'oversized' | 'ultra_boxy'>('oversized');
 
   const title = language === 'ar' ? product.nameAr : product.nameEn;
   const categoryLabel = language === 'ar' ? product.categoryLabelAr : product.categoryLabelEn;
@@ -208,17 +225,60 @@ export default function ProductDetailPage() {
   const fit = language === 'ar' ? product.fitAr : product.fitEn;
 
   const selectedSpec = SIZE_WEIGHT_SPECS[selectedSize.toUpperCase()];
+  const availableStock = product.inventory ?? 50;
+  const isOutOfStock = availableStock <= 0 && !product.isComingSoon;
+
+  const handleComputeRecommendation = (weightVal: string, heightVal: string, fitPref: 'regular' | 'oversized' | 'ultra_boxy') => {
+    const kg = parseFloat(weightVal);
+    if (isNaN(kg) || kg <= 0) return;
+
+    let baseIdx = 0; // S
+    if (kg < 65) baseIdx = 0;
+    else if (kg < 78) baseIdx = 1;
+    else if (kg < 92) baseIdx = 2;
+    else if (kg < 105) baseIdx = 3;
+    else baseIdx = 4; // 2XL / XXL
+
+    const cm = parseFloat(heightVal);
+    if (!isNaN(cm) && cm > 0) {
+      if (cm >= 186 && baseIdx < 4) baseIdx += 1;
+      else if (cm <= 165 && baseIdx > 0) baseIdx -= 1;
+    }
+
+    if (fitPref === 'regular' && baseIdx > 0) {
+      baseIdx -= 1;
+    } else if (fitPref === 'ultra_boxy' && baseIdx < 4) {
+      baseIdx += 1;
+    }
+
+    const standardSizes = ['S', 'M', 'L', 'XL', '2XL'];
+    const targetSize = standardSizes[Math.min(baseIdx, standardSizes.length - 1)];
+
+    if (product.sizes.includes(targetSize)) {
+      setSelectedSize(targetSize);
+    } else if (targetSize === '2XL' && product.sizes.includes('XXL')) {
+      setSelectedSize('XXL');
+    } else if (product.sizes.length > 0) {
+      // Find closest
+      const match = product.sizes.find((s) => s.toUpperCase() === targetSize);
+      if (match) setSelectedSize(match);
+      else setSelectedSize(product.sizes[0]);
+    }
+  };
 
   const handleWeightChange = (val: string) => {
     setUserWeightKg(val);
-    const kg = parseFloat(val);
-    if (!isNaN(kg)) {
-      if (kg < 65) setSelectedSize('S');
-      else if (kg < 78) setSelectedSize('M');
-      else if (kg < 92) setSelectedSize('L');
-      else if (kg < 105) setSelectedSize('XL');
-      else setSelectedSize(product.sizes.includes('2XL') ? '2XL' : 'XL');
-    }
+    handleComputeRecommendation(val, userHeightCm, fitPreference);
+  };
+
+  const handleHeightChange = (val: string) => {
+    setUserHeightCm(val);
+    handleComputeRecommendation(userWeightKg, val, fitPreference);
+  };
+
+  const handleFitPrefChange = (pref: 'regular' | 'oversized' | 'ultra_boxy') => {
+    setFitPreference(pref);
+    handleComputeRecommendation(userWeightKg, userHeightCm, pref);
   };
 
   const handleAddToCart = () => {
@@ -227,6 +287,14 @@ export default function ProductDetailPage() {
         language === 'ar'
           ? 'هذه القطعة ضمن الإصدار القادم في مصر. انضم لقائمة الإطلاق لتصلك دعوة الشراء فور طرحها!'
           : 'This item is part of our upcoming drop. Join the Drop List to get notified on release!'
+      );
+      return;
+    }
+    if (isOutOfStock) {
+      alert(
+        language === 'ar'
+          ? 'عذراً، هذا المقاس غير متوفر حالياً بالمخزن.'
+          : 'Sorry, this size is currently out of stock.'
       );
       return;
     }
@@ -241,6 +309,14 @@ export default function ProductDetailPage() {
         language === 'ar'
           ? 'هذه القطعة ضمن الإصدار القادم في مصر. انضم لقائمة الإطلاق لتصلك دعوة الشراء فور طرحها!'
           : 'This item is part of our upcoming drop. Join the Drop List to get notified on release!'
+      );
+      return;
+    }
+    if (isOutOfStock) {
+      alert(
+        language === 'ar'
+          ? 'عذراً، هذا المقاس غير متوفر حالياً بالمخزن.'
+          : 'Sorry, this size is currently out of stock.'
       );
       return;
     }
@@ -281,47 +357,85 @@ export default function ProductDetailPage() {
           {/* Left: Gallery Column (7 cols) */}
           <div className="lg:col-span-7 flex flex-col-reverse sm:flex-row gap-4">
             {/* Thumbnail Strip */}
-            <div className="flex sm:flex-col gap-3 overflow-x-auto sm:overflow-visible">
+            <div className="flex sm:flex-col gap-3 overflow-x-auto sm:overflow-visible pb-2 sm:pb-0">
               {galleryImages.map((img, idx) => (
                 <button
                   key={idx}
-                  onClick={() => setSelectedImage(img)}
-                  className={`relative w-20 h-24 sm:w-24 sm:h-32 border overflow-hidden flex-shrink-0 transition-all ${
+                  onClick={() => {
+                    setSelectedImage(img);
+                    setImageLoading(true);
+                  }}
+                  className={`relative w-20 h-24 sm:w-24 sm:h-32 border overflow-hidden flex-shrink-0 transition-all rounded-xs ${
                     selectedImage === img
-                      ? 'border-brand-gold ring-1 ring-brand-gold shadow-gold'
-                      : 'border-brand-border/60 opacity-60 hover:opacity-100'
+                      ? 'border-brand-gold ring-2 ring-brand-gold/80 shadow-gold'
+                      : 'border-brand-border/60 opacity-60 hover:opacity-100 hover:border-brand-gold/50'
                   }`}
                   aria-label={`View angle ${idx + 1}`}
                 >
-                  <div
-                    className="w-full h-full bg-cover bg-center"
-                    style={{ backgroundImage: `url('${img}')` }}
+                  <img
+                    src={img}
+                    alt={`${title} - angle ${idx + 1}`}
+                    className="w-full h-full object-cover object-center"
+                    loading="lazy"
+                    onError={(e) => {
+                      (e.target as HTMLElement).style.display = 'none';
+                    }}
                   />
+                  <span className="absolute bottom-1 right-1 rtl:right-auto rtl:left-1 bg-brand-black/80 text-[9px] font-mono text-brand-gold px-1 rounded-xs">
+                    {idx === 0 ? (isAr ? 'أمامي' : 'Front') : idx === 1 ? (isAr ? 'خلفي' : 'Back') : (isAr ? 'تفاصيل' : 'Detail')}
+                  </span>
                 </button>
               ))}
             </div>
 
-            {/* Main Stage View */}
-            <div className="flex-1 relative aspect-[3/4] bg-brand-charcoal border border-brand-border/70 overflow-hidden shadow-2xl">
-              <div
-                className="w-full h-full bg-cover bg-center transition-all duration-500 ease-out"
-                style={{ backgroundImage: `url('${selectedImage}')` }}
+            {/* Main Stage View with Click-to-Zoom */}
+            <div
+              onClick={() => setZoomModalOpen(true)}
+              className="flex-1 relative aspect-[3/4] bg-brand-charcoal border border-brand-border/70 overflow-hidden shadow-2xl rounded-xs group cursor-zoom-in"
+              title={isAr ? 'اضغط لتكبير وفحص الخامة والتفاصيل' : 'Click to inspect fabric & high-res details'}
+            >
+              {/* Image Loading Skeleton */}
+              {imageLoading && (
+                <div className="absolute inset-0 bg-brand-stone/40 animate-pulse flex items-center justify-center z-0">
+                  <Flame className="w-8 h-8 text-brand-gold/40 animate-bounce" />
+                </div>
+              )}
+
+              <img
+                src={selectedImage}
+                alt={title}
+                onLoad={() => setImageLoading(false)}
+                onError={() => setImageLoading(false)}
+                className={`w-full h-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105 ${
+                  imageLoading ? 'opacity-0' : 'opacity-100'
+                }`}
               />
 
               {/* GSM Badge */}
-              <div className="absolute top-4 left-4 rtl:left-auto rtl:right-4 z-10 flex flex-col space-y-1.5 font-mono">
-                <span className="bg-brand-black/90 backdrop-blur-md text-brand-gold border border-brand-gold/60 text-xs font-bold px-3 py-1">
+              <div className="absolute top-4 left-4 rtl:left-auto rtl:right-4 z-10 flex flex-col space-y-1.5 font-mono pointer-events-none">
+                <span className="bg-brand-black/90 backdrop-blur-md text-brand-gold border border-brand-gold/60 text-xs font-bold px-3 py-1 shadow">
                   {product.gsm} GSM
                 </span>
-                <span className="bg-brand-charcoal/95 backdrop-blur-md text-brand-ivory text-[10px] px-2.5 py-0.5 border border-brand-border">
+                <span className="bg-brand-charcoal/95 backdrop-blur-md text-brand-ivory text-[10px] px-2.5 py-0.5 border border-brand-border shadow">
                   {fit}
+                </span>
+              </div>
+
+              {/* Zoom Indicator Button */}
+              <div className="absolute bottom-4 right-4 rtl:right-auto rtl:left-4 z-10 opacity-80 group-hover:opacity-100 transition-opacity">
+                <span className="inline-flex items-center space-x-1.5 rtl:space-x-reverse px-3 py-1.5 bg-brand-black/85 backdrop-blur-md border border-brand-gold/60 text-brand-gold text-xs font-mono rounded-xs shadow-gold">
+                  <Maximize2 className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">{isAr ? 'فحص التفاصيل والأنسجة' : 'Zoom Fabric'}</span>
                 </span>
               </div>
 
               {/* Wishlist Button */}
               <button
-                onClick={() => setIsWishlisted(!isWishlisted)}
-                className="absolute top-4 right-4 rtl:right-auto rtl:left-4 z-10 w-10 h-10 rounded-full bg-brand-black/80 backdrop-blur-md border border-brand-border flex items-center justify-center text-brand-ivory hover:text-brand-gold transition-colors"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsWishlisted(!isWishlisted);
+                }}
+                className="absolute top-4 right-4 rtl:right-auto rtl:left-4 z-10 w-10 h-10 rounded-full bg-brand-black/80 backdrop-blur-md border border-brand-border flex items-center justify-center text-brand-ivory hover:text-brand-gold transition-colors shadow"
                 aria-label="Wishlist"
               >
                 <Heart
@@ -479,25 +593,102 @@ export default function ProductDetailPage() {
                   </div>
                 )}
 
-                {/* Weight-to-Size Calculator */}
-                <div className="mt-3 p-3 bg-brand-stone/30 border border-brand-border/80 rounded-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-                  <div className="flex items-center space-x-2 rtl:space-x-reverse text-brand-cream/80 font-mono">
-                    <Scale className="w-4 h-4 text-brand-gold flex-shrink-0" />
-                    <span>{isAr ? 'محتار في المقاس؟ اكتب وزنك بالكيلو:' : 'Unsure? Type your weight (KG):'}</span>
+                {/* Multi-Factor Size Recommendation Engine (Weight, Height & Fit Preference) */}
+                <div className="mt-3 p-3.5 bg-brand-stone/30 border border-brand-border/80 rounded-xs space-y-3 text-xs">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2 rtl:space-x-reverse text-brand-cream/90 font-mono font-bold">
+                      <Scale className="w-4 h-4 text-brand-gold flex-shrink-0" />
+                      <span>{isAr ? 'مستشار المقاس والقصّة الذكي:' : 'Smart Fit & Size Advisor:'}</span>
+                    </div>
+                    <span className="text-[10px] text-brand-gold/80 font-mono">
+                      {isAr ? 'حساب مبني على الأبعاد والتفضيل' : 'Multi-factor Fit Algorithm'}
+                    </span>
                   </div>
-                  <div className="flex items-center space-x-2 rtl:space-x-reverse">
-                    <input
-                      type="number"
-                      min="40"
-                      max="150"
-                      value={userWeightKg}
-                      onChange={(e) => handleWeightChange(e.target.value)}
-                      placeholder={isAr ? 'مثال: 80 كجم' : 'e.g. 80 KG'}
-                      className="w-28 bg-brand-charcoal border border-brand-border px-3 py-1.5 text-brand-gold font-mono font-bold text-xs rounded-xs focus:border-brand-gold focus:outline-none"
-                    />
+
+                  {/* Inputs: Weight & Height */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    <div>
+                      <label className="block text-[10px] text-brand-cream/60 font-mono mb-1">
+                        {isAr ? 'الوزن (كجم):' : 'Weight (KG):'}
+                      </label>
+                      <input
+                        type="number"
+                        min="40"
+                        max="150"
+                        value={userWeightKg}
+                        onChange={(e) => handleWeightChange(e.target.value)}
+                        placeholder={isAr ? 'مثال: 80 كجم' : 'e.g. 80 KG'}
+                        className="w-full bg-brand-charcoal border border-brand-border px-3 py-1.5 text-brand-gold font-mono font-bold text-xs rounded-xs focus:border-brand-gold focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] text-brand-cream/60 font-mono mb-1">
+                        {isAr ? 'الطول (سم):' : 'Height (CM):'}
+                      </label>
+                      <input
+                        type="number"
+                        min="140"
+                        max="220"
+                        value={userHeightCm}
+                        onChange={(e) => handleHeightChange(e.target.value)}
+                        placeholder={isAr ? 'مثال: 178 سم' : 'e.g. 178 CM'}
+                        className="w-full bg-brand-charcoal border border-brand-border px-3 py-1.5 text-brand-gold font-mono font-bold text-xs rounded-xs focus:border-brand-gold focus:outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Fit Preference Buttons */}
+                  <div>
+                    <label className="block text-[10px] text-brand-cream/60 font-mono mb-1.5">
+                      {isAr ? 'ستايل القصّة المفضل لديك:' : 'Preferred Fit Style:'}
+                    </label>
+                    <div className="grid grid-cols-3 gap-1.5 text-center font-mono text-[11px]">
+                      <button
+                        type="button"
+                        onClick={() => handleFitPrefChange('regular')}
+                        className={`py-1.5 px-2 rounded-xs border transition-colors ${
+                          fitPreference === 'regular'
+                            ? 'bg-brand-gold/20 border-brand-gold text-brand-gold font-bold'
+                            : 'bg-brand-charcoal/80 border-brand-border/60 text-brand-cream/70 hover:border-brand-gold/40'
+                        }`}
+                      >
+                        {isAr ? 'مضبوط / كلاسيك' : 'Regular Fitted'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleFitPrefChange('oversized')}
+                        className={`py-1.5 px-2 rounded-xs border transition-colors ${
+                          fitPreference === 'oversized'
+                            ? 'bg-brand-gold/20 border-brand-gold text-brand-gold font-bold'
+                            : 'bg-brand-charcoal/80 border-brand-border/60 text-brand-cream/70 hover:border-brand-gold/40'
+                        }`}
+                      >
+                        {isAr ? 'بوكسي معتمد' : 'Boxy Oversized'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleFitPrefChange('ultra_boxy')}
+                        className={`py-1.5 px-2 rounded-xs border transition-colors ${
+                          fitPreference === 'ultra_boxy'
+                            ? 'bg-brand-gold/20 border-brand-gold text-brand-gold font-bold'
+                            : 'bg-brand-charcoal/80 border-brand-border/60 text-brand-cream/70 hover:border-brand-gold/40'
+                        }`}
+                      >
+                        {isAr ? 'واسع جداً ستريت' : 'Ultra Baggy'}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Explanation & Result */}
+                  <div className="pt-1 flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-t border-brand-border/40 text-[11px]">
+                    <p className="text-brand-cream/60 leading-relaxed font-sans">
+                      {isAr
+                        ? 'تعتمد التوصية على قياسات الصدر والأكتاف وطريقة ارتدائك للقطعة، وليس الوزن المجرد فقط.'
+                        : 'Fit is calibrated by shoulder drape, chest width, and your preferred silhouette, not solely body weight.'}
+                    </p>
                     {userWeightKg && (
-                      <span className="text-[11px] font-mono text-emerald-400 font-bold whitespace-nowrap">
-                        ← {isAr ? `مقاسك: ${selectedSize}` : `Your size: ${selectedSize}`}
+                      <span className="text-emerald-400 font-mono font-bold whitespace-nowrap shrink-0">
+                        ✓ {isAr ? `المقاس المقترح: ${selectedSize}` : `Recommended: ${selectedSize}`}
                       </span>
                     )}
                   </div>
@@ -546,18 +737,42 @@ export default function ProductDetailPage() {
                 )}
               </div>
 
+              {/* Inventory Stock Status & Warning */}
+              {isOutOfStock ? (
+                <div className="p-4 bg-red-950/40 border border-red-500/60 rounded-xs mb-6 flex items-center space-x-3 rtl:space-x-reverse text-red-200 text-xs font-mono">
+                  <AlertCircle className="w-5 h-5 text-red-400 shrink-0" />
+                  <div>
+                    <span className="font-bold block">
+                      {isAr ? 'نفد المخزون مؤقتاً لهذا المقاس' : 'Temporarily Out of Stock'}
+                    </span>
+                    <span className="text-[11px] text-red-300/80 font-sans">
+                      {isAr ? 'جاري تجهيز دفعة جديدة في مصانعنا بالقاهرة. يمكنك اختيار مقاس آخر أو التواصل مع الكونسيرج.' : 'Restocking soon. Select another size or contact our WhatsApp concierge.'}
+                    </span>
+                  </div>
+                </div>
+              ) : availableStock <= 10 && !product.isComingSoon ? (
+                <div className="mb-4 inline-flex items-center space-x-2 rtl:space-x-reverse px-2.5 py-1 bg-amber-950/40 border border-amber-500/50 rounded-xs text-[11px] font-mono text-amber-300">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+                  <span>
+                    {isAr ? `متبقي بالمخزن ${availableStock} قطع فقط — سارع بالطلب` : `Only ${availableStock} pieces remaining in stock`}
+                  </span>
+                </div>
+              ) : null}
+
               {/* Action Buttons: 1-Click Fast Buy Now + Add to Bag */}
               <div className="space-y-3 mb-8">
                 {/* Primary Hero CTA: Express Direct Checkout */}
                 <button
                   type="button"
                   onClick={handleBuyNow}
-                  disabled={product.isComingSoon}
+                  disabled={product.isComingSoon || isOutOfStock}
                   className="w-full h-14 bg-brand-gold hover:bg-brand-gold-hover text-brand-black text-xs sm:text-sm font-sans font-black uppercase tracking-[0.16em] rounded-xs shadow-gold transition-all duration-300 flex items-center justify-center space-x-2 rtl:space-x-reverse disabled:opacity-50 hover:scale-[1.01] active:scale-[0.99]"
                 >
                   <Zap className="w-4 h-4 fill-brand-black text-brand-black" />
                   <span>
-                    {language === 'ar'
+                    {isOutOfStock
+                      ? (isAr ? 'غير متوفر حالياً' : 'Out of Stock')
+                      : language === 'ar'
                       ? 'شراء فوري الآن (الدفع عند الاستلام)'
                       : 'Buy Now — Express Checkout (COD)'}
                   </span>
@@ -568,7 +783,8 @@ export default function ProductDetailPage() {
                   <div className="flex items-center border border-brand-border bg-brand-charcoal h-12 px-3 rounded-xs">
                     <button
                       onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                      className="text-brand-ivory/70 hover:text-brand-gold px-2 font-mono text-base"
+                      disabled={isOutOfStock}
+                      className="text-brand-ivory/70 hover:text-brand-gold px-2 font-mono text-base disabled:opacity-30"
                       aria-label="Decrease quantity"
                     >
                       -
@@ -577,8 +793,9 @@ export default function ProductDetailPage() {
                       {quantity}
                     </span>
                     <button
-                      onClick={() => setQuantity(quantity + 1)}
-                      className="text-brand-ivory/70 hover:text-brand-gold px-2 font-mono text-base"
+                      onClick={() => setQuantity(Math.min(availableStock || 1, quantity + 1))}
+                      disabled={isOutOfStock || quantity >= availableStock}
+                      className="text-brand-ivory/70 hover:text-brand-gold px-2 font-mono text-base disabled:opacity-30"
                       aria-label="Increase quantity"
                     >
                       +
@@ -588,7 +805,8 @@ export default function ProductDetailPage() {
                   <button
                     type="button"
                     onClick={handleAddToCart}
-                    className={`flex-1 h-12 border border-brand-gold/70 hover:border-brand-gold bg-brand-charcoal hover:bg-brand-stone/40 text-brand-gold text-xs uppercase tracking-wider font-mono font-bold transition-all rounded-xs flex items-center justify-center space-x-2 rtl:space-x-reverse ${
+                    disabled={product.isComingSoon || isOutOfStock}
+                    className={`flex-1 h-12 border border-brand-gold/70 hover:border-brand-gold bg-brand-charcoal hover:bg-brand-stone/40 text-brand-gold text-xs uppercase tracking-wider font-mono font-bold transition-all rounded-xs flex items-center justify-center space-x-2 rtl:space-x-reverse disabled:opacity-40 ${
                       addedSuccess ? 'bg-emerald-950/80 border-emerald-500 text-emerald-400' : ''
                     }`}
                   >
@@ -666,6 +884,98 @@ export default function ProductDetailPage() {
             </button>
           </div>
         </div>
+        {/* High-Resolution Zoom Lightbox Modal */}
+        {zoomModalOpen && (
+          <div
+            className="fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex flex-col items-center justify-between p-4 sm:p-6 animate-fade-in"
+            onClick={() => setZoomModalOpen(false)}
+          >
+            {/* Top Bar: Title & Close */}
+            <div
+              className="w-full max-w-5xl flex items-center justify-between text-brand-ivory pb-4 border-b border-brand-border/40"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center space-x-2 rtl:space-x-reverse font-mono text-xs">
+                <span className="text-brand-gold font-bold">{title}</span>
+                <span className="text-brand-cream/40">•</span>
+                <span className="text-brand-cream/70">
+                  {isAr ? 'معاينة النسيج والتطريز بدقة فائقة' : 'High-Res Fabric & Stitching Inspection'}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setZoomModalOpen(false)}
+                className="w-10 h-10 rounded-full bg-brand-charcoal border border-brand-gold/60 text-brand-gold hover:text-brand-ivory hover:bg-brand-gold/20 flex items-center justify-center transition-colors"
+                aria-label="Close Zoom"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Stage: Big Image with Carousel Navigation */}
+            <div
+              className="relative flex-1 w-full max-w-4xl flex items-center justify-center my-4 overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <img
+                src={selectedImage}
+                alt={`${title} zoomed view`}
+                className="max-h-[75vh] w-auto max-w-full object-contain rounded-xs shadow-2xl transition-all"
+              />
+
+              {/* Prev / Next buttons if multiple images */}
+              {galleryImages.length > 1 && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const curIdx = galleryImages.indexOf(selectedImage);
+                      const prevIdx = (curIdx - 1 + galleryImages.length) % galleryImages.length;
+                      setSelectedImage(galleryImages[prevIdx]);
+                    }}
+                    className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-black/70 border border-brand-gold/60 text-brand-gold hover:bg-brand-gold hover:text-black flex items-center justify-center transition-all shadow-lg"
+                    aria-label="Previous image"
+                  >
+                    <ChevronLeft className="w-6 h-6" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const curIdx = galleryImages.indexOf(selectedImage);
+                      const nextIdx = (curIdx + 1) % galleryImages.length;
+                      setSelectedImage(galleryImages[nextIdx]);
+                    }}
+                    className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-black/70 border border-brand-gold/60 text-brand-gold hover:bg-brand-gold hover:text-black flex items-center justify-center transition-all shadow-lg"
+                    aria-label="Next image"
+                  >
+                    <ChevronRight className="w-6 h-6" />
+                  </button>
+                </>
+              )}
+            </div>
+
+            {/* Bottom Thumbnail Selector in Modal */}
+            <div
+              className="w-full max-w-md flex items-center justify-center gap-3 py-2"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {galleryImages.map((img, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => setSelectedImage(img)}
+                  className={`relative w-14 h-16 rounded-xs overflow-hidden border transition-all ${
+                    selectedImage === img
+                      ? 'border-brand-gold ring-2 ring-brand-gold shadow-gold'
+                      : 'border-brand-border/60 opacity-60 hover:opacity-100'
+                  }`}
+                >
+                  <img src={img} alt={`Angle ${idx + 1}`} className="w-full h-full object-cover" />
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </main>
 
       <Footer />

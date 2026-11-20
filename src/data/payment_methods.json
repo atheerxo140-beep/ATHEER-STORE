@@ -22,7 +22,7 @@
     "accountDetails": "atheer@instapay",
     "instructionsEn": "Transfer the order total to our official InstaPay handle (atheer@instapay) and enter your reference ID.",
     "instructionsAr": "حول إجمالي قيمة الطلب إلى عنوان إنستاباي (atheer@instapay) وأدخل رقم العملية لتأكيد الطلب فوراً.",
-    "isActive": true,
+    "isActive": false,
     "isDefault": false
   },
   {
@@ -35,7 +35,7 @@
     "accountDetails": "01012345678",
     "instructionsEn": "Transfer the order total to our official wallet number (01012345678) and enter your wallet phone number.",
     "instructionsAr": "حول قيمة الطلب إلى رقم المحفظة (01012345678) واكتب رقم الهاتف الذي تم التحويل منه للتأكيد.",
-    "isActive": true,
+    "isActive": false,
     "isDefault": false
   },
   {

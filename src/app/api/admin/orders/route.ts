@@ -12,6 +12,8 @@ import {
 } from '@/data/localOrdersStore';
 import { verifyAdminRequest } from '@/lib/adminAuth';
 import { getSupabaseServer, isSupabaseConfigured } from '@/lib/supabaseServer';
+import { currentProducts } from '@/data/mockProducts';
+import { addInventoryLog } from '@/data/inventoryLogsStore';
 
 export const dynamic = 'force-dynamic';
 
@@ -201,6 +203,44 @@ export async function PUT(req: NextRequest) {
         } catch (loyaltyErr) {
           console.warn('[AdminOrders] Loyalty stamp reverse notice on cancellation:', loyaltyErr);
         }
+
+        // Restore inventory for all items in the cancelled order
+        try {
+          const supabase = isSupabaseConfigured() ? getSupabaseServer() : null;
+          for (const it of order.items || []) {
+            const prod = currentProducts.find((p) => p.id === it.productId);
+            if (prod) {
+              prod.inventory = (prod.inventory ?? 0) + it.quantity;
+            }
+            addInventoryLog({
+              id: `inv_restock_${Date.now()}_${it.productId}`,
+              productId: it.productId,
+              productName: it.productNameEn || it.productId,
+              adjustment: it.quantity,
+              newTotal: prod ? (prod.inventory ?? 0) : 0,
+              reason: 'restock',
+              notes: `Order cancelled (${order.orderReference}) — restocked ${it.quantity} units`,
+              timestamp: new Date().toISOString(),
+            });
+
+            if (supabase) {
+              const { data: vRow } = await supabase
+                .from('product_variants')
+                .select('id, inventory_quantity')
+                .eq('product_id', it.productId)
+                .eq('size', it.selectedSize)
+                .single();
+              if (vRow) {
+                await supabase
+                  .from('product_variants')
+                  .update({ inventory_quantity: (vRow.inventory_quantity || 0) + it.quantity })
+                  .eq('id', vRow.id);
+              }
+            }
+          }
+        } catch (restockErr) {
+          console.warn('[AdminOrders] Inventory restock warning on order cancel:', restockErr);
+        }
       }
     }
 
@@ -245,6 +285,10 @@ export async function PUT(req: NextRequest) {
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }
+}
+
+export async function PATCH(req: NextRequest) {
+  return PUT(req);
 }
 
 export async function DELETE(req: NextRequest) {

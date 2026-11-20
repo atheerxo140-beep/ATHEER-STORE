@@ -261,9 +261,9 @@ function TrackOrderContent() {
             'Delivered successfully! Open-box inspection completed and COD payment collected. Enjoy your bespoke ATHEER drop!',
           // فاضل له شنو
           remainingStageAr:
-            'متبقي لك كامل حقوقك في خدمة ما بعد البيع: حق الاستبدال أو الاسترجاع المجاني خلال ١٤ يوماً في أي وقت، وإضافة نقاط الولاء لحسابك.',
+            'متبقي لك كامل حقوقك في خدمة ما بعد البيع: حق الاستبدال أو الاسترجاع خلال 7 أيام من تاريخ الاستلام، وإضافة نقاط الولاء لحسابك.',
           remainingStageEn:
-            'All post-purchase guarantees active: 14-day free exchange/return window and ATHEER loyalty rewards added.',
+            'All post-purchase guarantees active: 7-day exchange/return window and ATHEER loyalty rewards added.',
           nextActionAdviceAr:
             'في حال احتجت لأي مساعدة أو تبديل للمقاس، فريق الكونسيرج متاح لك على مدار الساعة عبر الواتساب.',
           nextActionAdviceEn:
